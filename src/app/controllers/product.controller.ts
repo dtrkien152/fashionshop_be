@@ -30,9 +30,18 @@ class ProductController {
     }
   };
 
-  getTopSellingProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  getTopSellingProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.productService.getTop10BestSellingProducts();
+      const { keyword, categoryId, sortBy, limit, page } = req.query;
+
+      const result = await this.productService.getTopSellingProducts({
+        keyword: keyword as string,
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        sortBy: sortBy as string,
+        limit: limit ? Number(limit) : 10,
+        page: page ? Number(page) : 1,
+      });
+
       res.json(result);
     } catch (error) {
       console.error('get top selling products error:', error);
