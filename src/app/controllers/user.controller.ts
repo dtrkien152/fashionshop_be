@@ -2,19 +2,20 @@ import { inject, injectable } from 'tsyringe';
 import { UserService } from '../services';
 import { NextFunction, Request, Response, RequestHandler } from 'express';
 import { ObjectUtils } from '../utils';
-import { UnauthorizedError } from '../errors';
+import { NotFoundError, UnauthorizedError } from '../errors';
 
 @injectable()
 class UserController {
-  constructor(@inject(UserService) private userService: UserService) {}
+  constructor(@inject(UserService) private userService: UserService) {
+  }
 
   getMyProfile: RequestHandler = async (req, res, next) => {
     try {
-      const session = req.session;
-      if (!session?.userId) {
+      const userId = req.session['userId'];
+      if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
-      const user = await this.userService.getById(session.userId);
+      const user = await this.userService.getById(userId);
       const bodyResponse = ObjectUtils.convertAllowFields(user.toJSON(), [
         'id', 'email', 'fullName', 'gender', 'phone', 'avatar', 'isActive',
       ]);
@@ -26,7 +27,8 @@ class UserController {
 
   updateMyProfile: RequestHandler = async (req, res, next) => {
     try {
-      await this.userService.updateUserProfile(req.session.userId, req.body);
+      const userId = req.session['userId'];
+      await this.userService.updateUserProfile(userId, req.body);
       res.status(200).send('Moderator Content.');
     } catch (error) {
       next(error);
@@ -35,12 +37,12 @@ class UserController {
 
   getUserProfile: RequestHandler = async (req, res, next) => {
     try {
-      const session = req.session;
-      if (!session?.userId) {
+      const userId = req.session['userId'];
+      if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
 
-      const user = await this.userService.getById(session.userId);
+      const user = await this.userService.getById(userId);
       if (user) {
         const data = {
           id: user.id,
@@ -61,7 +63,7 @@ class UserController {
   // 🟢 Hàm mới: Lấy thông tin tất cả địa chỉ của người dùng
   getAddress: RequestHandler = async (req, res, next) => {
     try {
-      const { userId } = req.session;
+      const userId = req.session['userId'];
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
@@ -81,14 +83,14 @@ class UserController {
     }
   };
 
-  updateAddress: (req, res, next) => Promise<Response<any, Record<string, any>>> = async (req, res, next) => {
+  updateAddress: RequestHandler = async (req, res, next) => {
     try {
       const { id } = req.params;
       const [affectedCount, updatedAddresses] = await this.userService.updateAddress(Number(id), req.body);
       if (affectedCount === 0) {
-        return res.status(404).json({ message: 'Địa chỉ không tồn tại!' });
+        throw new NotFoundError('Địa chỉ không tồn tại!');
       }
-      res.status(200).json(updatedAddresses[0]);
+      res.json(updatedAddresses[0]);
     } catch (error) {
       next(error);
     }
