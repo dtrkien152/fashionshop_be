@@ -8,42 +8,51 @@ class CartController {
   constructor(@inject(CartService) private cartService: CartService) {
   }
 
+  getCart = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const userId = req.session['userId'];
+      const fingerprint = req.query['fingerprint'];
+      const results = await this.cartService.getCart(fingerprint as string, userId);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getCartForGuest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const fingerprint = req.query['fingerprint'];
+      const results = await this.cartService.getCart(fingerprint as string);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getCartDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { cartCode } = req.query;
+      const results = await this.cartService.getCartDetails(cartCode as string);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   addToCartDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
       const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.addToCartDetail(payload.products, payload.fingerprint, userId);
+      const results = await this.cartService.addToCartDetail(payload.cartCode, payload.products);
       return res.json(results);
     } catch (error) {
       next(error);
     }
   };
 
-  addToCartDetailsForGuest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  updateToCartDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.addToCartDetail(payload.products, payload.fingerprint);
-      return res.json(results);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  updateCartDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const userId = req.session['userId'];
-      const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.updateCartDetail(payload.products, payload.fingerprint, userId);
-      return res.json(results);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  updateCartDetailsForGuest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.updateCartDetail(payload.products, payload.fingerprint);
+      const results = await this.cartService.updateToCartDetail(payload.cartCode, payload.products);
       return res.json(results);
     } catch (error) {
       next(error);
@@ -52,19 +61,8 @@ class CartController {
 
   syncCartDetails = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
       const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.syncCartDetail(payload.products, payload.fingerprint, userId);
-      return res.json(results);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  syncCartDetailsForGuest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const payload: CartDetailRequest = req.body;
-      const results = await this.cartService.syncCartDetail(payload.products, payload.fingerprint);
+      const results = await this.cartService.syncCartDetail(payload.products, payload.cartCode);
       return res.json(results);
     } catch (error) {
       next(error);
@@ -73,19 +71,8 @@ class CartController {
 
   removeCartDetail = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
-      const { productSubDetailId } = req.query;
-      const results = await this.cartService.removeCartDetail(+productSubDetailId, null, userId);
-      return res.json(results);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  removeCartDetailForGuest = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const { fingerprint, productSubDetailId } = req.query;
-      const results = await this.cartService.removeCartDetail(+productSubDetailId, fingerprint as string);
+      const { cartCode, productId, color, size } = req.query;
+      const results = await this.cartService.removeCartDetail(cartCode as string, +productId, color as string, size as string);
       return res.json(results);
     } catch (error) {
       next(error);

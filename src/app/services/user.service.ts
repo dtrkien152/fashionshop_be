@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { IUser, User } from '../models';
+import { IUser, IUserAddress, User, UserAddress } from '../models';
 import { ObjectUtils } from '../utils';
 import { NotFoundError } from '../errors';
 
@@ -24,44 +24,65 @@ class UserService {
    * @returns {Promise<object>} - Thông tin user đã được cập nhật
    */
   async updateUserProfile(id: number, updatedData: IUser): Promise<object> {
-    try {
-      // Chỉ cho phép cập nhật các trường sau
-      const filteredData = ObjectUtils.convertAllowFields(updatedData, ['full_name', 'gender', 'phone']);
 
-      // Tìm user theo ID
-      const user = await User.findByPk(id);
-      if (!user) {
-        throw new NotFoundError('User không tồn tại!');
-      }
-
-      // Cập nhật thông tin user
-      await user.update(filteredData);
-
-      return user;
-    } catch (error) {
-      console.error('Lỗi khi cập nhật user:', error);
-      throw new Error('Không thể cập nhật thông tin user!');
+    // Chỉ cho phép cập nhật các trường sau
+    const filteredData = ObjectUtils.convertAllowFields(updatedData, ['full_name', 'gender', 'phone']);
+    // Tìm user theo ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
     }
+    // Cập nhật thông tin user
+    await user.update(filteredData);
+    return user;
   }
 
   /**
    * Lấy thông tin cơ bản của user theo ID
    * @param {number} id - ID của user
-   * @returns {Promise<object>} - Thông tin cơ bản của user hoặc null nếu không tìm thấy
+   * @returns {Promise<User>} - Thông tin cơ bản của user hoặc null nếu không tìm thấy
    */
-  async getById(id: number): Promise<object> {
-    try {
-      const user = await User.findByPk(id);
-
-      if (!user) {
-        return null;
-      }
-
-      return user;
-    } catch (error) {
-      console.error('Lỗi khi lấy thông tin user:', error);
-      throw new Error('Không thể lấy thông tin user.');
+  async getById(id: number): Promise<User> {
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
     }
+    return user;
+  }
+
+  async createAddress(data: IUserAddress): Promise<UserAddress> {
+    if (data.isDefault) {
+      await UserAddress.update({ isDefault: false }, { where: { userId: data.userId } });
+    }
+    return UserAddress.create(data);
+  }
+
+  async updateAddress(id: number, data: Partial<IUserAddress>): Promise<[number, UserAddress[]]> {
+    return UserAddress.update(data, { where: { id }, returning: true });
+  }
+
+  async setDefaultAddress(userId: number, addressId: number): Promise<void> {
+    await UserAddress.update({ isDefault: false }, { where: { userId } });
+    await UserAddress.update({ isDefault: true }, { where: { id: addressId } });
+  }
+  /**
+   * Lấy danh sách địa chỉ của người dùng theo ID người dùng
+   * @param {number} userId - ID của người dùng
+   * @returns {Promise<UserAddress[]>} - Danh sách địa chỉ của người dùng
+   */
+  async getAddressesByUserId(userId: number): Promise<UserAddress[]> {
+    return await UserAddress.findAll({
+      where: { userId },
+      order: [['isDefault', 'DESC'], ['createdAt', 'DESC']], // Địa chỉ mặc định trước, sau đó theo thời gian tạo mới nhất
+    });
+  }
+
+  async deleteAddress(addressId: number): Promise<void> {
+    const address = await UserAddress.findByPk(addressId);
+    if (!address) {
+      throw new Error('Địa chỉ không tồn tại!');
+    }
+    await address.destroy();
   }
 }
 

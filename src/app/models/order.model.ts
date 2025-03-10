@@ -15,7 +15,7 @@ interface IOrder {
   customerAddress?: string;
   customerPhone?: string;
   totalPrice?: number;
-  paymentType?: number;
+  paymentType?: string;
   paymentStatus?: string;
   status?: string;
   createdBy?: string;

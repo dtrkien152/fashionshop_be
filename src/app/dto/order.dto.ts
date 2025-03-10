@@ -1,16 +1,16 @@
 import { PageParams } from './paging.dto';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_TYPE } from '../constants';
 
 export interface OrderCreateRequest {
   siteId: number;
   customer: OrderCustomer;
   products: OrderProduct[];
   payment: OrderPayment;
-  voucherCode: string;
+  voucherCode?: string;
 }
 
 export interface OrderPayment {
-  type: number;
+  type: PAYMENT_TYPE;
   status: PAYMENT_STATUS;
 }
 

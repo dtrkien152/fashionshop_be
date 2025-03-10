@@ -1,5 +1,5 @@
 export interface CartDetailRequest {
-  fingerprint: string;
+  cartCode: string;
   products: CartProduct[];
 }
 

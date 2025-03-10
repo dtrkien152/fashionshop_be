@@ -5,6 +5,7 @@ interface ICart {
   id?: number;
   userId?: number;
   fingerprint?: string;
+  code?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +31,13 @@ class Cart extends Model<ICart> {
     allowNull: true,
   })
   fingerprint!: string;
+
+  @Column({
+    type: DataType.STRING(15),
+    allowNull: true,
+    unique: true,
+  })
+  code!: string;
 }
 
 export { ICart, Cart };

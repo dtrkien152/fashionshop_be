@@ -19,7 +19,7 @@ const app = express();
 const port = ENV_CONFIG.server.port || 5000;
 
 // Middleware
-app.use(cors());
+// app.use(cors());
 app.use(bodyParser.json());
 app.use(SESSION_CONFIG); // 💡 Dùng session middleware
 
