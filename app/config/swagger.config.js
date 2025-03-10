@@ -13,10 +13,24 @@ const swaggerOptions = {
                 url: "http://localhost:5000", // Cập nhật URL production nếu cần
             },
         ],
+        components: {
+            securitySchemes: {
+                BearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
+                    description: "Nhập JWT Token vào đây để xác thực",
+                },
+            },
+        },
+        security: [
+            {
+                BearerAuth: [],
+            },
+        ],
     },
     apis: ["./app/routes/*.js"], // Đường dẫn đến các file chứa API docs
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-
 export default swaggerDocs;

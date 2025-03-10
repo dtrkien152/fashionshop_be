@@ -120,6 +120,7 @@ router.get(
         const token = jwt.sign({id: req.user.id, email: req.user.email}, process.env.JWT_SECRET, {
             expiresIn: "24h",
         });
+        req.session.token = token; // Lưu JWT vào session
 
         return res.status(200).json({
             id: user.id,

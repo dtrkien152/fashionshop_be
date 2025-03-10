@@ -25,8 +25,26 @@ router.use((req, res, next) => {
  *     tags: [User]
  *     security:
  *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Thành công, trả về thông tin user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 full_name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Phiên đăng nhập hết hạn
+ *       500:
+ *         description: Lỗi server
  */
-router.get("/api/user/profile", controller.getUserProfile);
+router.get("/profile", controller.getUserProfile);
 
 /**
  * @swagger
@@ -43,16 +61,16 @@ router.get("/api/user/profile", controller.getUserProfile);
  *           schema:
  *             type: object
  *             properties:
- *               email:
- *                 type: string
  *               full_name:
  *                 type: string
  *               gender:
  *                 type: boolean
  *               phone:
  *                 type: string
- *               avatar:
- *                 type: string
+ *     responses:
+ *       200: { description: Cập nhật thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       500: { description: Lỗi server }
  */
 router.put("/update-profile", authJwt.verifyToken, controller.updateProfile);
 

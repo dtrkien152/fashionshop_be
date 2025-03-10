@@ -51,6 +51,7 @@ export const signin = async (req, res) => {
       email: user.email,
       role: user.role, // Nếu có quyền hạn
     };
+      req.session.token = token; // Lưu JWT vào session
 
     return res.status(200).json({
       id: user.id,
