@@ -185,5 +185,4 @@ router.get('/address', jwtMiddleware.verifyToken, userController.getAddress);
 
 // Xóa địa chỉ người dùng
 router.delete('/address/:id',jwtMiddleware.verifyToken, userController.deleteAddress);
-
 export default router;

@@ -24,6 +24,7 @@ class UserService {
    * @returns {Promise<object>} - Thông tin user đã được cập nhật
    */
   async updateUserProfile(id: number, updatedData: IUser): Promise<object> {
+
     // Chỉ cho phép cập nhật các trường sau
     const filteredData = ObjectUtils.convertAllowFields(updatedData, ['full_name', 'gender', 'phone']);
     // Tìm user theo ID
@@ -84,6 +85,5 @@ class UserService {
     await address.destroy();
   }
 }
-
 
 export default UserService;

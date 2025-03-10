@@ -6,7 +6,6 @@ const addHeaderResponse = (req: Request, res: Response, next: NextFunction): voi
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Credentials', 'true'); // Cần thiết cho cookie & session
 
-
   // Xử lý preflight request (OPTIONS)
   next();
 };

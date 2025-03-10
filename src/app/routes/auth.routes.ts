@@ -140,5 +140,4 @@ router.get(
  */
 router.get('/me',jwtMiddleware.verifyToken, userController.getUserProfile);
 
-
 export default router;
