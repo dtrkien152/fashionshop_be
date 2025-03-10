@@ -3,7 +3,7 @@ import { ENV_CONFIG, sequelize, SESSION_CONFIG, swaggerDocs } from './app/config
 import cors from 'cors';
 import { authRoutes, productRoutes, userRoutes } from './app/routes';
 import swaggerUi from 'swagger-ui-express';
-import { passportMiddleware } from './app/middlewares';
+import { corsMiddleware, errorMiddleware, passportMiddleware } from './app/middlewares';
 import bodyParser from 'body-parser';
 
 const app = express();
@@ -18,10 +18,16 @@ app.use(SESSION_CONFIG); // 💡 Dùng session middleware
 app.use(passportMiddleware.initialize());
 app.use(passportMiddleware.session()); // 💡 Cần có để dùng session trong Passport
 
+// Middleware CORS
+app.use(corsMiddleware.addHeaderResponse);
+
 // Routes
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+
+// ✅ Thêm Error Handler Middleware
+app.use(errorMiddleware.errorHandler);
 
 // Swagger API Docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

@@ -5,6 +5,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
 import { User } from '../models';
 import { ROLE } from '../constants';
+import { GenerateUtils } from '../utils';
 
 const mailService = container.resolve(MailService);
 passport.use(
@@ -20,7 +21,7 @@ passport.use(
 
         if (!user) {
           // Người dùng chưa tồn tại => Tạo mật khẩu ngẫu nhiên
-          const randomPassword = generateRandomPassword();
+          const randomPassword = GenerateUtils.password();
           const hashedPassword = bcrypt.hashSync(randomPassword, 8);
 
           // Tạo user mới
@@ -61,9 +62,4 @@ passport.deserializeUser(async (id: number, done) => {
   }
 });
 
-// Hàm tạo mật khẩu ngẫu nhiên
-const generateRandomPassword = (length = 12) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-};
 export default passport;

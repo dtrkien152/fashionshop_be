@@ -1,13 +1,9 @@
 import { Router } from 'express';
-import ProductController from '../controllers/product.controller';
 import { container } from '../config';
-import {corsMiddleware} from "../middlewares";
+import { ProductController } from '../controllers';
 
 const productController = container.resolve(ProductController);
-// Middleware CORS
-
 const router = Router();
-router.use(corsMiddleware.addHeaderResponse);
 
 /**
  * @swagger

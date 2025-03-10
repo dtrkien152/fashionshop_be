@@ -1,5 +1,5 @@
-import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
-import { container, ENV_CONFIG } from '../config';
+import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
+import { container } from '../config';
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../services';
 import { ROLE } from '../constants';
@@ -13,11 +13,11 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<a
     return Promise.resolve(res.status(403).json({ message: 'No token provided!' }));
   }
 
-  jwt.verify(token, ENV_CONFIG.jwt.secret, (err: VerifyErrors, decoded: JwtPayload) => {
+  authService.decodeToken(token, (err: VerifyErrors, decoded: JwtPayload) => {
     if (err) {
       return res.status(401).json({ message: 'Unauthorized!' });
     }
-    req.session['userId'] = decoded.id;
+    req.session['userId'] = decoded.sub;
     next();
   });
 };

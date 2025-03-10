@@ -29,9 +29,10 @@ export const ENV_CONFIG = {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUrl: process.env.GOOGLE_REDIRECT_URL,
+    redirectUrl: process.env.GOOGLE_CALLBACK_URL,
   },
   jwt: {
     secret: process.env.JWT_SECRET,
+    issuer: process.env.JWT_ISSUER,
   },
 };

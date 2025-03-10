@@ -1,12 +1,11 @@
 import express from 'express';
 import { container } from '../config';
 import { AuthController } from '../controllers';
-import { corsMiddleware, passportMiddleware } from '../middlewares';
+import { passportMiddleware } from '../middlewares';
+import jwtMiddleware from '../middlewares/jwt.middleware';
 
 const router = express.Router();
 const authController = container.resolve(AuthController);
-// Middleware CORS
-router.use(corsMiddleware.addHeaderResponse);
 /**
  * @swagger
  * tags:
@@ -112,15 +111,5 @@ router.get(
   passportMiddleware.authenticate('google', { failureRedirect: '/login' }),
   authController.signInWithGoogle,
 );
-
-/**
- * @swagger
- * /api/auth/getAccount:
- *   get:
- *     summary: Lấy thông tin user từ session
- *     tags: [Auth]
- *     description: API này trả về thông tin người dùng đang đăng nhập thông qua session.
- */
-router.get('/getAccount', authController.getInfo);
 
 export default router;

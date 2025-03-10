@@ -2,12 +2,9 @@ import express from 'express';
 import { container } from '../config';
 import jwtMiddleware from '../middlewares/jwt.middleware';
 import { UserController } from '../controllers';
-import { corsMiddleware } from '../middlewares';
 
 const router = express.Router();
 const userController = container.resolve(UserController);
-// Middleware CORS
-router.use(corsMiddleware.addHeaderResponse);
 
 /**
  * @swagger
@@ -43,7 +40,7 @@ router.use(corsMiddleware.addHeaderResponse);
  *       500:
  *         description: Lỗi server
  */
-router.get('/profile', userController.getUserProfile);
+router.get('/profile', jwtMiddleware.verifyToken, userController.getUserProfile);
 
 /**
  * @swagger
