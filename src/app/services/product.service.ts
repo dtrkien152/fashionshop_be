@@ -1,5 +1,5 @@
 // src/services/product.service.ts
-import { Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
+import { col, fn, Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
 
 import { Category, IProduct, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { injectable } from 'tsyringe';
@@ -22,11 +22,11 @@ class ProductService {
     const where: WhereOptions<IProduct> = {};
     const offset = Math.max(0, (page - 1) * limit);
 
-    // Tìm kiếm theo từ khóa
+    // Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
     if (keyword) {
       where[Op.or] = [
-        { name: { [Op.iLike]: `%${keyword}%` } },
-        { code: { [Op.iLike]: `%${keyword}%` } },
+        Sequelize.where(fn('LOWER', col('Product.name')), Op.like, `%${keyword.toLowerCase()}%`),
+        Sequelize.where(fn('LOWER', col('Product.code')), Op.like, `%${keyword.toLowerCase()}%`),
       ];
     }
 
@@ -65,9 +65,10 @@ class ProductService {
       order,
       limit: Number(limit),
       offset,
-      distinct: true, // Đảm bảo đếm chính xác số bản ghi Product
+      distinct: true,
       logging: console.log, // In ra câu truy vấn SQL
     });
+
     const data: IProductItemResponse[] = rows.map((product) => {
       const colors = [
         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
@@ -96,7 +97,6 @@ class ProductService {
       };
     });
 
-    // Tính toán số trang tổng cộng
     const totalPages = Math.ceil(count / limit);
 
     return { data, total: count, totalPages };
@@ -106,7 +106,7 @@ class ProductService {
 
     const product: Product = await Product.findOne({
       where,
-      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'imageUrls', 'unitOnOrder'],
+      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'imageUrls', 'salePrice', 'originalPrice', 'unitOnOrder'],
       include: [
         {
           model: Category,
@@ -129,13 +129,15 @@ class ProductService {
 
     // Xử lý dữ liệu trả về theo interface IProductDetailResponse
     const response: IProductDetailResponse = {
-      product_id: product.id,
+      productId: product.id,
       productName: product.name,
       description: product.description,
       thumbnailUrl: product.thumbnailUrl,
       imageUrls: product.imageUrls,
       unitOnOrder: product.unitOnOrder,
-      category_id: product.Category?.id || 0,
+      salePrice: product.salePrice,
+      originalPrice: product.originalPrice,
+      categoryId: product.Category?.id || 0,
       category_name: product.Category?.name || '',
       productSubDetails: product.ProductSubDetails.map((subDetail) => ({
         id: subDetail.id,
@@ -352,6 +354,53 @@ class ProductService {
     });
 
     return { data, total: count };
+  }
+
+  /**
+   * Lấy ra tối đa 5 sản phẩm dựa vào category hoặc sản phẩm gần đây
+   * @param productId ID của sản phẩm hiện tại
+   * @returns Danh sách tối đa 5 sản phẩm
+   */
+  /**
+   * Lấy ra tối đa 5 sản phẩm dựa vào category hoặc sản phẩm gần đây
+   * @param productId ID của sản phẩm hiện tại
+   * @returns Danh sách tối đa 5 sản phẩm
+   */
+  async getRecommendedProducts({ productId }) {
+    // Lấy sản phẩm hiện tại để xác định categoryId
+    const currentProduct = await Product.findByPk(productId);
+    if (!currentProduct) {
+      throw new Error('Product not found');
+    }
+
+    const { categoryId } = currentProduct;
+
+    // Lấy tối đa 5 sản phẩm cùng category, ngoại trừ sản phẩm hiện tại
+    const categoryProducts = await Product.findAll({
+      where: {
+        categoryId,
+        id: { [Op.ne]: productId },
+      },
+      limit: 5,
+      order: [['createdAt', 'DESC']],
+    });
+
+    // Nếu chưa đủ 5 sản phẩm, lấy thêm các sản phẩm gần đây nhất
+    if (categoryProducts.length < 5) {
+      const additionalProducts = await Product.findAll({
+        where: {
+          id: {
+            [Op.notIn]: [productId, ...categoryProducts.map((p) => p.id)],
+          },
+        },
+        limit: 5 - categoryProducts.length,
+        order: [['createdAt', 'DESC']],
+      });
+
+      categoryProducts.push(...additionalProducts);
+    }
+
+    return categoryProducts;
   }
 }
 

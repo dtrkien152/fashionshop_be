@@ -47,6 +47,25 @@ class ProductController {
       console.error('get top selling products error:', error);
       next(error);
     }
+  }
+
+  getRecommendedProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { productId } = req.query;
+
+      const result = await this.productService.getRecommendedProducts({
+        productId: Number(productId),
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Get recommended products error:', error);
+      next(error);
+    }
   };
 
 }

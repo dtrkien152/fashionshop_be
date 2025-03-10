@@ -1,15 +1,17 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderFilter } from '../dto/order.dto';
-import { ProductService, ShipFeeService, UserService, VoucherService } from './index';
+import { CartService, ProductService, ShipFeeService, UserService, VoucherService } from './index';
 import { IOrder, IOrderDetail, Order, OrderDetail } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 import { Op } from 'sequelize';
+import cartService from './cart.service';
 
 @injectable()
 class OrderService {
   constructor(@inject(delay(() => UserService)) private userService: UserService,
+              @inject(delay(() => CartService)) private cartService: CartService,
               @inject(delay(() => ProductService)) private productService: ProductService,
               @inject(delay(() => VoucherService)) private voucherService: VoucherService,
               @inject(delay(() => ShipFeeService)) private shipFeeService: ShipFeeService) {
@@ -62,6 +64,9 @@ class OrderService {
       } as IOrderDetail;
     }));
     await OrderDetail.bulkCreate(orderDetails);
+    if (payload.cartCode) {
+      await this.cartService.removeAllCartDetails(payload.cartCode);
+    }
     return {
       order, orderDetails: payload.products,
     };

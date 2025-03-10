@@ -4,6 +4,7 @@ import { Cart, CartDetail, ICartDetail, Product, ProductSubDetail } from '../mod
 import { ProductService } from './index';
 import { NotFoundError } from '../errors';
 import { GenerateUtils } from '../utils';
+import { Op } from 'sequelize';
 
 @injectable()
 class CartService {
@@ -42,7 +43,7 @@ class CartService {
   async getCartDetails(cartCode: string) {
     let cart = await this.getCartByCode(cartCode);
     const cartDetail = await CartDetail.findAll({
-      where: { cartId: cart.id },
+      where: { cartId: cart.id, unit: { [Op.gt]: 0 } },
       include: {
         model: ProductSubDetail,
         attributes: ['id', 'productId', 'color', 'size'],
@@ -77,7 +78,34 @@ class CartService {
       return {
         cartId: cart.id,
         productSubDetailId: productSubDetail.id,
-        unit: p0.unit + (cartDetailExists ? cartDetailExists.unit : 0),
+        unit: Math.max(p0.unit + (cartDetailExists ? cartDetailExists.unit : 0), 0),
+      } as ICartDetail;
+    }));
+    await CartDetail.bulkCreate(cartDetail, { updateOnDuplicate: ['unit'] });
+    return { cartDetail };
+  }
+
+  async changeUnitCartDetail(cartCode: string, products: CartProduct[]) {
+    const cart = await this.getCartByCode(cartCode);
+    const cartDetail: ICartDetail[] = await Promise.all(products.map(async (p0) => {
+      const productSubDetail = await this.productService.getSubProductByProductIdAndColorAndSize(p0.productId, p0.color, p0.size);
+      if (!productSubDetail) {
+        throw new NotFoundError('Product not found');
+      }
+      const cartDetailExists = await CartDetail.findOne({
+        where: {
+          productSubDetailId: productSubDetail.id,
+          cartId: cart.id,
+        },
+      });
+      let unit = 0;
+      if (cartDetailExists) {
+        unit = Math.max(cartDetailExists.unit + p0.unit, 0);
+      }
+      return {
+        cartId: cart.id,
+        productSubDetailId: productSubDetail.id,
+        unit: unit,
       } as ICartDetail;
     }));
     await CartDetail.bulkCreate(cartDetail, { updateOnDuplicate: ['unit'] });
@@ -94,7 +122,7 @@ class CartService {
       return {
         cartId: cart.id,
         productSubDetailId: productSubDetail.id,
-        unit: p0.unit,
+        unit: Math.max(p0.unit, 0),
       } as ICartDetail;
     }));
     await CartDetail.bulkCreate(cartDetail, { updateOnDuplicate: ['unit'] });
@@ -121,6 +149,12 @@ class CartService {
       throw new NotFoundError('Product in cart not found');
     }
     await cartDetail.destroy();
+    return { success: true };
+  }
+
+  async removeAllCartDetails(cartCode: string) {
+    const cart = await this.getCartByCode(cartCode);
+    await CartDetail.destroy({ where: { cartId: cart.id } });
     return { success: true };
   }
 }
