@@ -1,22 +1,16 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-import db from "../models/index.js";
-
-dotenv.config(); // Load biến môi trường
-
-const User = db.User;
-const Role = db.Role;
-
-// ✅ Khởi tạo transporter
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.MAIL_USER, // Lấy từ biến môi trường
-        pass: process.env.MAIL_PASS, // Lấy từ biến môi trường
-    },
-});
 
 export class MailService {
+    constructor() {
+        this.transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS, // Đảm bảo bạn dùng mật khẩu ứng dụng
+            },
+        });
+    }
+
     async sendActivationEmail(email, activationCode) {
         try {
             const mailOptions = {
@@ -33,11 +27,34 @@ export class MailService {
                 `,
             };
 
-            await transporter.sendMail(mailOptions);
+            await this.transporter.sendMail(mailOptions);
             console.log(`✅ Email kích hoạt đã gửi tới: ${email}`);
         } catch (error) {
             console.error(`❌ Lỗi khi gửi email: ${error.message}`);
             throw new Error("Không thể gửi email kích hoạt.");
+        }
+    }
+
+    async sendPassword(email, password) {
+        try {
+            const mailOptions = {
+                from: process.env.MAIL_USER,
+                to: email,
+                subject: "Thông tin tài khoản của bạn",
+                html: `
+                    <h2>Chào mừng bạn đến với FashionShop!</h2>
+                    <p>Tài khoản của bạn đã được tạo khi đăng nhập bằng Google.</p>
+                    <p><b>Email:</b> ${email}</p>
+                    <p><b>Mật khẩu:</b> ${password}</p>
+                    <p>Vui lòng đăng nhập và thay đổi mật khẩu ngay.</p>
+                `,
+            };
+
+            await this.transporter.sendMail(mailOptions);
+            console.log(`✅ Email chứa mật khẩu đã gửi tới: ${email}`);
+        } catch (error) {
+            console.error(`❌ Lỗi khi gửi email: ${error.message}`);
+            throw new Error("Không thể gửi email chứa mật khẩu.");
         }
     }
 }
