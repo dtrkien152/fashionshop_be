@@ -86,3 +86,11 @@ export const activateAccount = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const getAccount=async (req,res)=>{
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ message: "User not logged in." });
+  }
+
+  return res.status(200).json(req.session.user);
+}

@@ -7,7 +7,8 @@ import db from "./app/models/index.js"; // Import connection-manager
 import swaggerDocs from "./app/config/swagger.config.js";
 import authRoutes from "./app/routes/auth.routes.js";
 import userRoutes from "./app/routes/user.routes.js";
-import sessionConfig from "./app/config/session.config.js"; // Import file cấu hình session
+import sessionConfig from "./app/config/session.config.js";
+import {passport} from "./app/middleware/index.js"; // Import file cấu hình session
 
 const sequelize = db.sequelize; // Lấy instance của Sequelize
 const app = express();
@@ -18,6 +19,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(sessionConfig); // 💡 Dùng session middleware
 
+// ✅ Thêm Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session()); // 💡 Cần có để dùng session trong Passport
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

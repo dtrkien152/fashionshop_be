@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import config from "../config/auth.config.js";
 import {AuthService} from "../services/authService.js";
+import {ROLE_USER} from "../constant/constant.js";
 const authService = new AuthService(); // Khởi tạo instance
 const verifyToken = (req, res, next) => {
     let token = req.session?.token;
@@ -37,6 +38,7 @@ const checkRole = (roleNames) => {
 
 const authJwt = {
     verifyToken,
+    isUser:checkRole(ROLE_USER),
     isAdmin: checkRole(["admin"]),
     isModerator: checkRole(["moderator"]),
     isModeratorOrAdmin: checkRole(["moderator", "admin"]),

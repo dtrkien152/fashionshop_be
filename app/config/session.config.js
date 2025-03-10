@@ -1,7 +1,8 @@
 import session from "express-session";
-
+import dotenv from "dotenv";
+dotenv.config();
 const sessionConfig = session({
-    secret: "your_secret_key", // 🔐 Thay bằng khóa bí mật của bạn
+    secret: process.env.JWT_SECRET, // 🔐 Thay bằng khóa bí mật của bạn
     resave: false,
     saveUninitialized: true,
     cookie: {

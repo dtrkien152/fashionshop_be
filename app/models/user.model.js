@@ -9,15 +9,30 @@ export default (sequelize) => {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            // username: {
-            //     type: DataTypes.STRING,
-            //     allowNull: false,
-            //     unique: true,
-            // },
             email: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
+            },
+            full_name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
+            gender: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                unique: false,
+            },
+            phone: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
+            avatar: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
             },
             code: {
                 type: DataTypes.STRING
@@ -29,6 +44,16 @@ export default (sequelize) => {
             google_id: {
                 type: DataTypes.STRING,
                 allowNull: true,
+            },
+            user_address_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
+            },
+            role_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
             },
             is_active: {
                 type: DataTypes.BOOLEAN

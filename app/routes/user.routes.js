@@ -12,34 +12,48 @@ router.use((req, res, next) => {
 
 /**
  * @swagger
- * /api/user/test/all:
- *   get:
- *     description: Truy cập công khai
+ * tags:
+ *   name: User
+ *   description: API quản lý thông tin user
  */
-router.get("/test/all", controller.allAccess);
 
 /**
  * @swagger
- * /api/user/test/user:
+ * /api/user/profile:
  *   get:
- *     description: Truy cập yêu cầu đăng nhập
+ *     summary: Lấy thông tin user từ session
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
  */
-router.get("/test/user", [authJwt.verifyToken], controller.userBoard);
+router.get("/api/user/profile", controller.getUserProfile);
 
 /**
  * @swagger
- * /api/user/test/mod:
- *   get:
- *     description: Truy cập yêu cầu quyền Moderator
+ * /api/user/update-profile:
+ *   put:
+ *     summary: Cập nhật thông tin cá nhân của user
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               full_name:
+ *                 type: string
+ *               gender:
+ *                 type: boolean
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
  */
-router.get("/test/mod", [authJwt.verifyToken, authJwt.isModerator], controller.moderatorBoard);
-
-/**
- * @swagger
- * /api/user/test/admin:
- *   get:
- *     description: Truy cập yêu cầu quyền Admin
- */
-router.get("/test/admin", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBoard);
+router.put("/update-profile", authJwt.verifyToken, controller.updateProfile);
 
 export default router;

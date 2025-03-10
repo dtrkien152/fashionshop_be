@@ -2,9 +2,10 @@ import bcrypt from "bcryptjs";
 import db from "../models/index.js";
 import { MailService } from "../services/mailService.js";
 import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 const mailService = new MailService();
-
+const User=db.User;
 passport.use(
     new GoogleStrategy(
         {
@@ -14,7 +15,7 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await db.User.findOne({ where: { email: profile.emails[0].value } });
+                let user = await User.findOne({ where: { email: profile.emails[0].value } });
 
                 if (!user) {
                     // Người dùng chưa tồn tại => Tạo mật khẩu ngẫu nhiên
@@ -44,9 +45,24 @@ passport.use(
         }
     )
 );
+// ✅ **Fix lỗi serialize & deserialize**
+passport.serializeUser((user, done) => {
+    console.log("Serializing user:", user);
+    done(null, user.id); // Đảm bảo `user.id` tồn tại
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findByPk(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
 
 // Hàm tạo mật khẩu ngẫu nhiên
 const generateRandomPassword = (length = 12) => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
     return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 };
+export default passport
