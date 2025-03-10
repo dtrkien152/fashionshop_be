@@ -76,6 +76,13 @@ class UserService {
     });
   }
 
+  async deleteAddress(addressId: number): Promise<void> {
+    const address = await UserAddress.findByPk(addressId);
+    if (!address) {
+      throw new Error('Địa chỉ không tồn tại!');
+    }
+    await address.destroy();
+  }
 }
 
 

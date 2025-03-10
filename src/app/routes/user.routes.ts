@@ -176,4 +176,14 @@ router.put('/address/:id/default', jwtMiddleware.verifyToken, userController.upd
 
 router.get('/address', jwtMiddleware.verifyToken, userController.getAddress);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Address
+ *   description: Quản lý địa chỉ người dùng
+ */
+
+// Xóa địa chỉ người dùng
+router.delete('/address/:id',jwtMiddleware.verifyToken, userController.deleteAddress);
+
 export default router;

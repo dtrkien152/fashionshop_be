@@ -8,6 +8,7 @@ import { ValidationError } from 'sequelize';
 
 @injectable()
 class UserController {
+
   constructor(@inject(UserService) private userService: UserService) {}
 
   getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -80,7 +81,12 @@ class UserController {
 
   createAddress= async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const address = await this.userService.createAddress(req.body);
+      const { userId } = req.session;
+      if (!userId) {
+        throw new UnauthorizedError('Phiên đăng nhập hết hạn');
+      }
+      const model={...req.body,userId:userId};
+      const address = await this.userService.createAddress(model);
       res.status(201).json(address);
     } catch (error) {
       next(error);
@@ -100,11 +106,11 @@ class UserController {
       const addressData: Partial<IUserAddress> = req.body;
 
       // Kiểm tra dữ liệu đầu vào
-      if (!addressData.fullAddress || !addressData.city) {
+      if (!addressData.fullAddress || !addressData.addressName) {
         return res.status(400).json({ message: 'Thiếu thông tin địa chỉ hoặc thành phố' });
       }
 
-      const [affectedCount, updatedAddresses] = await this.userService.updateAddress(userId, addressData);
+      const [affectedCount, updatedAddresses] = await this.userService.updateAddress(addressData.id, addressData);
 
       if (affectedCount === 0) {
         return res.status(404).json({ message: 'Địa chỉ không tồn tại!' });
@@ -126,6 +132,17 @@ class UserController {
       next(error);
     }
   };
+
+  deleteAddress = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { id } = req.params;
+      await this.userService.deleteAddress(Number(id));
+      res.status(200).json({ message: 'Đã xóa địa chỉ thành công!' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
+
 
 export default UserController;
