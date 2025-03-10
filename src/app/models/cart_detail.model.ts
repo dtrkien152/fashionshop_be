@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { ProductSubDetail } from './product_sub_detail.model';
 import { Cart } from './cart.model';
 
@@ -34,6 +34,9 @@ class CartDetail extends Model<ICartDetail> {
     defaultValue: 1,
   })
   unit!: number;
+
+  @BelongsTo(() => ProductSubDetail)
+  ProductSubDetail!: ProductSubDetail;
 }
 
 export { ICartDetail, CartDetail };

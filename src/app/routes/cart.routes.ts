@@ -6,20 +6,19 @@ import { jwtMiddleware } from '../middlewares';
 const cartController = container.resolve(CartController);
 const router = Router();
 
-router.post('', jwtMiddleware.verifyToken, cartController.addToCartDetails);
+router.get('/info/guest', cartController.getCartForGuest);
 
-router.post('/guest', cartController.addToCartDetailsForGuest);
+router.get('/info', jwtMiddleware.verifyToken, cartController.getCart);
 
-router.put('', jwtMiddleware.verifyToken, cartController.updateCartDetails);
+router.get('', cartController.getCartDetails);
 
-router.put('/guest', cartController.updateCartDetailsForGuest);
+router.post('', cartController.addToCartDetails);
 
-router.post('', jwtMiddleware.verifyToken, cartController.syncCartDetails);
+router.put('', cartController.updateToCartDetails);
 
-router.post('/guest', jwtMiddleware.verifyToken, cartController.syncCartDetailsForGuest);
+router.post('', cartController.syncCartDetails);
 
-router.delete('', jwtMiddleware.verifyToken, cartController.removeCartDetail);
+router.delete('', cartController.removeCartDetail);
 
-router.delete('/guest', cartController.removeCartDetailForGuest);
 
 export default router;
