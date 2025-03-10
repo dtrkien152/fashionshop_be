@@ -1,0 +1,48 @@
+import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
+import { container, ENV_CONFIG } from '../config';
+import { NextFunction, Request, Response } from 'express';
+import { AuthService } from '../services';
+import { ROLE } from '../constants';
+
+const authService = container.resolve(AuthService);
+
+const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<any> | void => {
+  let token = req.session['token'];
+
+  if (!token) {
+    return Promise.resolve(res.status(403).json({ message: 'No token provided!' }));
+  }
+
+  jwt.verify(token, ENV_CONFIG.jwt.secret, (err: VerifyErrors, decoded: JwtPayload) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized!' });
+    }
+    req.session['userId'] = decoded.id;
+    next();
+  });
+};
+
+// ✅ Kiểm tra quyền
+const checkRole = (roles: string[]) => {
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const role = await authService.getRole(req.session['userId']);
+      if (roles.includes(role)) {
+        return next();
+      }
+      res.status(403).json({ message: `Require ${roles.join(' or ')} Role!` });
+    } catch (error) {
+      console.error('Role validation error:', error);
+      res.status(500).json({ message: 'Unable to validate user role!' });
+    }
+  };
+};
+
+
+const jwtMiddleware = {
+  verifyToken,
+  isUser: checkRole([ROLE.USER]),
+  isAdmin: checkRole([ROLE.ADMIN]),
+};
+export default jwtMiddleware;
