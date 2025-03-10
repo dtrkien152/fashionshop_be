@@ -4,24 +4,30 @@ export default (sequelize) => {
     return sequelize.define(
         "user",
         {
-            user_id: {
+            id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
             },
-            username: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true,
-            },
+            // username: {
+            //     type: DataTypes.STRING,
+            //     allowNull: false,
+            //     unique: true,
+            // },
             email: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             },
+            code: {
+                type: DataTypes.STRING
+            },
             password: {
                 type: DataTypes.STRING,
                 allowNull: false,
+            },
+            is_active: {
+                type: DataTypes.BOOLEAN
             },
         },
         {

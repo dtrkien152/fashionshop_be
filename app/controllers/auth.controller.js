@@ -1,34 +1,17 @@
-import { AuthService } from "../services/authService.js";
-import db from "../models/index.js";
+import {AuthService} from "../services/authService.js";
 import config from "../config/auth.config.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import {ROLE_USER} from "../constant/constant.js";
+import {MailService} from "../services/mailService.js";
 
-const User = db.User;
-const Role = db.Role;
+const authService = new AuthService(); // Khởi tạo instance
+const mailService=new MailService();
 export const signup = async (req, res) => {
   try {
 
-    let roleId = 1; // Mặc định role là 1 nếu không có role trong request
-
-    if (req.body.role) {
-      const role = await Role.findOne({
-        where: { name: req.body.role },
-      });
-
-      if (role) {
-        roleId = role.id;
-      }
-    }
-
-    // Tạo user với roleId
-    const user = await User.create({
-      username: req.body.username,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 8),
-      role_id: roleId, // Gán roleId trực tiếp
-    });
-
+    const user = await authService.signup(req.body.email, req.body.password, req.body.role_id, ROLE_USER);
+    await mailService.sendActivationEmail(user.get("email"), user.get("code"));
     res.send({ message: "User registered successfully!" });
   } catch (error) {
     console.error(error)
@@ -82,62 +65,6 @@ export const signin = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// export const signin = async (req, res) => {
-//   try {
-//     const user = await User.findOne({
-//       where: {
-//         username: req.body.username,
-//       },
-//     });
-//
-//     if (!user) {
-//       return res.status(404).send({ message: "User Not found." });
-//     }
-//
-//     const passwordIsValid = bcrypt.compareSync(
-//       req.body.password,
-//       user.password
-//     );
-//
-//     if (!passwordIsValid) {
-//       return res.status(401).send({
-//         message: "Invalid Password!",
-//       });
-//     }
-//
-//     const token = jwt.sign({ id: user.id },
-//                            config.secret,
-//                            {
-//                             algorithm: 'HS256',
-//                             allowInsecureKeySizes: true,
-//                             expiresIn: 86400, // 24 hours
-//                            });
-//
-//     let authorities = [];
-//     const roles = await user.getRole();
-//     authorities.push("ROLE_" + roles.role_name);
-//
-//     // roles.role_name;
-//     // for (let i = 0; i < roles.length; i++) {
-//     //   authorities.push("ROLE_" + roles[i].name.toUpperCase());
-//     // }
-//     if (!req.session) {
-//       return res.status(500).send({ message: "Session is not initialized!" });
-//     }
-//
-//     req.session.token = token;
-//
-//     return res.status(200).send({
-//       id: user.id,
-//       username: user.username,
-//       email: user.email,
-//       roles: authorities,
-//     });
-//   } catch (error) {
-//     return res.status(500).send({ message: error.message });
-//   }
-// };
 
 export const signout = async (req, res) => {
   try {

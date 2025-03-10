@@ -4,7 +4,7 @@ export default (sequelize) => {
     return sequelize.define(
         "role",
         {
-            role_id: {
+            id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
@@ -18,7 +18,7 @@ export default (sequelize) => {
         {
             tableName: "role",
             underscored: true,
-            timestamps: false,  // ✅ Tắt tự động thêm createdAt và updatedAt
+            timestamps: true,  // ✅ Tắt tự động thêm createdAt và updatedAt
         }
     );
 };

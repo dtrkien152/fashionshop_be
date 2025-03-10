@@ -1,5 +1,7 @@
 import { Sequelize } from "sequelize";
 import config from "../config/db.config.js";
+import UserModel from "../models/user.model.js";
+import RoleModel from "../models/role.model.js";
 
 const sequelize = new Sequelize(
     config.DB_NAME,
@@ -26,8 +28,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Import models
-import UserModel from "../models/user.model.js";
-import RoleModel from "../models/role.model.js";
+
 
 // Gán model vào `db`
 db.User = UserModel(sequelize);

@@ -16,13 +16,7 @@ class VerifySignUpService {
         return res.status(500).json({ message: "Database error: User model not found" });
       }
 
-      const { username, email } = req.body;
-
-      // Kiểm tra username
-      const userByUsername = await db.User.findOne({ where: { username } });
-      if (userByUsername) {
-        return res.status(400).json({ message: "Failed! Username is already in use!" });
-      }
+      const {email } = req.body;
 
       // Kiểm tra email
       const userByEmail = await db.User.findOne({ where: { email } });
