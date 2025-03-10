@@ -46,4 +46,23 @@ export class AuthService {
         return Math.floor(100000 + Math.random() * 900000).toString();
     };
 
+    async activateAccount(code) {
+        if (!code) {
+            throw new Error("Mã kích hoạt không hợp lệ!");
+        }
+
+        // Tìm user với mã kích hoạt
+        const user = await User.findOne({ where: { code: code } });
+
+        if (!user) {
+            throw new Error("Mã kích hoạt không đúng hoặc đã hết hạn!");
+        }
+
+        // Cập nhật trạng thái active
+        user.is_active = true;
+        user.code = null; // Xóa mã kích hoạt sau khi dùng
+        await user.save();
+
+        return { message: "Tài khoản đã được kích hoạt thành công!" };
+    }
 }

@@ -26,7 +26,7 @@ export class MailService {
                 html: `
                     <h2>Chào mừng bạn đến với FashionShop!</h2>
                     <p>Nhấn vào liên kết bên dưới để kích hoạt tài khoản của bạn:</p>
-                    <a href="http://yourwebsite.com/activate?code=${activationCode}">
+                    <a href="http://localhost:5000/api/auth/activate?code=${activationCode}">
                         Kích hoạt tài khoản
                     </a>
                     <p>Nếu bạn không yêu cầu kích hoạt, vui lòng bỏ qua email này.</p>

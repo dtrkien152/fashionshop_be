@@ -9,7 +9,6 @@ const authService = new AuthService(); // Khởi tạo instance
 const mailService=new MailService();
 export const signup = async (req, res) => {
   try {
-
     const user = await authService.signup(req.body.email, req.body.password, req.body.role_id, ROLE_USER);
     await mailService.sendActivationEmail(user.get("email"), user.get("code"));
     res.send({ message: "User registered successfully!" });
@@ -77,3 +76,13 @@ export const signout = async (req, res) => {
   }
 };
 
+export const activateAccount = async (req, res) => {
+  try {
+    const { code } = req.query;
+    const response = await authService.activateAccount(code);
+    res.json(response);
+  } catch (error) {
+    console.error("❌ Lỗi kích hoạt tài khoản:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
