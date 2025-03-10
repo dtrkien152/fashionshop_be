@@ -17,7 +17,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<a
     if (err) {
       return res.status(401).json({ message: 'Unauthorized!' });
     }
-    req.session['userId'] = decoded.sub;
+    req.session['userId'] = Number(decoded.sub);
     req.session['email'] = decoded['email'];
     req.session['role'] = decoded['role'];
     next();

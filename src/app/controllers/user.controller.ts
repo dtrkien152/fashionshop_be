@@ -2,16 +2,18 @@ import { inject, injectable } from 'tsyringe';
 import { UserService } from '../services';
 import { NextFunction, Request, Response, RequestHandler } from 'express';
 import { ObjectUtils } from '../utils';
-import { NotFoundError, UnauthorizedError } from '../errors';
+import { UnauthorizedError } from '../errors';
+import { IUserAddress } from '../models';
+import { ValidationError } from 'sequelize';
 
 @injectable()
 class UserController {
-  constructor(@inject(UserService) private userService: UserService) {
-  }
+  constructor(@inject(UserService) private userService: UserService) {}
 
-  getMyProfile: RequestHandler = async (req, res, next) => {
+  getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
+      const session = req.session;
+      const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
@@ -25,9 +27,10 @@ class UserController {
     }
   };
 
-  updateMyProfile: RequestHandler = async (req, res, next) => {
+  updateMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
+      const session = req.session;
+      const { userId } = req.session;
       await this.userService.updateUserProfile(userId, req.body);
       res.status(200).send('Moderator Content.');
     } catch (error) {
@@ -35,9 +38,10 @@ class UserController {
     }
   };
 
-  getUserProfile: RequestHandler = async (req, res, next) => {
+  getUserProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
+      const session = req.session;
+      const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
@@ -61,9 +65,9 @@ class UserController {
   };
 
   // 🟢 Hàm mới: Lấy thông tin tất cả địa chỉ của người dùng
-  getAddress: RequestHandler = async (req, res, next) => {
+  getAddress =async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.session['userId'];
+      const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
@@ -74,7 +78,7 @@ class UserController {
     }
   };
 
-  createAddress: RequestHandler = async (req, res, next) => {
+  createAddress= async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const address = await this.userService.createAddress(req.body);
       res.status(201).json(address);
@@ -83,23 +87,39 @@ class UserController {
     }
   };
 
-  updateAddress: RequestHandler = async (req, res, next) => {
+  updateAddress=  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { id } = req.params;
-      const [affectedCount, updatedAddresses] = await this.userService.updateAddress(Number(id), req.body);
-      if (affectedCount === 0) {
-        throw new NotFoundError('Địa chỉ không tồn tại!');
+
+      const { userId } = req.session;
+
+      // Kiểm tra xem userId có tồn tại hay không
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized: User ID not found in session' });
       }
-      res.json(updatedAddresses[0]);
+
+      const addressData: Partial<IUserAddress> = req.body;
+
+      // Kiểm tra dữ liệu đầu vào
+      if (!addressData.fullAddress || !addressData.city) {
+        return res.status(400).json({ message: 'Thiếu thông tin địa chỉ hoặc thành phố' });
+      }
+
+      const [affectedCount, updatedAddresses] = await this.userService.updateAddress(userId, addressData);
+
+      if (affectedCount === 0) {
+        return res.status(404).json({ message: 'Địa chỉ không tồn tại!' });
+      }
+
+      res.status(200).json(updatedAddresses[0]);
     } catch (error) {
       next(error);
     }
   };
 
-  updateDefaultAddress: RequestHandler = async (req, res, next) => {
+  updateDefaultAddress = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { id } = req.params;
-      const { userId } = req.body;
+      const { userId } = req.session;
       await this.userService.setDefaultAddress(userId, Number(id));
       res.status(200).json({ message: 'Đã cập nhật địa chỉ mặc định!' });
     } catch (error) {

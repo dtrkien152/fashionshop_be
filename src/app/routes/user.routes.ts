@@ -106,7 +106,7 @@ router.post('/address', jwtMiddleware.verifyToken, userController.createAddress)
 
 /**
  * @swagger
- * /api/user/address/{id}:
+ * /api/user/address:
  *   put:
  *     summary: Cập nhật thông tin địa chỉ của user
  *     tags: [User]
@@ -145,7 +145,7 @@ router.post('/address', jwtMiddleware.verifyToken, userController.createAddress)
  *       500:
  *         description: Lỗi server
  */
-router.put('/address/:id', jwtMiddleware.verifyToken, userController.updateAddress);
+router.put('/address', jwtMiddleware.verifyToken, userController.updateAddress);
 
 /**
  * @swagger
