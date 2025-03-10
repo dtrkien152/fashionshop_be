@@ -117,7 +117,11 @@ router.get('/google', passportMiddleware.authenticate('google', { scope: ['profi
  */
 router.get(
   '/google/callback',
-  passportMiddleware.authenticate('google', { failureRedirect: '/login' }),
+  passportMiddleware.authenticate('google', {
+    failureRedirect: 'http://localhost:3000/login',
+    successRedirect: 'http://localhost:3000', // Chuyển về FE khi đăng nhập thành công
+    session: true, // Cần thiết để lưu session nếu dùng cookie
+  }),
   authController.signInWithGoogle,
 );
 
