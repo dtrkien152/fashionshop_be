@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { IUser, User } from '../models';
+import { IUser, IUserAddress, User, UserAddress } from '../models';
 import { ObjectUtils } from '../utils';
 import { NotFoundError } from '../errors';
 
@@ -48,6 +48,35 @@ class UserService {
     }
     return user;
   }
+
+  async createAddress(data: IUserAddress): Promise<UserAddress> {
+    if (data.isDefault) {
+      await UserAddress.update({ isDefault: false }, { where: { userId: data.userId } });
+    }
+    return UserAddress.create(data);
+  }
+
+  async updateAddress(id: number, data: Partial<IUserAddress>): Promise<[number, UserAddress[]]> {
+    return UserAddress.update(data, { where: { id }, returning: true });
+  }
+
+  async setDefaultAddress(userId: number, addressId: number): Promise<void> {
+    await UserAddress.update({ isDefault: false }, { where: { userId } });
+    await UserAddress.update({ isDefault: true }, { where: { id: addressId } });
+  }
+  /**
+   * Lấy danh sách địa chỉ của người dùng theo ID người dùng
+   * @param {number} userId - ID của người dùng
+   * @returns {Promise<UserAddress[]>} - Danh sách địa chỉ của người dùng
+   */
+  async getAddressesByUserId(userId: number): Promise<UserAddress[]> {
+    return await UserAddress.findAll({
+      where: { userId },
+      order: [['isDefault', 'DESC'], ['createdAt', 'DESC']], // Địa chỉ mặc định trước, sau đó theo thời gian tạo mới nhất
+    });
+  }
+
 }
+
 
 export default UserService;

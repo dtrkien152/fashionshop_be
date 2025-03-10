@@ -19,7 +19,7 @@ class AuthController {
       }
       const user = await this.authService.signUp(req.body.fullName, req.body.email, req.body.password);
       const otp = await this.otpService.create(user.id, ACTION.ACTIVE_USER);
-      await this.mailService.sendActivationEmail(user.get('email'), otp.code);
+      await this.mailService.sendActivationEmail(user.get('email') as string, otp.code);
       return res.send({ message: 'Đăng ký tài khoản thành công!' });
     } catch (error) {
       next(error);
@@ -38,13 +38,28 @@ class AuthController {
   };
 
   signInWithGoogle = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+
     try {
+      if (!req.user) {
+        return res.redirect('http://localhost:3000/login');
+      }
       const user = req.user;
-      const data = this.authService.signInWithGoogle(user['email']);
-      return res.json({ ...data });
+      const data = await this.authService.signInWithGoogle(user['email']);
+      console.log('data ', data);
+      // Chuyển hướng về frontend kèm theo JWT token
+      res.redirect(`http://localhost:3000/login?token=${data?.token}`);
     } catch (error) {
-      next(error);
+      console.error('Lỗi đăng nhập Google:', error);
+      res.redirect('http://localhost:3000/login');
     }
+
+    // try {
+    //   const user = req.user;
+    //   const data = this.authService.signInWithGoogle(user['email']);
+    //   return res.json({ ...data });
+    // } catch (error) {
+    //   next(error);
+    // }
   };
 
   activate = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -59,6 +74,18 @@ class AuthController {
       next(error);
     }
   };
+
+  // getUserProfile = async (req: Request, res: Response): Promise<void> => {
+  //   const user = req.user;
+  //   const data = {
+  //     id: user['id'],
+  //     email: user['email'],
+  //     fullName: user['fullName'],
+  //     role: user['role'],
+  //     avatar: user['avatar'],
+  //   };
+  //   res.json({ data }); // Không cần return
+  // };
 }
 
 export default AuthController;

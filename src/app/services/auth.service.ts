@@ -53,6 +53,7 @@ class AuthService {
       email: user.email,
       role: user.role,
       avatar:user.avatar,
+      phone:user.phone,
       token,
       fullName:user.fullName
     };
@@ -71,6 +72,7 @@ class AuthService {
       email: user.email,
       role: user.role,
       avatar:user.avatar,
+      phone:user.phone,
       token,
       fullName:user.fullName
     };
