@@ -6,7 +6,7 @@ interface ICartDetail {
   id?: number;
   cartId?: number;
   productSubDetailId?: number;
-  quantity?: number;
+  unit?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -39,7 +39,7 @@ class CartDetail extends Model<ICartDetail> {
     allowNull: true,
     defaultValue: 1,
   })
-  quantity!: number;
+  unit!: number;
 }
 
 export { ICartDetail, CartDetail };

@@ -17,7 +17,7 @@ class AuthController {
       if (await this.userService.isExistsEmail(req.body.email)) {
         throw new BadRequestError('Email is already in use!');
       }
-      const user = await this.authService.signUp(req.body.email, req.body.password);
+      const user = await this.authService.signUp(req.body.fullName, req.body.email, req.body.password);
       const otp = await this.otpService.create(user.id, ACTION.ACTIVE_USER);
       await this.mailService.sendActivationEmail(user.get('email'), otp.code);
       return res.send({ message: 'User registered successfully!' });

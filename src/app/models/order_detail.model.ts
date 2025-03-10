@@ -6,8 +6,8 @@ interface IOrderDetail {
   id?: number;
   orderId?: number;
   productSubDetailId?: number;
-  quantity?: number;
-  price?: number;
+  unit?: number;
+  totalPrice?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -39,13 +39,13 @@ class OrderDetail extends Model<IOrderDetail> {
     type: DataType.INTEGER,
     allowNull: true,
   })
-  quantity!: number;
+  unit!: number;
 
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
   })
-  price!: number;
+  totalPrice!: number;
 }
 
 export { IOrderDetail, OrderDetail };

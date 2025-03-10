@@ -40,11 +40,11 @@ const userController = container.resolve(UserController);
  *       500:
  *         description: Lỗi server
  */
-router.get('/profile', jwtMiddleware.verifyToken, userController.getUserProfile);
+router.get('/profile', jwtMiddleware.verifyToken, userController.getMyProfile);
 
 /**
  * @swagger
- * /api/user/update-profile:
+ * /api/user/profile:
  *   put:
  *     summary: Cập nhật thông tin cá nhân của user
  *     tags: [User]
@@ -68,6 +68,6 @@ router.get('/profile', jwtMiddleware.verifyToken, userController.getUserProfile)
  *       400: { description: Dữ liệu không hợp lệ }
  *       500: { description: Lỗi server }
  */
-router.put('/update-profile', jwtMiddleware.verifyToken, userController.updateProfile);
+router.put('/profile', jwtMiddleware.verifyToken, userController.updateMyProfile);
 
 export default router;

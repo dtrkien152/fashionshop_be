@@ -33,7 +33,7 @@ const router = Router();
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [newest, price_asc, price_desc,lastest]
+ *           enum: [newest, price_asc, price_desc, latest]
  *         description: Sort by newest, price ascending, or price descending
  *       - in: query
  *         name: limit

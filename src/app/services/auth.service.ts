@@ -82,9 +82,9 @@ class AuthService {
     };
   };
 
-  signUp = async (email: string, password: string) => {
-    // Tạo mã kích hoạt ngẫu nhiên
+  signUp = async (fullName: string, email: string, password: string) => {
     return await User.create({
+      fullName: fullName,
       email: email,
       password: bcrypt.hashSync(password, 8),
       role: ROLE.USER,

@@ -26,10 +26,15 @@ const authController = container.resolve(AuthController);
  *           schema:
  *             type: object
  *             properties:
+ *               fullName:
+ *                 type: string
+ *                 example: "Nguyen Hoang Dinh"
  *               email:
  *                 type: string
+ *                 example: "hapego8519@calmpros.com"
  *               password:
- *                 type: string
+ *                 type: "string"
+ *                 example: "Vebo123$%^"
  *     responses:
  *       200:
  *         description: Đăng ký thành công
@@ -51,8 +56,10 @@ router.post('/sign-up', authController.signUp);
  *             properties:
  *               email:
  *                 type: string
+ *                 example: "hapego8519@calmpros.com"
  *               password:
- *                 type: string
+ *                 type: "string"
+ *                 example: "Vebo123$%^"
  *     responses:
  *       200:
  *         description: Đăng nhập thành công
@@ -74,12 +81,14 @@ router.post('/sign-in', authController.signIn);
  *         description: Mã kích hoạt của người dùng
  *         schema:
  *           type: string
+ *           example: 841852
  *       - in: query
  *         name: email
  *         required: true
  *         description: Email người dùng
  *         schema:
  *           type: string
+ *           example: "hapego8519@calmpros.com"
  *     responses:
  *       200:
  *         description: Kích hoạt thành công

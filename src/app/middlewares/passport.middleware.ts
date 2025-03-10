@@ -32,7 +32,7 @@ passport.use(
             password: hashedPassword,
             role: ROLE.USER,
             isActive: true, // Không cần kích hoạt
-            code: null,
+            code: GenerateUtils.code('USR', 12),
           });
 
           // Gửi email chứa mật khẩu

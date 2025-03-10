@@ -1,6 +1,5 @@
 import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { Payment } from './payment.model';
-import { ShipInfo } from './ship_info.model';
 import { Site } from './site.model';
 
 interface IOrder {
@@ -11,13 +10,12 @@ interface IOrder {
   voucherCode?: string;
   shippedAt?: Date;
   shipFee?: number;
-  shipName?: string;
-  shipAddress?: string;
-  shipMobile?: string;
-  shipEmail?: string;
+  customerName?: string;
+  customerAddress?: string;
+  customerPhone?: string;
   totalPrice?: number;
-  paymentId?: number;
-  shipInfoId?: number;
+  paymentType?: number;
+  paymentStatus?: string;
   status?: string;
   createdBy?: string;
   updatedBy?: string;
@@ -76,25 +74,19 @@ class Order extends Model<IOrder> {
     type: DataType.STRING(50),
     allowNull: true,
   })
-  shipName!: string;
+  customerName!: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
   })
-  shipAddress!: string;
+  customerAddress!: string;
 
   @Column({
     type: DataType.STRING(11),
     allowNull: true,
   })
-  shipMobile!: string;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: true,
-  })
-  shipEmail!: string;
+  customerPhone!: string;
 
   @Column({
     type: DataType.BIGINT,
@@ -102,19 +94,17 @@ class Order extends Model<IOrder> {
   })
   totalPrice!: number;
 
-  @ForeignKey(() => Payment)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING(32),
     allowNull: true,
   })
-  paymentId!: number;
+  paymentType!: string;
 
-  @ForeignKey(() => ShipInfo)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING(32),
     allowNull: true,
   })
-  shipInfoId!: number;
+  paymentStatus!: string;
 
   @Column({
     type: DataType.STRING(30),

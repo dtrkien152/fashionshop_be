@@ -1,7 +1,7 @@
 import express from 'express';
 import { ENV_CONFIG, sequelize, SESSION_CONFIG, swaggerDocs } from './app/config';
 import cors from 'cors';
-import { authRoutes, productRoutes, userRoutes } from './app/routes';
+import {authRoutes, categoryRoutes, orderRoutes, productRoutes, userRoutes, voucherRoutes} from './app/routes';
 import swaggerUi from 'swagger-ui-express';
 import { corsMiddleware, errorMiddleware, passportMiddleware } from './app/middlewares';
 import bodyParser from 'body-parser';
@@ -25,6 +25,9 @@ app.use(corsMiddleware.addHeaderResponse);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/order', orderRoutes);
+app.use('/api/voucher', voucherRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);

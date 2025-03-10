@@ -8,7 +8,6 @@ export interface IProductFilterParams
   limit?: number;
   page?: number;
 }
-// Giao diện cho ProductSubDetail (Chi tiết sản phẩm con)
 export interface IProductSubDetailResponse {
   id: number;
   size: string;
@@ -17,12 +16,25 @@ export interface IProductSubDetailResponse {
   totalQuantity: number;
 }
 
-// Giao diện cho Product (Sản phẩm chính)
 export interface IProductDetailResponse {
   product_id: number;
   productName: string;
   category_id: number;
   category_name: string;
   productSubDetails: IProductSubDetailResponse[];
+}
+export interface IProductItemResponse {
+  id: number;
+  category: string;
+  productName: string;
+  salePrice: number;
+  originalPrice: number;
+  flag: {
+    type: 'sale' | 'new' | 'hot';
+    value: string;
+  };
+  images: [string, string]; // Ảnh đầu là thumbnailUrl của product, ảnh sau là 1 ảnh của subproduct
+  colors: string[]; // Các thuộc tính của subproduct
+  size: string[]; // Các thuộc tính của subproduct
 }
 

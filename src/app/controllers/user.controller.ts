@@ -9,7 +9,7 @@ class UserController {
   constructor(@inject(UserService) private userService: UserService) {
   }
 
-  getUserProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const session = req.session;
       if (!session || !session['userId']) {
@@ -23,7 +23,7 @@ class UserController {
     }
   };
 
-  updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+  updateMyProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       await this.userService.updateUserProfile(req.session['userId'], req.body);
       res.status(200).send('Moderator Content.');
