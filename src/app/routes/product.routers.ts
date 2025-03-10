@@ -94,4 +94,44 @@ router.get('/detail', productController.getProductDetail);
  */
 router.get('/top-selling', productController.getTopSellingProducts);
 
+
+/**
+ * @swagger
+ * /api/products/recommended:
+ *   get:
+ *     summary: Lấy ra tối đa 5 sản phẩm được đề xuất
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: query
+ *         name: productId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID của sản phẩm hiện tại
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách sản phẩm đề xuất
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   categoryId:
+ *                     type: integer
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *       400:
+ *         description: Thiếu Product ID
+ *       500:
+ *         description: Lỗi server
+ */
+router.get('/recommended', productController.getRecommendedProducts);
 export default router;
