@@ -52,6 +52,14 @@ class AuthController {
       console.error('Lỗi đăng nhập Google:', error);
       res.redirect('http://localhost:3000/login');
     }
+
+    // try {
+    //   const user = req.user;
+    //   const data = this.authService.signInWithGoogle(user['email']);
+    //   return res.json({ ...data });
+    // } catch (error) {
+    //   next(error);
+    // }
   };
 
   activate = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -66,6 +74,18 @@ class AuthController {
       next(error);
     }
   };
+
+  // getUserProfile = async (req: Request, res: Response): Promise<void> => {
+  //   const user = req.user;
+  //   const data = {
+  //     id: user['id'],
+  //     email: user['email'],
+  //     fullName: user['fullName'],
+  //     role: user['role'],
+  //     avatar: user['avatar'],
+  //   };
+  //   res.json({ data }); // Không cần return
+  // };
 }
 
 export default AuthController;
