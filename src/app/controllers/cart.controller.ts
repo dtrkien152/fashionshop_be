@@ -74,8 +74,8 @@ class CartController {
   removeCartDetail = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const userId = req.session['userId'];
-      const { fingerprint, productSubDetailId } = req.query;
-      const results = await this.cartService.removeCartDetail(+productSubDetailId, fingerprint as string, userId);
+      const { productSubDetailId } = req.query;
+      const results = await this.cartService.removeCartDetail(+productSubDetailId, null, userId);
       return res.json(results);
     } catch (error) {
       next(error);

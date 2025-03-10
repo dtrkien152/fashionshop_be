@@ -10,7 +10,7 @@ router.get('', jwtMiddleware.verifyToken, productController.getAllOrders);
 
 router.post('', productController.createOrder);
 
-router.put('/status', jwtMiddleware.verifyToken, productController.updateStatusOrder);
+router.put('', jwtMiddleware.verifyToken, productController.updateStatusOrder);
 
 router.get('/my-orders', jwtMiddleware.verifyToken, productController.getAllMyOrders);
 

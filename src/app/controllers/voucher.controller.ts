@@ -84,8 +84,8 @@ class VoucherController {
 
   deactivateVoucherForUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { id } = req.params;
-      const results = await this.voucherService.deactivateVoucherForUser(+id);
+      const { userVoucherId } = req.params;
+      const results = await this.voucherService.deactivateVoucherForUser(+userVoucherId);
       return res.json(results);
     } catch (error) {
       next(error);

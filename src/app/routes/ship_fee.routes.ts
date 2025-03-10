@@ -12,7 +12,7 @@ router.post('', jwtMiddleware.verifyToken, shipFeeController.create);
 
 router.put('', jwtMiddleware.verifyToken, shipFeeController.update);
 
-router.delete('', jwtMiddleware.verifyToken, shipFeeController.deactivate);
+router.delete('/:id', jwtMiddleware.verifyToken, shipFeeController.deactivate);
 
 router.get('/calculator', shipFeeController.getFee);
 

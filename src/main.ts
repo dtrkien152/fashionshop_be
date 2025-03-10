@@ -34,11 +34,11 @@ app.use(corsMiddleware.addHeaderResponse);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/order', orderRoutes);
-app.use('/api/voucher', voucherRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/vouchers', voucherRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/ship-fee', shipFeeRoutes);
-app.use('/api/cart', cartRoutes);
+app.use('/api/carts', cartRoutes);
 
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);

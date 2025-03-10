@@ -3,25 +3,22 @@ import { Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
 
 import { Category, IProduct, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { injectable } from 'tsyringe';
-import {
-  IProductDetailResponse,
-  IProductFilterParams,
-  IProductItemResponse,
-} from '../dto/product.dto';
+import { IProductDetailResponse, IProductFilterParams, IProductItemResponse } from '../dto/product.dto';
 import { SORT_BY_ENUM } from '../constants';
 import { Sequelize } from 'sequelize-typescript';
 
 @injectable()
 class ProductService {
-  constructor() {}
+  constructor() {
+  }
 
   async searchProducts({
-    keyword,
-    categoryId,
-    sortBy = SORT_BY_ENUM.NEWEST,
-    limit = 10,
-    page = 1,
-  }: IProductFilterParams): Promise<{ data: IProductItemResponse[]; total: number }> {
+                         keyword,
+                         categoryId,
+                         sortBy = SORT_BY_ENUM.NEWEST,
+                         limit = 10,
+                         page = 1,
+                       }: IProductFilterParams): Promise<{ data: IProductItemResponse[]; total: number }> {
     const where: WhereOptions<IProduct> = {};
     const offset = (page - 1) * limit;
 
@@ -75,8 +72,6 @@ class ProductService {
         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
       ];
       const sizes = [...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean))];
-      const firstSubImage =
-        product.imageUrls?.[1] || product.imageUrls?.[0] || product.thumbnailUrl;
       const discountPercentage = Math.round(
         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
       );
@@ -91,7 +86,8 @@ class ProductService {
           type: 'sale',
           value: `${discountPercentage}% Sale`,
         },
-        images: [product.thumbnailUrl, firstSubImage],
+        thumbnailUrl: product.thumbnailUrl,
+        imageUrls: product.imageUrls,
         colors,
         size: sizes,
       };
@@ -105,7 +101,7 @@ class ProductService {
 
     const product: Product = await Product.findOne({
       where,
-      attributes: ['id', 'name'],
+      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'imageUrls', 'unitOnOrder'],
       include: [
         {
           model: Category,
@@ -130,6 +126,10 @@ class ProductService {
     const response: IProductDetailResponse = {
       product_id: product.id,
       productName: product.name,
+      description: product.description,
+      thumbnailUrl: product.thumbnailUrl,
+      imageUrls: product.imageUrls,
+      unitOnOrder: product.unitOnOrder,
       category_id: product.Category?.id || 0,
       category_name: product.Category?.name || '',
       productSubDetails: product.ProductSubDetails.map((subDetail) => ({
@@ -152,14 +152,121 @@ class ProductService {
     return ProductSubDetail.findOne({ where: { productId, color, size } });
   };
 
+  async getTop10BestSellingProducts(): Promise<Product[]> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-   async  getTopSellingProducts({
-                                                keyword,
-                                                categoryId,
-                                                sortBy = 'unit_on_order',
-                                                limit = 10,
-                                                page = 1,
-                                              }: {
+    // Lấy top sản phẩm bán chạy nhất trong ngày
+    const bestSellingToday = await Product.findAll({
+      attributes: [
+        'id',
+        'name',
+        'salePrice',
+        'thumbnailUrl',
+        [Sequelize.fn('SUM', Sequelize.col('OrderDetails.unit')), 'unitsSold'],
+      ],
+      include: [
+        {
+          model: ProductSubDetail,
+          attributes: [],
+          include: [
+            {
+              model: OrderDetail,
+              as: 'OrderDetails', // Đặt alias chính xác
+              attributes: [],
+              include: [
+                {
+                  model: Order,
+                  attributes: [],
+                  where: {
+                    createdAt: {
+                      [Op.gte]: oneWeekAgo,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      group: ['Product.id'],
+      order: [[Sequelize.literal('unitsSold'), 'DESC']],
+      limit: 10,
+    });
+
+    const productIds = bestSellingToday.map((p) => p.id);
+    let remainingSlots = 10 - productIds.length;
+
+    // Nếu chưa đủ 10 sản phẩm, lấy thêm theo số lượng order cao nhất mọi thời điểm
+    if (remainingSlots > 0) {
+      const bestSellingAllTime = await Product.findAll({
+        attributes: [
+          'id',
+          'name',
+          'salePrice',
+          'thumbnailUrl',
+          [Sequelize.fn('SUM', Sequelize.col('orderDetails.unit')), 'totalUnitsSold'],
+        ],
+        include: [
+          {
+            model: ProductSubDetail,
+            attributes: [],
+            include: [
+              {
+                model: OrderDetail,
+                attributes: [],
+                include: [
+                  {
+                    model: Order,
+                    attributes: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        where: {
+          id: {
+            [Op.notIn]: productIds,
+          },
+        },
+        group: ['Product.id'],
+        order: [[Sequelize.literal('totalUnitsSold'), 'DESC']],
+        limit: remainingSlots,
+      });
+
+      productIds.push(...bestSellingAllTime.map((p) => p.id));
+      remainingSlots = 10 - productIds.length;
+
+      bestSellingToday.push(...bestSellingAllTime);
+    }
+
+    // Nếu vẫn chưa đủ, lấy thêm sản phẩm mới nhất
+    if (remainingSlots > 0) {
+      const newestProducts = await Product.findAll({
+        where: {
+          id: {
+            [Op.notIn]: productIds,
+          },
+          isActive: true,
+        },
+        order: [['updatedAt', 'DESC']],
+        limit: remainingSlots,
+      });
+
+      bestSellingToday.push(...newestProducts);
+    }
+
+    return bestSellingToday;
+  }
+
+  async getTopSellingProducts({
+                                keyword,
+                                categoryId,
+                                sortBy = 'unit_on_order',
+                                limit = 10,
+                                page = 1,
+                              }: {
     keyword?: string;
     categoryId?: number;
     sortBy?: string;
@@ -169,7 +276,7 @@ class ProductService {
     const where: WhereOptions = {};
     const offset = (page - 1) * limit;
 
-    // Tìm kiếm theo từ khóa
+// Tìm kiếm theo từ khóa
     if (keyword) {
       where[Op.or as any] = [
         { name: { [Op.iLike as any]: `%${keyword}%` } },
@@ -177,12 +284,12 @@ class ProductService {
       ];
     }
 
-    // Lọc theo category
+// Lọc theo category
     if (categoryId) {
       where.categoryId = categoryId;
     }
 
-    // Sắp xếp mặc định theo unit_on_order (sản phẩm bán chạy nhất)
+// Sắp xếp mặc định theo unit_on_order (sản phẩm bán chạy nhất)
     const order: any[] = [['unit_on_order', 'DESC']];
     switch (sortBy) {
       case 'price_asc':
@@ -202,7 +309,6 @@ class ProductService {
         break;
     }
 
-    // Truy vấn dữ liệu và ánh xạ về IProductItemResponse
     const { rows, count } = await Product.findAndCountAll({
       where,
       include: [
@@ -219,8 +325,6 @@ class ProductService {
         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
       ];
       const sizes = [...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean))];
-      const firstSubImage =
-        product.imageUrls?.[1] || product.imageUrls?.[0] || product.thumbnailUrl;
       const discountPercentage = Math.round(
         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
       );
@@ -235,7 +339,8 @@ class ProductService {
           type: 'sale',
           value: `${discountPercentage}% Sale`,
         },
-        images: [product.thumbnailUrl, firstSubImage],
+        thumbnailUrl: product.thumbnailUrl,
+        imageUrls: product.imageUrls,
         colors,
         size: sizes,
       };

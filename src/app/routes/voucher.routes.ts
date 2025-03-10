@@ -17,16 +17,16 @@ router.post('', jwtMiddleware.verifyToken, voucherController.addVoucher);
 
 router.put('', jwtMiddleware.verifyToken, voucherController.updateVoucher);
 
-router.delete('', jwtMiddleware.verifyToken, voucherController.deactivateVoucher);
+router.delete('/:id', jwtMiddleware.verifyToken, voucherController.deactivateVoucher);
 
 router.get('/my-voucher', jwtMiddleware.verifyToken, voucherController.getMyVoucher);
 
 router.post('/my-voucher', jwtMiddleware.verifyToken, voucherController.addMyVoucher);
 
-router.post('/user/:userId', jwtMiddleware.verifyToken, voucherController.getVoucherInUser);
+router.post('/user', jwtMiddleware.verifyToken, voucherController.getVoucherInUser);
 
-router.put('/user/:userId', jwtMiddleware.verifyToken, voucherController.addVoucherForUsers);
+router.put('/user', jwtMiddleware.verifyToken, voucherController.addVoucherForUsers);
 
-router.delete('/user/:userId', jwtMiddleware.verifyToken, voucherController.deactivateVoucherForUser);
+router.delete('/user/:userVoucherId', jwtMiddleware.verifyToken, voucherController.deactivateVoucherForUser);
 
 export default router;

@@ -104,7 +104,7 @@ class Product extends Model<IProduct> {
     type: DataType.INTEGER,
     allowNull: true,
   })
-  unitOnOrder!: string;
+  unitOnOrder!: number;
 
   @Column({
     type: DataType.STRING(50),
