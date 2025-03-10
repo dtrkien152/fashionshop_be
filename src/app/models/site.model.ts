@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import {Column, DataType, HasMany, Model, Table} from 'sequelize-typescript';
+import {Stock} from "./stock.model";
 
 interface ISite {
   id?: number;
@@ -36,6 +37,11 @@ class Site extends Model<ISite> {
     allowNull: true,
   })
   address!: string;
+
+  @HasMany(() => Stock)
+  stocks!: Stock[];
+
 }
+
 
 export { Site, ISite };

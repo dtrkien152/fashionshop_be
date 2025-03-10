@@ -1,5 +1,7 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table} from 'sequelize-typescript';
 import { Product } from './product.model';
+import {Category} from "./category.model";
+import {Stock} from "./stock.model";
 
 interface IProductSubDetail {
   id?: number;
@@ -60,6 +62,12 @@ class ProductSubDetail extends Model<IProductSubDetail> {
     allowNull: true,
   })
   createdBy!: string;
+
+  @BelongsTo(() => Product)
+  Product!: Product;
+
+  @HasMany(() => Stock)
+  Stocks!: Stock[];
 }
 
 export { IProductSubDetail, ProductSubDetail };

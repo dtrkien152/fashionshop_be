@@ -1,5 +1,6 @@
-import {BelongsTo, Column, DataType, ForeignKey, Model, Table} from 'sequelize-typescript';
+import {BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table} from 'sequelize-typescript';
 import { Category } from './category.model';
+import {ProductSubDetail} from "./product_sub_detail.model";
 
 interface IProduct {
   id?: number;
@@ -103,8 +104,10 @@ class Product extends Model<IProduct> {
   updatedBy!: string;
 
   @BelongsTo(() => Category)
-  category!: Category;
+  Category!: Category;
 
+  @HasMany(() => ProductSubDetail)
+  ProductSubDetails!: ProductSubDetail[];
 }
 
 export { IProduct, Product };

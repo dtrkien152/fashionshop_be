@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {BelongsTo, Column, DataType, ForeignKey, Model, Table} from 'sequelize-typescript';
 import { Site } from './site.model';
 import { ProductSubDetail } from './product_sub_detail.model';
 
@@ -40,6 +40,13 @@ class Stock extends Model<IStock> {
     defaultValue: 0,
   })
   unit!: number;
+
+  @BelongsTo(() => Site)
+  site!: Site;
+
+  @BelongsTo(() => ProductSubDetail)
+  productSubDetail!: ProductSubDetail;
+
 }
 
 export { Stock, IStock };

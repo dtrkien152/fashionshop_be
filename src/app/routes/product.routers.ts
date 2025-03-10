@@ -54,21 +54,34 @@ router.use(corsMiddleware.addHeaderResponse);
  *     responses:
  *       200:
  *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                 total:
- *                   type: integer
- *                   example: 100
  *       500:
  *         description: Internal server error
  */
 router.get('/search', productController.searchProducts);
+
+
+/**
+ * @swagger
+ * /api/products/detail:
+ *   get:
+ *     summary: Get product details
+ *     description: Retrieve detailed information about a product by its ID
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: productId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the product to retrieve
+ *     responses:
+ *       200:
+ *         description: Product detail retrieved successfully
+ *       400:
+ *         description: Invalid request (missing productId)
+ *       404:
+ *         description: Product not found
+ */
+router.get('/detail', productController.getProductDetail);
 
 export default router;
