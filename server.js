@@ -1,22 +1,26 @@
-require("dotenv").config({ path: "./dev.env" }); // Load file env
+import "dotenv/config"; // Load env file
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import swaggerUi from "swagger-ui-express";
+import db from "./app/models/index.js"; // Import connection-manager
+import swaggerDocs from "./app/config/swagger.config.js";
+import authRoutes from "./app/routes/auth.routes.js";
+import userRoutes from "./app/routes/user.routes.js";
+import sessionConfig from "./app/config/session.config.js"; // Import file cấu hình session
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const db = require("./app/models/index"); // Import connection-manager
 const sequelize = db.sequelize; // Lấy instance của Sequelize
-const swaggerDocs = require("./app/config/swagger.config"); // Import Swagger config
-const swaggerUi = require("swagger-ui-express");
 const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(sessionConfig); // 💡 Dùng session middleware
 
 // Routes
-app.use("/api/auth", require("./app/routes/auth.routes"));
-app.use("/api/user", require("./app/routes/user.routes"));
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 // Swagger API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -26,9 +30,8 @@ sequelize
     .authenticate()
     .then(() => {
         console.log("✅ Connected to MySQL Database!");
+        return sequelize
 
-        // Đồng bộ cơ sở dữ liệu (nếu cần)
-        return sequelize.sync();
     })
     .then(() => {
         app.listen(port, () => {
@@ -40,4 +43,4 @@ sequelize
         console.error("❌ Database connection failed:", err);
     });
 
-module.exports = app;
+export default app;

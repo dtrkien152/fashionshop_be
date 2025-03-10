@@ -1,61 +1,58 @@
-const db = require("../models");
-const ROLES = db.ROLES;
-const User = db.user;
+import db from "../models/index.js";
 
-checkDuplicateUsernameOrEmail = async (req, res, next) => {
-  try {
-    // Username
-    let user = await User.findOne({
-      where: {
-        username: req.body.username
+class VerifySignUpService {
+  constructor() {
+    this.ROLE = db.Role;
+  }
+
+  // ✅ Kiểm tra username & email trùng lặp
+  async checkDuplicateUsernameOrEmail(req, res, next) {
+    try {
+      // console.log("DB Keys:", Object.keys(db)); // Debug DB keys
+      // console.log("User Model in VerifySignUpService:", db.User);
+      // console.log("FindOne Function Exists:", db.User?.findOne);
+
+      if (!db.User) {
+        return res.status(500).json({ message: "Database error: User model not found" });
       }
-    });
 
-    if (user) {
-      return res.status(400).send({
-        message: "Failed! Username is already in use!"
-      });
+      const { username, email } = req.body;
+
+      // Kiểm tra username
+      const userByUsername = await db.User.findOne({ where: { username } });
+      if (userByUsername) {
+        return res.status(400).json({ message: "Failed! Username is already in use!" });
+      }
+
+      // Kiểm tra email
+      const userByEmail = await db.User.findOne({ where: { email } });
+      if (userByEmail) {
+        return res.status(400).json({ message: "Failed! Email is already in use!" });
+      }
+
+      next();
+    } catch (error) {
+      console.error("Error in checkDuplicateUsernameOrEmail:", error);
+      return res.status(500).json({ message: error.message });
     }
+  }
 
-    // Email
-    user = await User.findOne({
-      where: {
-        email: req.body.email
+  // ✅ Kiểm tra role có tồn tại không
+  checkRolesExisted(req, res, next) {
+    const { roles } = req.body;
+
+    if (roles) {
+      for (const role of roles) {
+        if (!this.ROLE.includes(role)) {
+          return res.status(400).json({ message: `Failed! Role does not exist: ${role}` });
+        }
       }
-    });
-
-    if (user) {
-      return res.status(400).send({
-        message: "Failed! Email is already in use!"
-      });
     }
 
     next();
-  } catch (error) {
-    return res.status(500).send({
-      message: error.message
-    });
   }
-};
+}
 
-checkRolesExisted = (req, res, next) => {
-  if (req.body.roles) {
-    for (let i = 0; i < req.body.roles.length; i++) {
-      if (!ROLES.includes(req.body.roles[i])) {
-        res.status(400).send({
-          message: "Failed! Role does not exist = " + req.body.roles[i]
-        });
-        return;
-      }
-    }
-  }
-  
-  next();
-};
-
-const verifySignUp = {
-  checkDuplicateUsernameOrEmail,
-  checkRolesExisted
-};
-
-module.exports = verifySignUp;
+// ✅ Tạo instance để dùng như service
+const verifySignUpService = new VerifySignUpService();
+export default verifySignUpService;

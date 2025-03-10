@@ -1,101 +1,44 @@
-const jwt = require("jsonwebtoken");
-const config = require("../config/auth.config.js");
-const db = require("../models");
-const User = db.user;
+import jwt from "jsonwebtoken";
+import config from "../config/auth.config.js";
+import {AuthService} from "../services/authService.js";
+const authService = new AuthService(); // Khởi tạo instance
+const verifyToken = (req, res, next) => {
+    let token = req.session?.token;
 
-verifyToken = (req, res, next) => {
-  let token = req.session.token;
-
-  if (!token) {
-    return res.status(403).send({
-      message: "No token provided!",
-    });
-  }
-
-  jwt.verify(token,
-             config.secret,
-             (err, decoded) => {
-              if (err) {
-                return res.status(401).send({
-                  message: "Unauthorized!",
-                });
-              }
-              req.userId = decoded.id;
-              next();
-             });
-};
-
-isAdmin = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.userId);
-    const roles = await user.getRoles();
-
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "admin") {
-        return next();
-      }
+    if (!token) {
+        return res.status(403).json({message: "No token provided!"});
     }
 
-    return res.status(403).send({
-      message: "Require Admin Role!",
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({message: "Unauthorized!"});
+        }
+        req.userId = decoded.id;
+        next();
     });
-  } catch (error) {
-    return res.status(500).send({
-      message: "Unable to validate User role!",
-    });
-  }
 };
 
-isModerator = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.userId);
-    const roles = await user.getRoles();
-
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "moderator") {
-        return next();
-      }
-    }
-
-    return res.status(403).send({
-      message: "Require Moderator Role!",
-    });
-  } catch (error) {
-    return res.status(500).send({
-      message: "Unable to validate Moderator role!",
-    });
-  }
+// ✅ Kiểm tra quyền
+const checkRole = (roleNames) => {
+    return async (req, res, next) => {
+        try {
+            const roles = await authService.getRole(req.userId);
+            if (roles.some((role) => roleNames.includes(role))) {
+                return next();
+            }
+            res.status(403).json({message: `Require ${roleNames.join(" or ")} Role!`});
+        } catch (error) {
+            console.error("Role validation error:", error);
+            res.status(500).json({message: "Unable to validate user role!"});
+        }
+    };
 };
 
-isModeratorOrAdmin = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.userId);
-    const roles = await user.getRoles();
-
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "moderator") {
-        return next();
-      }
-
-      if (roles[i].name === "admin") {
-        return next();
-      }
-    }
-
-    return res.status(403).send({
-      message: "Require Moderator or Admin Role!",
-    });
-  } catch (error) {
-    return res.status(500).send({
-      message: "Unable to validate Moderator or Admin role!",
-    });
-  }
-};
 
 const authJwt = {
-  verifyToken,
-  isAdmin,
-  isModerator,
-  isModeratorOrAdmin,
+    verifyToken,
+    isAdmin: checkRole(["admin"]),
+    isModerator: checkRole(["moderator"]),
+    isModeratorOrAdmin: checkRole(["moderator", "admin"]),
 };
-module.exports = authJwt;
+export default authJwt;

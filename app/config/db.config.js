@@ -1,6 +1,8 @@
-require("dotenv").config({ path: "./dev.env" });
+import dotenv from "dotenv";
 
-module.exports = {
+dotenv.config({ path: "./dev.env" });
+
+const config = {
     DB_NAME: process.env.DB_NAME,
     DB_USER: process.env.DB_USER,
     DB_PASSWORD: process.env.DB_PASSWORD,
@@ -14,3 +16,5 @@ module.exports = {
         idle: 10000,
     },
 };
+
+export default config;

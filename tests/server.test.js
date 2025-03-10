@@ -1,6 +1,6 @@
-const request = require('supertest');
-const assert = require('assert')
-const app = require('../server');
+import request from "supertest";
+import assert from "assert";
+import app from "../server.js";
 
 describe('GET /', () => {
   it('responds responds to the world', async function() {

@@ -1,6 +1,6 @@
-const express = require("express");
-const { verifySignUp } = require("../middleware");
-const controller = require("../controllers/auth.controller");
+import express from "express";
+import { verifySignUp } from "../middleware/index.js";
+import * as controller from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -63,4 +63,4 @@ router.post(
  */
 router.post("/signin", controller.signin);
 
-module.exports = router;
+export default router;

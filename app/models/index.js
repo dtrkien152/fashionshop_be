@@ -1,5 +1,5 @@
-const config = require("../config/db.config.js");
-const { Sequelize } = require("sequelize");
+import { Sequelize } from "sequelize";
+import config from "../config/db.config.js";
 
 const sequelize = new Sequelize(
     config.DB_NAME,
@@ -10,7 +10,14 @@ const sequelize = new Sequelize(
         port: config.DB_PORT,
         dialect: config.DIALECT,
         pool: config.pool,
-    }
+        logging: console.log, // Giúp debug query
+            define: {
+                    // timestamps: true, // Bật timestamps
+                    createdAt: "created_date", // Đổi tên createdAt
+                    updatedAt: "updated_date", // Đổi tên updatedAt
+                    underscored: true, // Chuyển camelCase thành snake_case
+            },
+    },
 );
 
 const db = {};
@@ -18,16 +25,16 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.user = require("../models/user.model.js")(sequelize, Sequelize);
-db.role = require("../models/role.model.js")(sequelize, Sequelize);
+// Import models
+import UserModel from "../models/user.model.js";
+import RoleModel from "../models/role.model.js";
 
-db.role.belongsToMany(db.user, {
-    through: "user_roles",
-});
-db.user.belongsToMany(db.role, {
-    through: "user_roles",
-});
+// Gán model vào `db`
+db.User = UserModel(sequelize);
+db.Role = RoleModel(sequelize);
 
-db.ROLES = ["user", "admin", "moderator"];
+// Khai báo quan hệ
+db.Role.hasMany(db.User, { foreignKey: "role_id", as: "user" });
+db.User.belongsTo(db.Role, { foreignKey: "role_id", as: "role" });
 
-module.exports = db;
+export default db;

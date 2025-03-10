@@ -1,16 +1,24 @@
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
 
-module.exports = (sequelize) => {
-  const Role = sequelize.define("roles", {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    name: {
-      type: DataTypes.STRING
-    }
-  });
-
-  return Role;
+export default (sequelize) => {
+    return sequelize.define(
+        "role",
+        {
+            role_id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            role_name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: true,
+            },
+        },
+        {
+            tableName: "role",
+            underscored: true,
+            timestamps: false,  // ✅ Tắt tự động thêm createdAt và updatedAt
+        }
+    );
 };
