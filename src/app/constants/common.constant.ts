@@ -9,6 +9,7 @@ export enum ACTION {
 }
 export enum SORT_BY_ENUM{
     NEWEST = 'newest',
+    LASTEST = 'lastest',
     PRICE_ASC = 'price_asc',
     PRICE_DESC = 'price_desc'
 }

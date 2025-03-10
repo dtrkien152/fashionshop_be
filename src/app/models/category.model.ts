@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import {Column, DataType, HasMany, Model, Table} from 'sequelize-typescript';
+import {Product} from "./product.model";
 
 interface ICategory {
   id?: number;
@@ -44,6 +45,11 @@ class Category extends Model<ICategory> {
     defaultValue: false,
   })
   isActive!: boolean;
+
+  @HasMany(() => Product)
+  products!: Product[];
+
 }
+
 
 export { ICategory, Category };

@@ -1,15 +1,16 @@
 // src/controllers/product.controller.ts
 
 import { Request, Response } from 'express';
-import { inject, singleton } from 'tsyringe';
+import {inject, injectable, singleton} from 'tsyringe';
 import { ProductService } from '../services';
 import { IProductFilterParams } from '../dto/product.dto';
+import UserController from "./user.controller";
 
-@singleton()
+@injectable()
 class ProductController {
   constructor(@inject(ProductService) private productService: ProductService) {}
 
-  async searchProducts(req: Request, res: Response) {
+   searchProducts=async (req: Request, res: Response): Promise<any>=> {
     try {
       const model = req.query as IProductFilterParams;
       const result = await this.productService.searchProducts(model);

@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import {BelongsTo, Column, DataType, ForeignKey, Model, Table} from 'sequelize-typescript';
 import { Category } from './category.model';
 
 interface IProduct {
@@ -101,6 +101,10 @@ class Product extends Model<IProduct> {
     allowNull: true,
   })
   updatedBy!: string;
+
+  @BelongsTo(() => Category)
+  category!: Category;
+
 }
 
 export { IProduct, Product };

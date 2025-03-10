@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import ProductController from '../controllers/product.controller';
-import { container } from 'tsyringe';
+import { container } from '../config';
+import {corsMiddleware} from "../middlewares";
 
 const productController = container.resolve(ProductController);
+// Middleware CORS
 
 const router = Router();
+router.use(corsMiddleware.addHeaderResponse);
 
 /**
  * @swagger
@@ -34,7 +37,7 @@ const router = Router();
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [newest, price_asc, price_desc]
+ *           enum: [newest, price_asc, price_desc,lastest]
  *         description: Sort by newest, price ascending, or price descending
  *       - in: query
  *         name: limit

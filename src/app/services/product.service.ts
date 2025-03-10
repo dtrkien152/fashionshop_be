@@ -1,14 +1,16 @@
 // src/services/product.service.ts
 
-import { Op, WhereOptions, Order } from 'sequelize';
-import { Product, IProduct } from '../models';
-import { Category } from '../models';
-import { injectable } from 'tsyringe';
-import { IProductFilterParams } from '../dto/product.dto';
-import { SORT_BY_ENUM } from '../constants';
+import {Op, Order, WhereOptions} from 'sequelize';
+import {Category, IProduct, Product} from '../models';
+import {injectable} from 'tsyringe';
+import {IProductFilterParams} from '../dto/product.dto';
+import {SORT_BY_ENUM} from '../constants';
 
 @injectable()
 class ProductService {
+  constructor() {
+  }
+
   async searchProducts({
                          keyword,
                          categoryId,
@@ -42,6 +44,11 @@ class ProductService {
         order.push(['salePrice', 'DESC']);
         break;
       case SORT_BY_ENUM.NEWEST:
+        order.push(['createdAt', 'DESC']);
+        break;
+      case SORT_BY_ENUM.LASTEST:
+        order.push(['createdAt', 'ASC']);
+        break;
       default:
         order.push(['createdAt', 'DESC']);
         break;
@@ -52,7 +59,7 @@ class ProductService {
       where,
       include: [{ model: Category, attributes: ['name'] }],
       order,
-      limit,
+      limit: Number(limit),
       offset,
     });
 
