@@ -1,10 +1,11 @@
 import { delay, inject, injectable } from 'tsyringe';
-import { OrderCreateRequest } from '../dto/order.dto';
+import { OrderCreateRequest, OrderFilter } from '../dto/order.dto';
 import { ProductService, ShipFeeService, UserService, VoucherService } from './index';
 import { IOrder, IOrderDetail, Order, OrderDetail } from '../models';
-import { GenerateUtils } from '../utils';
+import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
+import { Op } from 'sequelize';
 
 @injectable()
 class OrderService {
@@ -14,7 +15,7 @@ class OrderService {
               @inject(delay(() => ShipFeeService)) private shipFeeService: ShipFeeService) {
   }
 
-  create = async (payload: OrderCreateRequest) => {
+  create = async (email: string, payload: OrderCreateRequest) => {
     const products = await Promise.all(payload.products.map(async (el) => {
       const product = await this.productService.getProductById(el.productId);
       el.priceInUnit = product.salePrice;
@@ -25,7 +26,7 @@ class OrderService {
     let discountPrice = 0;
     if (payload.voucherCode) {
       const voucher = await this.voucherService.getByCode(payload.voucherCode);
-      const user = await this.userService.getByEmail(payload.email);
+      const user = await this.userService.getByEmail(email);
       if (!user) throw new BadRequestError('Email is invalid');
       if (await this.voucherService.verifyVoucherUser(user.id, voucher.id)) {
         if (originTotalPrice > voucher.triggerPrice) {
@@ -38,7 +39,7 @@ class OrderService {
     const order: IOrder = {
       siteId: payload.siteId,
       code: GenerateUtils.code('ORD'),
-      email: payload.email,
+      email: email,
       voucherCode: payload.voucherCode,
       shipFee: shipFee,
       customerName: payload.customer.name,
@@ -65,6 +66,51 @@ class OrderService {
       order, orderDetails: payload.products,
     };
   };
+
+  async updateStatusOrder(code: string, status: ORDER_STATUS) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    return await order.update({ status });
+  }
+
+  async getAll(filter?: OrderFilter) {
+    const likeOp = `%${filter.keyword}%`;
+    const pageRequest = PageableUtils.pageRequest(filter.page, filter.limit, filter.orderBy, filter.orderDirection);
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    if (filter.keyword) {
+      whereCondition[Op.and].push({
+        [Op.or]: [
+          { code: { [Op.like]: likeOp } },
+          { customerName: { [Op.like]: likeOp } },
+          { customerPhone: { [Op.like]: likeOp } },
+        ],
+      });
+    }
+    if (filter.status) {
+      whereCondition[Op.and].push({
+        status: filter.status,
+      });
+    }
+    if (filter.paymentStatus) {
+      whereCondition[Op.and].push({
+        paymentStatus: filter.paymentStatus,
+      });
+    }
+    if (filter.email) {
+      whereCondition[Op.and].push({
+        email: filter.email,
+      });
+    }
+    return await Order.findAll({
+      order: pageRequest.order,
+      offset: pageRequest.offset,
+      limit: pageRequest.limit,
+      where: whereCondition[Op.and].length ? whereCondition : undefined,
+      include: { model: OrderDetail },
+    });
+  }
 }
 
 export default OrderService;

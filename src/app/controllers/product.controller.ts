@@ -30,6 +30,16 @@ class ProductController {
     }
   };
 
+  getTopSellingProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const result = await this.productService.getTop10BestSellingProducts();
+      res.json(result);
+    } catch (error) {
+      console.error('get top selling products error:', error);
+      next(error);
+    }
+  };
+
 }
 
 export default ProductController;

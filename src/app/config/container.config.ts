@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
 import {
-  AuthService, CategoryService,
+  AuthService, CartService, CategoryService,
   MailService,
   OrderService,
   OtpService,
@@ -16,7 +16,7 @@ import {
   ProductController,
   OrderController,
   VoucherController,
-  ShipFeeController,
+  ShipFeeController, CartController,
 } from '../controllers';
 import CategoryController from "../controllers/category.controller";
 
@@ -31,6 +31,7 @@ container.register('VoucherService', { useClass: VoucherService });
 container.register('ShipFeeService', { useClass: ShipFeeService });
 container.register('OrderService', { useClass: OrderService });
 container.register('CategoryService', { useClass: CategoryService });
+container.register('CartService', { useClass: CartService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });
@@ -39,5 +40,6 @@ container.register('OrderController', { useClass: OrderController });
 container.register('VoucherController', { useClass: VoucherController });
 container.register('ShipFeeController', { useClass: ShipFeeController });
 container.register('CategoryController', { useClass: CategoryController });
+container.register('CartController', { useClass: CartController });
 
 export { container };

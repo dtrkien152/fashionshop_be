@@ -1,7 +1,16 @@
-import {BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table} from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { Product } from './product.model';
-import {Category} from "./category.model";
-import {Stock} from "./stock.model";
+import { Category } from './category.model';
+import { Stock } from './stock.model';
+import { OrderDetail } from './order_detail.model';
 
 interface IProductSubDetail {
   id?: number;
@@ -43,7 +52,6 @@ class ProductSubDetail extends Model<IProductSubDetail> {
   })
   color!: string;
 
-
   @Column({
     type: DataType.BOOLEAN,
     allowNull: true,
@@ -68,6 +76,9 @@ class ProductSubDetail extends Model<IProductSubDetail> {
 
   @HasMany(() => Stock)
   Stocks!: Stock[];
+
+  @HasMany(() =>OrderDetail)
+  OrderDetails!: OrderDetail[];
 }
 
 export { IProductSubDetail, ProductSubDetail };

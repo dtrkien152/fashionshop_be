@@ -1,13 +1,13 @@
 import { SORT_BY_ENUM } from '../constants';
 
-export interface IProductFilterParams
-{
+export interface IProductFilterParams {
   keyword?: string;
   categoryId?: number;
   sortBy?: SORT_BY_ENUM;
   limit?: number;
   page?: number;
 }
+
 export interface IProductSubDetailResponse {
   id: number;
   size: string;
@@ -23,6 +23,7 @@ export interface IProductDetailResponse {
   category_name: string;
   productSubDetails: IProductSubDetailResponse[];
 }
+
 export interface IProductItemResponse {
   id: number;
   category: string;
@@ -33,8 +34,8 @@ export interface IProductItemResponse {
     type: 'sale' | 'new' | 'hot';
     value: string;
   };
-  images: [string, string]; // Ảnh đầu là thumbnailUrl của product, ảnh sau là 1 ảnh của subproduct
+  thumbnailUrl: string;
+  imageUrls: string[]; // Ảnh đầu là thumbnailUrl của product, ảnh sau là 1 ảnh của subproduct
   colors: string[]; // Các thuộc tính của subproduct
   size: string[]; // Các thuộc tính của subproduct
 }
-

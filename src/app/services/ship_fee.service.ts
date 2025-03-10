@@ -1,4 +1,6 @@
 import { injectable } from 'tsyringe';
+import { ShipFeeCreateRequest, ShipFeeUpdateRequest } from '../dto';
+import { IShipFee, ShipFee } from '../models';
 
 @injectable()
 class ShipFeeService {
@@ -6,19 +8,41 @@ class ShipFeeService {
   }
 
   getFee = async (totalPrice: number) => {
-    return 0;
+    let fee = 0;
+    const shipFees = await this.getAll();
+    for (const shipFee of shipFees) {
+      if (totalPrice >= shipFee.triggerPrice && fee < shipFee.fee) {
+        return fee = shipFee.fee;
+      }
+    }
+    return fee;
   };
 
-  create = () => {
+  create = async (payload: ShipFeeCreateRequest) => {
+    const shipFee: IShipFee = payload;
+    shipFee.isActive = true;
+    return await ShipFee.create(shipFee);
   };
 
-  update = () => {
+  update = async (payload: ShipFeeUpdateRequest) => {
+    const shipFee = await ShipFee.findByPk(payload.id);
+    if (!shipFee) {
+      throw new Error('Ship fee not found');
+    }
+    return await shipFee.update(payload);
   };
 
-  deactivate = () => {
+  deactivate = async (id: number) => {
+    const shipFee = await ShipFee.findByPk(id);
+    if (!shipFee) {
+      throw new Error('Ship fee not found');
+    }
+    shipFee.isActive = false;
+    return { success: true };
   };
 
-  getAll = () => {
+  getAll = async () => {
+    return await ShipFee.findAll({ where: { isActive: true } });
   };
 }
 

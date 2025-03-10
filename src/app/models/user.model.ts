@@ -8,6 +8,7 @@ interface IUser {
   fullName?: string;
   gender?: boolean;
   phone?: string;
+  avatar?: string;
   role?: string;
   googleId?: string;
   isActive?: boolean;
@@ -73,6 +74,12 @@ class User extends Model<IUser> {
     allowNull: true,
   })
   googleId!: string;
+
+  @Column({
+    type: DataType.STRING(1000),
+    allowNull: true,
+  })
+  avatar!: string;
 
   @Column({
     type: DataType.BOOLEAN,

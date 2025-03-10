@@ -1,9 +1,31 @@
 import { Sequelize } from 'sequelize-typescript';
 import { ENV_CONFIG } from './env.config';
 import {
-  Blog, BlogTag, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
-  Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail,
-  ReturnOrder, ShipInfo, Site, Stock, Tag, User, UserAddress, UserVoucher, Voucher,
+  Blog,
+  BlogTag,
+  Cart,
+  CartDetail,
+  Category,
+  CategoryEvent,
+  Comment,
+  Event,
+  Notify,
+  Order,
+  OrderDetail,
+  Otp,
+  Payment,
+  Product,
+  ProductSubDetail,
+  ReturnOrder,
+  ShipFee,
+  ShipInfo,
+  Site,
+  Stock,
+  Tag,
+  User,
+  UserAddress,
+  UserVoucher,
+  Voucher,
 } from '../models';
 
 const sequelize = new Sequelize(
@@ -32,7 +54,7 @@ const sequelize = new Sequelize(
     },
     models: [
       Blog, BlogTag, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
-      Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail,
+      Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
       ReturnOrder, ShipInfo, Site, Stock, Tag, User, UserAddress, UserVoucher, Voucher,
     ],
   },

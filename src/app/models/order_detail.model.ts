@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { Order } from './order.model';
 import { ProductSubDetail } from './product_sub_detail.model';
 
@@ -46,6 +46,12 @@ class OrderDetail extends Model<IOrderDetail> {
     allowNull: true,
   })
   totalPrice!: number;
+
+  @BelongsTo(() => Order)
+  order!: Order;
+
+  @BelongsTo(() => ProductSubDetail)
+  productSubDetail!: ProductSubDetail;
 }
 
 export { IOrderDetail, OrderDetail };

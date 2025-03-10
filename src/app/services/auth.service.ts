@@ -6,23 +6,13 @@ import { GenerateUtils } from '../utils';
 import { OtpService, UserService } from '../services';
 import jwt, { JwtPayload, VerifyCallback } from 'jsonwebtoken';
 import { ENV_CONFIG } from '../config';
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../errors';
+import { BadRequestError, NotFoundError } from '../errors';
 
 @injectable()
 class AuthService {
   constructor(@inject(delay(() => OtpService)) private otpService: OtpService,
               @inject(delay(() => UserService)) private userService: UserService) {
   }
-
-  getRole = async (userId: number) => {
-    try {
-      const user = await User.findByPk(userId);
-      return user?.role;
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      throw new Error('Error fetching user role');
-    }
-  };
 
   createToken = (user: IUser) => {
     return jwt.sign({
@@ -46,13 +36,13 @@ class AuthService {
     const user = await this.userService.getByEmail(email);
 
     if (!user) {
-      throw new NotFoundError('User not found.');
+      throw new NotFoundError('Bạn đã nhập sai email');
     }
 
     // 🔑 Kiểm tra mật khẩu
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     if (!passwordIsValid) {
-      throw new UnauthorizedError('Invalid password!');
+      throw new NotFoundError('Bạn đã nhập sai password');
     }
 
     // 🛠️ Tạo JWT Token
@@ -62,7 +52,9 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
+      avatar:user.avatar,
       token,
+      fullName:user.fullName
     };
   };
 
@@ -78,7 +70,9 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
+      avatar:user.avatar,
       token,
+      fullName:user.fullName
     };
   };
 

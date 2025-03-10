@@ -7,3 +7,4 @@ export { default as OrderService } from './order.service';
 export { default as VoucherService } from './voucher.service';
 export { default as ShipFeeService } from './ship_fee.service';
 export { default as CategoryService } from './category.service';
+export { default as CartService } from './cart.service';

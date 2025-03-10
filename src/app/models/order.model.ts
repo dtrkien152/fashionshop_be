@@ -1,6 +1,7 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
 import { Payment } from './payment.model';
 import { Site } from './site.model';
+import { OrderDetail } from './order_detail.model';
 
 interface IOrder {
   id?: number;
@@ -123,6 +124,9 @@ class Order extends Model<IOrder> {
     allowNull: true,
   })
   updatedBy!: string;
+
+  @HasMany(() => OrderDetail)
+  OrderDetails!: OrderDetail[];
 }
 
 export { IOrder, Order };

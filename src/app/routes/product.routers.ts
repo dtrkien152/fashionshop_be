@@ -15,45 +15,42 @@ const router = Router();
 /**
  * @swagger
  * /api/products/search:
- *   get:
+ *   post:
  *     summary: Search and filter products
  *     tags: [Products]
- *     parameters:
- *       - in: query
- *         name: keyword
- *         schema:
- *           type: string
- *         description: Keyword to search products
- *       - in: query
- *         name: categoryId
- *         schema:
- *           type: integer
- *         description: Category ID to filter products
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [newest, price_asc, price_desc, latest]
- *         description: Sort by newest, price ascending, or price descending
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Limit number of results
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number for pagination
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keyword:
+ *                 type: string
+ *                 description: Keyword to search products
+ *               categoryId:
+ *                 type: integer
+ *                 description: Category ID to filter products
+ *               sortBy:
+ *                 type: string
+ *                 enum: [newest, price_asc, price_desc, latest]
+ *                 description: Sort by newest, price ascending, or price descending
+ *               limit:
+ *                 type: integer
+ *                 default: 10
+ *                 description: Limit number of results
+ *               page:
+ *                 type: integer
+ *                 default: 1
+ *                 description: Page number for pagination
  *     responses:
  *       200:
  *         description: Successful response
  *       500:
  *         description: Internal server error
  */
-router.get('/search', productController.searchProducts);
+
+router.post('/search', productController.searchProducts);
 
 
 /**
@@ -79,5 +76,22 @@ router.get('/search', productController.searchProducts);
  *         description: Product not found
  */
 router.get('/detail', productController.getProductDetail);
+
+/**
+ * @swagger
+ * /api/products/top-selling:
+ *   get:
+ *     summary: Get top-selling products of the week
+ *     description: Retrieve a list of the top-selling products within the last 7 days, ordered by sales volume
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: List of top-selling products retrieved successfully
+ *       400:
+ *         description: Invalid request parameters
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/top-selling', productController.getTopSellingProducts);
 
 export default router;

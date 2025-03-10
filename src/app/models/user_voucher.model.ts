@@ -6,7 +6,7 @@ interface IUserVoucher {
   id?: number;
   userId?: number;
   voucherId?: number;
-  isUsed?: boolean;
+  isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -39,7 +39,7 @@ class UserVoucher extends Model<IUserVoucher> {
     allowNull: true,
     defaultValue: false,
   })
-  isUsed!: boolean;
+  isActive!: boolean;
 }
 
 export { UserVoucher, IUserVoucher };

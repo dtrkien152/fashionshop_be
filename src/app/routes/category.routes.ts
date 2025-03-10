@@ -1,6 +1,6 @@
-import { container } from "../config";
-import { Router } from "express";
-import CategoryController from "../controllers/category.controller";
+import { container } from '../config';
+import { Router } from 'express';
+import CategoryController from '../controllers/category.controller';
 
 const categoryController = container.resolve(CategoryController);
 const router = Router();

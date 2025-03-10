@@ -4,3 +4,4 @@ export { default as ProductController } from './product.controller';
 export { default as OrderController } from './order.controller';
 export { default as VoucherController } from './voucher.controller';
 export { default as ShipFeeController } from './ship_fee.controller';
+export { default as CartController } from './cart.controller';

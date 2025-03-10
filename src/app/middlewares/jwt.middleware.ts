@@ -18,16 +18,17 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<a
       return res.status(401).json({ message: 'Unauthorized!' });
     }
     req.session['userId'] = decoded.sub;
+    req.session['email'] = decoded['email'];
+    req.session['role'] = decoded['role'];
     next();
   });
 };
 
 // ✅ Kiểm tra quyền
 const checkRole = (roles: string[]) => {
-
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const role = await authService.getRole(req.session['userId']);
+      const role = req.session['role'];
       if (roles.includes(role)) {
         return next();
       }

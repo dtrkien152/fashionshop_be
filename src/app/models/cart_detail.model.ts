@@ -1,9 +1,8 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { ProductSubDetail } from './product_sub_detail.model';
 import { Cart } from './cart.model';
 
 interface ICartDetail {
-  id?: number;
   cartId?: number;
   productSubDetailId?: number;
   unit?: number;
@@ -13,13 +12,7 @@ interface ICartDetail {
 
 @Table({ tableName: 'cart_detail', timestamps: true })
 class CartDetail extends Model<ICartDetail> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
-
+  @PrimaryKey
   @ForeignKey(() => Cart)
   @Column({
     type: DataType.INTEGER,
@@ -27,6 +20,7 @@ class CartDetail extends Model<ICartDetail> {
   })
   cartId!: number;
 
+  @PrimaryKey
   @ForeignKey(() => ProductSubDetail)
   @Column({
     type: DataType.INTEGER,

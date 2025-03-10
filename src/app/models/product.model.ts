@@ -1,6 +1,14 @@
-import {BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table} from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { Category } from './category.model';
-import {ProductSubDetail} from "./product_sub_detail.model";
+import { ProductSubDetail } from './product_sub_detail.model';
 
 interface IProduct {
   id?: number;
@@ -13,6 +21,7 @@ interface IProduct {
   originalPrice?: number;
   salePrice?: number;
   description?: string;
+  unitOnOrder?: number;
   isActive?: boolean;
   createdBy?: string;
   updatedBy?: string;
@@ -90,6 +99,12 @@ class Product extends Model<IProduct> {
     defaultValue: false,
   })
   isActive!: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  unitOnOrder!: string;
 
   @Column({
     type: DataType.STRING(50),

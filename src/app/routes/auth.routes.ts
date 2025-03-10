@@ -2,7 +2,7 @@ import express from 'express';
 import { container } from '../config';
 import { AuthController } from '../controllers';
 import { passportMiddleware } from '../middlewares';
-import jwtMiddleware from '../middlewares/jwt.middleware';
+import { jwtMiddleware } from '../middlewares';
 
 const router = express.Router();
 const authController = container.resolve(AuthController);

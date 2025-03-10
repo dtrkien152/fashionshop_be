@@ -1,6 +1,6 @@
 import express from 'express';
 import { container } from '../config';
-import jwtMiddleware from '../middlewares/jwt.middleware';
+import { jwtMiddleware } from '../middlewares';
 import { UserController } from '../controllers';
 
 const router = express.Router();
