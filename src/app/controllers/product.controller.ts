@@ -10,7 +10,7 @@ class ProductController {
 
   searchProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const model = req.query as IProductFilterParams;
+      const model = req.body as IProductFilterParams;
       const result = await this.productService.searchProducts(model);
       res.json(result);
     } catch (error) {

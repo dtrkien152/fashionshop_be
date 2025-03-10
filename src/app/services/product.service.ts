@@ -18,9 +18,9 @@ class ProductService {
                          sortBy = SORT_BY_ENUM.NEWEST,
                          limit = 10,
                          page = 1,
-                       }: IProductFilterParams): Promise<{ data: IProductItemResponse[]; total: number }> {
+                       }: IProductFilterParams): Promise<{ data: IProductItemResponse[]; total: number; totalPages: number }> {
     const where: WhereOptions<IProduct> = {};
-    const offset = (page - 1) * limit;
+    const offset = Math.max(0, (page - 1) * limit);
 
     // Tìm kiếm theo từ khóa
     if (keyword) {
@@ -65,13 +65,16 @@ class ProductService {
       order,
       limit: Number(limit),
       offset,
+      distinct: true, // Đảm bảo đếm chính xác số bản ghi Product
+      logging: console.log, // In ra câu truy vấn SQL
     });
-
     const data: IProductItemResponse[] = rows.map((product) => {
       const colors = [
         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
       ];
-      const sizes = [...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean))];
+      const sizes = [
+        ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
+      ];
       const discountPercentage = Math.round(
         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
       );
@@ -93,9 +96,11 @@ class ProductService {
       };
     });
 
-    return { data, total: count };
-  }
+    // Tính toán số trang tổng cộng
+    const totalPages = Math.ceil(count / limit);
 
+    return { data, total: count, totalPages };
+  }
   async getProductDetail(productId: number) {
     const where: WhereOptions<IProduct> = { id: productId };
 

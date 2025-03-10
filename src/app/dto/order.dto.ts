@@ -7,7 +7,6 @@ export interface OrderCreateRequest {
   products: OrderProduct[];
   payment: OrderPayment;
   voucherCode?: string;
-  cartCode?: string;
 }
 
 export interface OrderPayment {
