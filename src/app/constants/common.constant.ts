@@ -22,6 +22,11 @@ export enum ORDER_STATUS {
   COMPLETED = 'COMPLETED',
 }
 
+export enum PAYMENT_TYPE {
+  VNPAY = 'VNPAY',
+  COD = 'COD'
+}
+
 export enum PAYMENT_STATUS {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',

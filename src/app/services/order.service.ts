@@ -41,7 +41,7 @@ class OrderService {
       code: GenerateUtils.code('ORD'),
       email: email,
       voucherCode: payload.voucherCode,
-      shipFee: shipFee,
+      shipFee: shipFee.fee,
       customerName: payload.customer.name,
       customerAddress: payload.customer.address,
       customerPhone: payload.customer.phone,
@@ -50,18 +50,18 @@ class OrderService {
       paymentStatus: payload.payment.status,
       status: ORDER_STATUS.PENDING,
     };
-    await Order.create(order);
+    const orderCreated = await Order.create(order);
     const orderDetails = await Promise.all(payload.products.map(async (el) => {
       const subProduct = await this.productService.getSubProductByProductIdAndColorAndSize(el.productId, el.color, el.size);
       el.productSubDetailId = subProduct.id;
       return {
-        orderId: order.id,
+        orderId: orderCreated.id,
         productSubDetailId: subProduct.id,
         unit: el.unit,
         totalPrice: el.unit * el.priceInUnit,
       } as IOrderDetail;
     }));
-    await OrderDetail.create(orderDetails);
+    await OrderDetail.bulkCreate(orderDetails);
     return {
       order, orderDetails: payload.products,
     };
