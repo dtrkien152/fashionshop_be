@@ -1,7 +1,8 @@
 import { injectable } from 'tsyringe';
-import { IVoucher, UserVoucher, Voucher } from '../models';
+import { IUserVoucher, IVoucher, User, UserVoucher, Voucher } from '../models';
 import { VoucherCreateRequest, VoucherUpdateRequest } from '../dto';
 import { GenerateUtils } from '../utils';
+import { ROLE } from '../constants';
 
 @injectable()
 class VoucherService {
@@ -21,9 +22,19 @@ class VoucherService {
     return !!userVoucher;
   }
 
-  async add(payload: VoucherCreateRequest) {
+  async add(payload: VoucherCreateRequest, addForAll?: boolean) {
     const voucher: IVoucher = { ...payload, code: GenerateUtils.code('VOU').toUpperCase(), isActive: true };
-    return await Voucher.create(voucher);
+    const voucherAdded = await Voucher.create(voucher);
+    if (!addForAll) {
+      const userIds = await User.findAll({ where: { role: ROLE.USER }, attributes: ['id'] });
+      const userVoucher = userIds.map((u) => ({
+        userId: u.id,
+        voucherId: voucher.id,
+        isActive: false,
+      } as IUserVoucher));
+      await UserVoucher.bulkCreate(userVoucher);
+    }
+    return voucherAdded;
   }
 
   async update(payload: VoucherUpdateRequest) {
@@ -34,12 +45,12 @@ class VoucherService {
     return await voucher.update(payload);
   }
 
-  async deactivate(id: number) {
+  async updateStatusVoucher(id: number, status: boolean) {
     const voucher = await Voucher.findByPk(id);
     if (!voucher) {
       throw new Error('Voucher not found');
     }
-    await voucher.update({ isActive: false });
+    await voucher.update({ isActive: status });
     return { success: true };
   }
 

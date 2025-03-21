@@ -1,9 +1,8 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { User } from './user.model';
 import { Voucher } from './voucher.model';
 
 interface IUserVoucher {
-  id?: number;
   userId?: number;
   voucherId?: number;
   isActive?: boolean;
@@ -13,13 +12,8 @@ interface IUserVoucher {
 
 @Table({ tableName: 'user_voucher', timestamps: true })
 class UserVoucher extends Model<IUserVoucher> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
 
+  @PrimaryKey
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
@@ -27,6 +21,7 @@ class UserVoucher extends Model<IUserVoucher> {
   })
   userId!: number;
 
+  @PrimaryKey
   @ForeignKey(() => Voucher)
   @Column({
     type: DataType.INTEGER,

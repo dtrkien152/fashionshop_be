@@ -44,7 +44,8 @@ class ProductService {
     if (categoryId) {
       where.categoryId = categoryId;
     }
-
+    where.isDelete=false;
+    where.isActive=true;
     // Sắp xếp
     const order: SequelizeOrder = [];
     switch (sortBy) {

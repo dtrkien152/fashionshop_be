@@ -5,6 +5,7 @@ interface ICategory {
   id?: number;
   code?: string;
   name?: string;
+  description?: string;
   thumbnailUrl?: string;
   isActive?: boolean;
   createdAt?: Date;
@@ -33,6 +34,11 @@ class Category extends Model<ICategory> {
   })
   name!: string;
 
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: true,
+  })
+  description!: string;
   @Column({
     type: DataType.STRING(500),
     allowNull: true,

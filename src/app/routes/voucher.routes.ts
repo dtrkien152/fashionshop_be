@@ -19,7 +19,7 @@ router.post('', jwtMiddleware.verifyToken, voucherController.addVoucher);
 
 router.put('', jwtMiddleware.verifyToken, voucherController.updateVoucher);
 
-router.delete('/:id', jwtMiddleware.verifyToken, voucherController.deactivateVoucher);
+router.put('/:id', jwtMiddleware.verifyToken, voucherController.updateStatusVoucher);
 
 router.get('/my-voucher', jwtMiddleware.verifyToken, voucherController.getMyVoucher);
 

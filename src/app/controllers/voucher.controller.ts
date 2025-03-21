@@ -22,7 +22,8 @@ class VoucherController {
   addVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const payload: VoucherCreateRequest = req.body;
-      const results = await this.voucherService.add(payload);
+      const addForAll = req.query['addForAll'] == 'true';
+      const results = await this.voucherService.add(payload, addForAll);
       return res.json(results);
     } catch (error) {
       next(error);
@@ -39,11 +40,12 @@ class VoucherController {
     }
   };
 
-  deactivateVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  updateStatusVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { id } = req.params;
+      const status = req.query.status === 'true';
       if (!id) throw new BadRequestError('Voucher id is required');
-      const results = await this.voucherService.deactivate(+id);
+      const results = await this.voucherService.updateStatusVoucher(+id, !!status);
       return res.json(results);
     } catch (error) {
       next(error);

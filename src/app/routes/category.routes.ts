@@ -26,4 +26,14 @@ const router = Router();
  */
 router.get('/getAll', categoryController.getAllCategory);
 
+
+// Lấy danh sách danh mục kèm số lượng sản phẩm
+router.post('/manager/search', categoryController.searchCategoriesForAdmin);
+
+// Tạo mới danh mục
+router.post('/manager/create', categoryController.createCategory);
+
+// Cập nhật danh mục
+router.put('/manager/update/:id', categoryController.updateCategory);
+
 export default router;
