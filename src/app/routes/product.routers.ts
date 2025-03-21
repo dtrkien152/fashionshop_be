@@ -1,9 +1,11 @@
-import { Router } from 'express';
+import { RequestHandler, Router } from 'express';
 import { container } from '../config';
 import { ProductController } from '../controllers';
+import multer from 'multer';
 
 const productController = container.resolve(ProductController);
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() }); // Lưu vào bộ nhớ để upload lên Azure
 
 /**
  * @swagger
@@ -179,5 +181,18 @@ router.post('/search-for-admin', productController.searchProductsAdmin);
 router.put('/update-status/:id', productController.updateStatus);
 
 router.post('/create', productController.createProducts);
+
+router.get('/get-by-id/:id', productController.getProductById);
+
+router.put(
+  '/update',
+  upload.fields([
+    { name: 'thumbnail', maxCount: 1 },
+    { name: 'images', maxCount: 5 },
+  ]),
+  productController.updateProduct as RequestHandler
+);
+router.delete('/delete/:id', productController.deleteProduct);
+router.get('/countProducts', productController.countProducts);
 
 export default router;

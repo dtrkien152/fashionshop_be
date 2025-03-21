@@ -11,6 +11,7 @@ import {
 } from '../dto/product.dto';
 import { SORT_BY_ENUM } from '../constants';
 import { Sequelize } from 'sequelize-typescript';
+import { sequelize } from '../config';
 
 @injectable()
 class ProductService {
@@ -420,15 +421,17 @@ class ProductService {
                                  sortBy = SORT_BY_ENUM.NEWEST,
                                  limit = 10,
                                  page = 1,
+                                 isDelete = false, // Thêm isDelete, mặc định lấy tất cả nếu null
+                                 isActive = null, // Thêm isActive, mặc định lấy tất cả nếu null
                                }: IProductFilterParams): Promise<{
     data: IProductItem2Response[];
     total: number;
-    totalPages: number
+    totalPages: number;
   }> {
     const where: any = {};
     const offset = Math.max(0, (Number(page) - 1) * Number(limit));
 
-    // Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
+    // 🔍 Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
     if (keyword) {
       where[Op.or] = [
         { name: { [Op.like]: `%${keyword}%` } },
@@ -436,12 +439,22 @@ class ProductService {
       ];
     }
 
-    // Lọc theo category
+    // 📂 Lọc theo category
     if (categoryId) {
       where.categoryId = Number(categoryId);
     }
 
-    // Sắp xếp
+    // ✅ Áp dụng filter isDelete nếu có giá trị (không null)
+    if (isDelete !== null) {
+      where.isDelete = isDelete;
+    }
+
+    // ✅ Áp dụng filter isActive nếu có giá trị (không null)
+    if (isActive !== null) {
+      where.isActive = isActive;
+    }
+
+    // 🔀 Sắp xếp theo lựa chọn
     const order: any = [];
     switch (sortBy) {
       case 'price_asc':
@@ -461,7 +474,7 @@ class ProductService {
         break;
     }
 
-    // Truy vấn sản phẩm
+    // 🚀 Truy vấn sản phẩm
     const { rows, count } = await Product.findAndCountAll({
       where,
       include: [
@@ -474,6 +487,7 @@ class ProductService {
       distinct: true,
     });
 
+    // 🔄 Xử lý dữ liệu trả về
     const data: IProductItem2Response[] = rows.map((product) => {
       const colors = [
         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
@@ -489,7 +503,6 @@ class ProductService {
         0,
       );
 
-
       return {
         id: product.id,
         category: product.Category?.name || 'Unknown',
@@ -502,6 +515,8 @@ class ProductService {
         discountPercentage: discountPercentage > 0 ? `${discountPercentage}%` : '0%',
         thumbnailUrl: product.thumbnailUrl,
         imageUrls: product.imageUrls || [],
+        isDelete: product.isDelete,
+        isActive: product.isActive,
         colors,
         size: sizes,
       };
@@ -513,11 +528,11 @@ class ProductService {
       totalPages: Math.ceil(count / Number(limit)),
     };
   }
-
-  catch(error) {
+  catch (error) {
     console.error('Error in searchProductsForAdmin:', error);
-    return [];
+    return { data: [], total: 0, totalPages: 0 };
   }
+
 
   async updateStatus(productId: number, status: boolean) {
     const product = await Product.findByPk(productId);
@@ -544,7 +559,7 @@ class ProductService {
         createdBy: 'admin',
         updatedBy: 'admin',
       },
-      { transaction }
+      { transaction },
     );
 
     // Lưu danh sách biến thể (không có quantity)
@@ -558,11 +573,138 @@ class ProductService {
           createdBy: 'admin',
           updatedBy: 'admin',
         })),
-        { transaction }
+        { transaction },
       );
     }
 
     await transaction?.commit();
+  }
+
+  async getProductByIdAdmin(id: number) {
+    // Tìm sản phẩm theo ID
+    const where={id};
+    const product = await Product.findOne({
+      where: where,
+      include: [
+        {
+          model: Category,
+          attributes: ['id', 'name'], // Lấy thông tin danh mục
+        },
+        {
+          model: ProductSubDetail,
+          attributes: ['id', 'size', 'color', 'isActive'],
+          include: [
+            {
+              model: Stock,
+              attributes: ['siteId', 'unit'], // Lấy thông tin tồn kho theo từng địa điểm
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!product) {
+     throw ('Sản phẩm không tồn tại' );
+    }
+
+    // Xử lý tổng số lượng sản phẩm trong kho
+    const productData = product; // Chuyển về object để dễ xử lý
+    productData.ProductSubDetails = productData?.ProductSubDetails.map((subDetail: any) => {
+      const totalQuantity = subDetail.Stocks.reduce((sum: number, stock: any) => sum + stock.unit, 0);
+      return { ...subDetail, totalQuantity };
+    });
+    return productData;
+  }
+
+  async updateProduct(productId: number, updateData: any) {
+    const transaction = await Product.sequelize?.transaction();
+    try {
+      // Tìm sản phẩm cần cập nhật
+      const product = await Product.findByPk(productId);
+      if (!product) {
+        throw new Error('Sản phẩm không tồn tại');
+      }
+
+      // Cập nhật thông tin sản phẩm
+      await product.update(
+        {
+          name: updateData.productName,
+          categoryId: updateData.categoryId,
+          originalPrice: updateData.originalPrice,
+          salePrice: updateData.salePrice,
+          description: updateData.description,
+          thumbnailUrl: updateData.thumbnailUrl,
+          imageUrls: updateData.imageUrls,
+          updatedBy: 'admin', // Cập nhật thông tin người sửa đổi
+        },
+        { transaction },
+      );
+
+      // Xử lý cập nhật biến thể sản phẩm (sub-products)
+      if (Array.isArray(updateData.subProducts)) {
+        await Promise.all(
+          updateData.subProducts.map(async (sub) => {
+            const where={ productId, color: sub.color, size: sub.size };
+            const existingSubProduct = await ProductSubDetail.findOne({
+              where: where,
+            });
+
+            if (existingSubProduct) {
+              // Cập nhật biến thể hiện có
+              await existingSubProduct.update(
+                { isActive: sub.isActive },
+                { transaction },
+              );
+            } else {
+              // Tạo biến thể mới
+              await ProductSubDetail.create(
+                {
+                  productId,
+                  color: sub.color,
+                  size: sub.size,
+                  isActive: sub.isActive,
+                  createdBy: 'admin',
+                  updatedBy: 'admin',
+                },
+                { transaction },
+              );
+            }
+          }),
+        );
+      }
+
+      await transaction?.commit();
+      return product;
+    } catch (error) {
+      await transaction?.rollback();
+      throw error;
+    }
+  }
+  async deleteProductById(productId: number) {
+    // Kiểm tra xem sản phẩm có tồn tại không
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      throw new Error('Sản phẩm không tồn tại');
+    }
+
+    // Đánh dấu sản phẩm là đã xóa
+    await product.update({ isDelete: true });
+
+    const where={ productId };
+    // Cập nhật tất cả sub-product thành isActive = false (status = 0)
+    await ProductSubDetail.update({ isActive: false }, { where: where });
+
+    return { message: 'Sản phẩm đã được đánh dấu là đã xóa' };
+  }
+  /**
+   * Lấy số lượng sản phẩm theo trạng thái isDelete
+   */
+  async countProducts() {
+    const total = await Product.count();
+    const available = await Product.count({ group: undefined, where: { isDelete: false } });
+    const deleted = await Product.count({ group: undefined, where: { isDelete: true } });
+
+    return { total, available, deleted };
   }
 }
 

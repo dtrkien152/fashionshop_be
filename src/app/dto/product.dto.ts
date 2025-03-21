@@ -6,6 +6,8 @@ export interface IProductFilterParams {
   sortBy?: SORT_BY_ENUM;
   limit?: number;
   page?: number;
+  isDelete?:boolean;
+  isActive?:boolean;
 }
 
 export interface IProductSubDetailResponse {
@@ -59,6 +61,8 @@ export interface IProductItem2Response {
   unitInStock?: number; //tổng unit on stock cac sub product
   unitOnOrder?: number;
   status?: boolean;
+  isDelete?: boolean;
+  isActive?: boolean;
   created_date?: boolean;
   created_by?: string;
   colors?: string[]; // Các thuộc tính của subproduct

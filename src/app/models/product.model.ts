@@ -23,6 +23,7 @@ interface IProduct {
   description?: string;
   unitOnOrder?: number;
   isActive?: boolean;
+  isDelete?: boolean;
   createdBy?: string;
   updatedBy?: string;
   createdAt?: Date;
@@ -111,6 +112,13 @@ class Product extends Model<IProduct> {
     allowNull: true,
   })
   createdBy!: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: true,
+    defaultValue: false,
+  })
+  isDelete!: boolean;
 
   @Column({
     type: DataType.STRING(50),
