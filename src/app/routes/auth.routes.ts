@@ -1,11 +1,14 @@
 import express from 'express';
 import { container } from '../config';
-import { AuthController } from '../controllers';
+import { AuthController, UserController } from '../controllers';
 import { passportMiddleware } from '../middlewares';
 import { jwtMiddleware } from '../middlewares';
+import passport from 'passport';
 
 const router = express.Router();
 const authController = container.resolve(AuthController);
+const userController = container.resolve(UserController);
+
 /**
  * @swagger
  * tags:
@@ -117,8 +120,25 @@ router.get('/google', passportMiddleware.authenticate('google', { scope: ['profi
  */
 router.get(
   '/google/callback',
-  passportMiddleware.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    failureRedirect: 'http://localhost:3000/login',
+    session: false, // Đặt session false nếu dùng JWT thay vì cookie
+  }),
   authController.signInWithGoogle,
 );
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Lấy thông tin người dùng hiện tại (Google SSO)
+ *     description: API này trả về thông tin người dùng sau khi xác thực thành công bằng Google SSO.
+ *     responses:
+ *       200:
+ *         description: Thông tin người dùng
+ */
+router.get('/me',jwtMiddleware.verifyToken, userController.getUserProfile);
+
 
 export default router;

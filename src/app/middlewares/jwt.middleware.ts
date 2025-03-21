@@ -7,7 +7,7 @@ import { ROLE } from '../constants';
 const authService = container.resolve(AuthService);
 
 const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<any> | void => {
-  let token = req.session['token'];
+  let token = req.header("Authorization")?.split(" ")[1]; // Expecting 'Bearer <token>'
 
   if (!token) {
     return Promise.resolve(res.status(403).json({ message: 'No token provided!' }));
@@ -17,7 +17,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<a
     if (err) {
       return res.status(401).json({ message: 'Unauthorized!' });
     }
-    req.session['userId'] = decoded.sub;
+    req.session['userId'] = Number(decoded.sub);
     req.session['email'] = decoded['email'];
     req.session['role'] = decoded['role'];
     next();

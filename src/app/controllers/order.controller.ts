@@ -14,7 +14,7 @@ class OrderController {
   createMyOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const payload: OrderCreateRequest = req.body;
-      const { email } = req.session['email'];
+      const email = req.session['email'];
       const results = await this.orderService.create(email as string, payload);
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
@@ -52,7 +52,7 @@ class OrderController {
 
   getAllMyOrders = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { email } = req.session['email'];
+      const email = req.session['email'];
       const filterParams = req.query as OrderFilter;
       filterParams.email = email;
       const results = await this.orderService.getAll(filterParams);
@@ -66,6 +66,16 @@ class OrderController {
     try {
       const filterParams = req.query as OrderFilter;
       const results = await this.orderService.getAll(filterParams);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const orderCode = req.params['orderCode'];
+      const results = await this.orderService.getOrderByOrderCode(orderCode);
       return res.json(results);
     } catch (error) {
       next(error);

@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
 import { ENV_CONFIG } from './env.config';
 import {
-  Blog,
-  BlogTag,
+  Post,
+  PostCategory,
   Cart,
   CartDetail,
   Category,
@@ -53,7 +53,7 @@ const sequelize = new Sequelize(
       collate: 'utf8mb4_unicode_ci',
     },
     models: [
-      Blog, BlogTag, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
+      Post, PostCategory, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
       Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
       ReturnOrder, ShipInfo, Site, Stock, Tag, User, UserAddress, UserVoucher, Voucher,
     ],

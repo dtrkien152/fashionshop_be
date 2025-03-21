@@ -1,4 +1,6 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Post } from './post.model';
+import { Comment } from './comment.model';
 
 interface IUser {
   id?: number;
@@ -87,6 +89,11 @@ class User extends Model<IUser> {
     defaultValue: false,
   })
   isActive!: boolean;
+
+  @HasMany(() => Comment) // Xác định quan hệ
+  comments!: Comment[];
 }
+
+
 
 export { User, IUser };

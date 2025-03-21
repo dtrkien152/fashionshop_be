@@ -10,7 +10,7 @@ class ProductController {
 
   searchProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const model = req.query as IProductFilterParams;
+      const model = req.body as IProductFilterParams;
       const result = await this.productService.searchProducts(model);
       res.json(result);
     } catch (error) {
@@ -45,6 +45,25 @@ class ProductController {
       res.json(result);
     } catch (error) {
       console.error('get top selling products error:', error);
+      next(error);
+    }
+  }
+
+  getRecommendedProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { productId } = req.query;
+
+      const result = await this.productService.getRecommendedProducts({
+        productId: Number(productId),
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Get recommended products error:', error);
       next(error);
     }
   };

@@ -1,19 +1,9 @@
-import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, Model, Table, BelongsTo } from 'sequelize-typescript';
 import { User } from './user.model';
-import { Blog } from './blog.model';
-
-interface IComment {
-  id?: number;
-  userId?: number;
-  blogId?: number;
-  content?: string;
-  isActive?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Post } from './post.model';
 
 @Table({ tableName: 'comment', timestamps: true })
-class Comment extends Model<IComment> {
+class Comment extends Model {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -24,29 +14,35 @@ class Comment extends Model<IComment> {
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: false,
   })
   userId!: number;
 
-  @ForeignKey(() => Blog)
+  @ForeignKey(() => Post)
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: false,
   })
-  blogId!: number;
+  postId!: number;
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: true,
+    allowNull: false,
   })
   content!: string;
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: true,
+    allowNull: false,
     defaultValue: true,
   })
   isActive!: boolean;
+
+  @BelongsTo(() => User) // Fix lỗi quan hệ với User
+  user!: User;
+
+  @BelongsTo(() => Post) // Quan hệ với Post
+  post!: Post;
 }
 
-export { IComment, Comment };
+export { Comment };

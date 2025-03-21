@@ -8,14 +8,16 @@ class ShipFeeService {
   }
 
   getFee = async (totalPrice: number) => {
-    let fee = 0;
+    let fee = 50000;
+    let results: ShipFee;
     const shipFees = await this.getAll();
     for (const shipFee of shipFees) {
-      if (totalPrice >= shipFee.triggerPrice && fee < shipFee.fee) {
-        return fee = shipFee.fee;
+      if (totalPrice >= shipFee.triggerPrice && fee > shipFee.fee) {
+        fee = shipFee.fee;
+        results = shipFee;
       }
     }
-    return fee;
+    return results.toJSON();
   };
 
   create = async (payload: ShipFeeCreateRequest) => {

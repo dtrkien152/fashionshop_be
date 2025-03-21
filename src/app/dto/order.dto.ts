@@ -1,16 +1,18 @@
 import { PageParams } from './paging.dto';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_TYPE } from '../constants';
+import { CartProduct } from './cart.dto';
 
 export interface OrderCreateRequest {
   siteId: number;
   customer: OrderCustomer;
   products: OrderProduct[];
   payment: OrderPayment;
-  voucherCode: string;
+  voucherCode?: string;
+  cartCode?: string;
 }
 
 export interface OrderPayment {
-  type: number;
+  type: PAYMENT_TYPE;
   status: PAYMENT_STATUS;
 }
 
@@ -38,8 +40,31 @@ export interface OrderDetailDto {
 }
 
 export interface OrderFilter extends PageParams {
-  keyword?: string;
+  searchTerm?: string;
+  searchBy?: string;
   email?: string;
   status?: ORDER_STATUS;
   paymentStatus?: PAYMENT_STATUS;
+}
+
+export interface OrderDto {
+  products: CartProduct[];
+  id: number;
+  siteId: number;
+  code: string;
+  email: string;
+  voucherCode: string;
+  shippedAt: Date;
+  shipFee: number;
+  customerName: string;
+  customerAddress: string;
+  customerPhone: string;
+  totalPrice: number;
+  paymentType: string;
+  paymentStatus: string;
+  status: string;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -20,6 +20,12 @@ export enum ORDER_STATUS {
   CONFIRMED = 'CONFIRMED',
   REJECTED = 'REJECTED',
   COMPLETED = 'COMPLETED',
+  RETURN = 'RETURN',
+}
+
+export enum PAYMENT_TYPE {
+  VNPAY = 'VNPAY',
+  COD = 'COD'
 }
 
 export enum PAYMENT_STATUS {
