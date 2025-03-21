@@ -3,6 +3,7 @@ import { IUser, IUserAddress, User, UserAddress } from '../models';
 import { ObjectUtils } from '../utils';
 import { NotFoundError } from '../errors';
 import FileService from './file.service';
+import bcrypt from 'bcryptjs';
 
 @injectable()
 class UserService {
@@ -108,6 +109,22 @@ class UserService {
     await user.update({ avatar });
 
     return avatar; // Trả về URL avatar mới
+  }
+
+  async changePassword(userId: number, oldPassword: any, newPassword: any) {
+    const user = await this.getById(userId);
+
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
+    }
+
+    // 🔑 Kiểm tra mật khẩu
+    const passwordIsValid = bcrypt.compareSync(oldPassword, user.password);
+    if (!passwordIsValid) {
+      throw new NotFoundError('Bạn đã nhập sai password');
+    }
+    await user.update({ password: bcrypt.hashSync(newPassword, 8) });
+    return { success: true };
   }
 }
 

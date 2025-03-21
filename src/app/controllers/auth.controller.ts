@@ -2,7 +2,8 @@ import { inject, injectable } from 'tsyringe';
 import { AuthService, MailService, OtpService, UserService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { ACTION } from '../constants';
-import { BadRequestError } from '../errors';
+import { BadRequestError, NotFoundError } from '../errors';
+import bcrypt from 'bcryptjs';
 
 @injectable()
 class AuthController {
@@ -19,7 +20,7 @@ class AuthController {
       }
       const user = await this.authService.signUp(req.body.fullName, req.body.email, req.body.password);
       const otp = await this.otpService.create(user.id, ACTION.ACTIVE_USER);
-      await this.mailService.sendActivationEmail(user.get('email') as string, otp.code);
+      await this.mailService.sendOtpActivationEmail(user.get('email') as string, otp.code);
       return res.send({ message: 'Đăng ký tài khoản thành công!' });
     } catch (error) {
       next(error);
@@ -75,17 +76,54 @@ class AuthController {
     }
   };
 
-  // getUserProfile = async (req: Request, res: Response): Promise<void> => {
-  //   const user = req.user;
-  //   const data = {
-  //     id: user['id'],
-  //     email: user['email'],
-  //     fullName: user['fullName'],
-  //     role: user['role'],
-  //     avatar: user['avatar'],
-  //   };
-  //   res.json({ data }); // Không cần return
-  // };
+
+  changeMyPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { userId } = req.session;
+      const { oldPassword, newPassword } = req.body;
+      await this.userService.changePassword(userId, oldPassword, newPassword);
+      res.status(200).json({ success: true, message: 'Đổi mật khẩu thành công!' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  sendMailForgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { email } = req.body;
+      const user = await this.userService.getByEmail(email as string);
+      if (!user) {
+        throw new BadRequestError('Email không tồn tại');
+      }
+      const otp = await this.otpService.create(user.id, ACTION.FORGOT_PASSWORD);
+      await this.mailService.sendOtpForgotPassword(email as string, otp.code);
+      res.status(200).json({ success: true, message: 'Mã OTP đã được gửi tới email của bạn' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetForgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { email, code, newPassword } = req.body;
+      // Tìm user với mã kích hoạt
+      const user = await this.userService.getByEmail(email);
+
+      if (!user) {
+        throw new NotFoundError('Tài khoản không tồn tại!');
+      }
+
+      const verify = await this.otpService.verify(user.id, code, ACTION.FORGOT_PASSWORD);
+
+      if (!verify) {
+        throw new BadRequestError('Mã kích hoạt không hợp lệ!');
+      }
+      await user.update({ password: bcrypt.hashSync(newPassword, 8) });
+      res.status(200).json({ success: true, message: 'Đổi mật khẩu thành công!' });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default AuthController;

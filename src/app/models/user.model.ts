@@ -90,8 +90,8 @@ class User extends Model<IUser> {
   })
   isActive!: boolean;
 
-@HasMany(() => Comment)
-comments!: Comment[];
+  @HasMany(() => Comment) // Xác định quan hệ
+  comments!: Comment[];
 }
 
 

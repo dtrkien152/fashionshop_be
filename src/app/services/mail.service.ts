@@ -14,7 +14,7 @@ class MailService {
     this.transporter = TRANSPORTER;
   }
 
-  sendActivationEmail = async (email: string, otp: string) => {
+  sendOtpActivationEmail = async (email: string, otp: string) => {
     try {
       const mailOptions = {
         from: ENV_CONFIG.mail.user,
@@ -58,6 +58,30 @@ class MailService {
     } catch (error) {
       console.error(`❌ Lỗi khi gửi email: ${error.message}`);
       throw new Error('Không thể gửi email chứa mật khẩu.');
+    }
+  };
+
+  sendOtpForgotPassword = async (email: string, otp: string) => {
+    try {
+      const mailOptions = {
+        from: ENV_CONFIG.mail.user,
+        to: email,
+        subject: 'Thay đổi mật khẩu tài khoản của bạn',
+        html: `
+                    <h2>Chào mừng bạn đến với FashionShop!</h2>
+                    <p>Nhấn vào liên kết bên dưới để đổi mật khẩu tài khoản của bạn:</p>
+                    <a href="http://localhost:3000/forgot-password/change-password?email=${email}&code=${otp}">
+                        Thay đổi mật khâẩu
+                    </a>
+                    <p>Nếu bạn không yêu cầu thay đổi mật khẩu, vui lòng bỏ qua email này.</p>
+                `,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Email thay đổi mật khẩu đã gửi tới: ${email}`);
+    } catch (error) {
+      console.error(`❌ Lỗi khi gửi email: ${error.message}`);
+      throw new Error('Không thể gửi email thay đổi mật khẩu.');
     }
   };
 

@@ -4,12 +4,12 @@ import { NextFunction, Request, Response, RequestHandler } from 'express';
 import { ObjectUtils } from '../utils';
 import { UnauthorizedError } from '../errors';
 import { IUserAddress } from '../models';
-import { ValidationError } from 'sequelize';
 
 @injectable()
 class UserController {
 
-  constructor(@inject(UserService) private userService: UserService) {}
+  constructor(@inject(UserService) private userService: UserService) {
+  }
 
   getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -66,7 +66,7 @@ class UserController {
   };
 
   // 🟢 Hàm mới: Lấy thông tin tất cả địa chỉ của người dùng
-  getAddress =async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  getAddress = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { userId } = req.session;
       if (!userId) {
@@ -79,13 +79,13 @@ class UserController {
     }
   };
 
-  createAddress= async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  createAddress = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
-      const model={...req.body,userId:userId};
+      const model = { ...req.body, userId: userId };
       const address = await this.userService.createAddress(model);
       res.status(201).json(address);
     } catch (error) {
@@ -93,7 +93,7 @@ class UserController {
     }
   };
 
-  updateAddress=  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  updateAddress = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
 
       const { userId } = req.session;
@@ -147,7 +147,7 @@ class UserController {
     try {
       const file = req.file;
       if (!file) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({ message: 'No file uploaded' });
       }
       const { userId } = req.session;
       const result = await this.userService.uploadAvatar(userId, req.file.buffer, req.file.mimetype);

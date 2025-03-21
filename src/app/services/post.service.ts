@@ -1,6 +1,8 @@
 import { injectable } from 'tsyringe';
 import { Post, Comment, User, PostCategory } from '../models';
 import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
+import { IMAGE_DEFAULT } from '../constants';
 
 @injectable()
 class PostService {
@@ -13,17 +15,7 @@ class PostService {
         {
           model: PostCategory,
           attributes: ['id', 'name'],
-        },
-        {
-          model: Comment,
-          attributes: ['id', 'userId', 'content', 'createdAt'],
-          include: [
-            {
-              model: User,
-              attributes: ['id', 'username'], // Lấy tên người bình luận
-            },
-          ],
-        },
+        }
       ],
       order: [['createdAt', 'DESC']], // Sắp xếp bài viết mới nhất
       limit: limit, // Lấy 5 bài viết gần nhất
@@ -44,28 +36,31 @@ class PostService {
   }
 
   async getPostsByCategory(params: IPostQueryParams) {
-    const { categoryId, page = 1, size = 10 } = params;
+    const { categoryId, keyword = "", page = 1, size = 10 } = params;
 
     const limit = size;
     const offset = (page - 1) * size;
 
-    const where={ postCategoryId: categoryId, isActive: true };
+    let where: any = { isActive: true };
+
+    // Nếu có categoryId thì lọc theo danh mục
+    if (categoryId) {
+      where.postCategoryId = categoryId;
+    }
+
+    // 🔍 Chỉ tìm theo tiêu đề (`title`)
+    if (keyword.trim()) {
+      where.title = { [Op.like]: `%${keyword}%` }; // Nếu dùng MySQL / MariaDB
+    }
+
     const { rows: posts, count: totalItems } = await Post.findAndCountAll({
-      where: where,
+      where,
       include: [
-        {
-          model: PostCategory,
-          attributes: ['id', 'name'],
-        },
+        { model: PostCategory, attributes: ['id', 'name'] },
         {
           model: Comment,
           attributes: ['id', 'userId', 'content', 'createdAt'],
-          include: [
-            {
-              model: User,
-              attributes: ['id', 'username'],
-            },
-          ],
+          include: [{ model: User, attributes: ['id', 'fullName'] }],
         },
       ],
       order: [['createdAt', 'DESC']],
@@ -81,14 +76,14 @@ class PostService {
       posts: posts.map((post) => ({
         id: post.id,
         title: post.title,
-        code:post.code,
         content: post.content,
         author: post.author,
+        code:post.code,
         thumbnailUrl: post.thumbnailUrl,
         isActive: post.isActive,
         createdAt: post.createdAt,
         categoryId: post.postCategoryId,
-        categoryName: post.category?.name || 'Unknown'
+        categoryName: post.category?.name || 'Unknown',
       })),
     };
   }
@@ -132,7 +127,7 @@ class PostService {
           include: [
             {
               model: User,
-              attributes: ['id', 'username'],
+              attributes: ['id', 'fullName'],
             },
           ],
         },
@@ -157,10 +152,30 @@ class PostService {
         userId: comment.userId,
         fullName: comment.user?.fullName || 'Anonymous',
         content: comment.content,
+        avatar: comment.user?.avatar || IMAGE_DEFAULT,
         createdAt: comment.createdAt,
       })),
     };
+
   }
+  async addComment(postId: number, userId: number, content: string) {
+    // Kiểm tra bài viết có tồn tại không
+    const post = await Post.findByPk(postId);
+    if (!post) {
+      throw new Error("Bài viết không tồn tại");
+    }
+
+    // Thêm bình luận vào DB
+    const newComment = await Comment.create({
+      postId,
+      userId,
+      content,
+      createdAt: new Date(),
+    });
+
+    return newComment;
+  }
+
 }
 
 export default PostService;

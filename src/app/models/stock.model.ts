@@ -1,9 +1,8 @@
-import {BelongsTo, Column, DataType, ForeignKey, Model, Table} from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { Site } from './site.model';
 import { ProductSubDetail } from './product_sub_detail.model';
 
 interface IStock {
-  id?: number;
   siteId?: number;
   productSubDetailId?: number;
   unit?: number;
@@ -13,13 +12,7 @@ interface IStock {
 
 @Table({ tableName: 'stock', timestamps: true })
 class Stock extends Model<IStock> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
-
+  @PrimaryKey
   @ForeignKey(() => Site)
   @Column({
     type: DataType.INTEGER,
@@ -27,6 +20,7 @@ class Stock extends Model<IStock> {
   })
   siteId!: number;
 
+  @PrimaryKey
   @ForeignKey(() => ProductSubDetail)
   @Column({
     type: DataType.INTEGER,
