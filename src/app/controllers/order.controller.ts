@@ -71,6 +71,16 @@ class OrderController {
       next(error);
     }
   };
+
+  getOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const orderCode = req.params['orderCode'];
+      const results = await this.orderService.getOrderByOrderCode(orderCode);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default OrderController;

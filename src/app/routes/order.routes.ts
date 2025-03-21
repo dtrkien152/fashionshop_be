@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('', jwtMiddleware.verifyToken, productController.getAllOrders);
 
+router.get('/tracking/:orderCode', productController.getOrder);
+
 router.post('', productController.createOrder);
 
 router.put('', jwtMiddleware.verifyToken, productController.updateStatusOrder);
