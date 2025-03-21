@@ -19,6 +19,7 @@ import {
   ShipFeeController, CartController,
 } from '../controllers';
 import CategoryController from "../controllers/category.controller";
+import FileService from '../services/file.service';
 
 // Register dependencies
 container.register('Sequelize', { useValue: sequelize });
@@ -32,6 +33,7 @@ container.register('ShipFeeService', { useClass: ShipFeeService });
 container.register('OrderService', { useClass: OrderService });
 container.register('CategoryService', { useClass: CategoryService });
 container.register('CartService', { useClass: CartService });
+container.register('FileService', { useClass: FileService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });

@@ -35,4 +35,8 @@ export const ENV_CONFIG = {
     secret: process.env.JWT_SECRET,
     issuer: process.env.JWT_ISSUER,
   },
+  file:{
+    connectionString:process.env.AZURE_STORAGE_CONNECTION_STRING,
+    containerName:process.env.AZURE_CONTAINER_NAME
+  }
 };

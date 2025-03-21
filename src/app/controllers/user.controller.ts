@@ -142,6 +142,20 @@ class UserController {
       next(error);
     }
   };
+
+  uploadAvatar = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      const { userId } = req.session;
+      const result = await this.userService.uploadAvatar(userId, req.file.buffer, req.file.mimetype);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 

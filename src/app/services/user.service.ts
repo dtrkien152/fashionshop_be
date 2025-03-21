@@ -1,11 +1,12 @@
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { IUser, IUserAddress, User, UserAddress } from '../models';
 import { ObjectUtils } from '../utils';
 import { NotFoundError } from '../errors';
+import FileService from './file.service';
 
 @injectable()
 class UserService {
-  constructor() {
+  constructor(@inject(FileService) private fileService: FileService) {
   }
 
   getByEmail = async (email: string) => {
@@ -64,6 +65,7 @@ class UserService {
     await UserAddress.update({ isDefault: false }, { where: { userId } });
     await UserAddress.update({ isDefault: true }, { where: { id: addressId } });
   }
+
   /**
    * Lấy danh sách địa chỉ của người dùng theo ID người dùng
    * @param {number} userId - ID của người dùng
@@ -82,6 +84,30 @@ class UserService {
       throw new Error('Địa chỉ không tồn tại!');
     }
     await address.destroy();
+  }
+
+  /**
+   * Upload avatar cho user và cập nhật vào database
+   * @param {number} userId - ID của user
+   * @param {Buffer} fileBuffer - Dữ liệu file avatar dưới dạng Buffer
+   * @param {string} mimeType - Kiểu file (MIME type)
+   * @returns {Promise<string>} - URL của avatar mới
+   */
+  async uploadAvatar(userId: number, fileBuffer: Buffer, mimeType: string): Promise<string> {
+    // Kiểm tra xem user có tồn tại không
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
+    }
+
+    // Upload avatar lên Azure
+    const fileName = `avatar-${userId}-${Date.now()}.jpg`; // Tên file theo ID user
+    const avatar = await this.fileService.uploadFileToAzure(fileBuffer, mimeType, fileName);
+
+    // Cập nhật URL avatar vào database
+    await user.update({ avatar });
+
+    return avatar; // Trả về URL avatar mới
   }
 }
 

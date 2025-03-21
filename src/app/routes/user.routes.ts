@@ -2,10 +2,10 @@ import express from 'express';
 import { container } from '../config';
 import { jwtMiddleware } from '../middlewares';
 import { UserController } from '../controllers';
-
+import multer from "multer"
 const router = express.Router();
 const userController = container.resolve(UserController);
-
+ const  upload=multer();
 /**
  * @swagger
  * tags:
@@ -186,4 +186,6 @@ router.get('/address', jwtMiddleware.verifyToken, userController.getAddress);
 // Xóa địa chỉ người dùng
 router.delete('/address/:id',jwtMiddleware.verifyToken, userController.deleteAddress);
 
+// Xóa địa chỉ người dùng
+router.post('/upload-avatar',upload.single('file'),jwtMiddleware.verifyToken, userController.uploadAvatar);
 export default router;
