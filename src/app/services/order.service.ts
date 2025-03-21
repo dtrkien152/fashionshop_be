@@ -3,7 +3,7 @@ import { OrderCreateRequest, OrderDto, OrderFilter } from '../dto/order.dto';
 import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
 import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
-import { ORDER_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
@@ -82,6 +82,12 @@ class OrderService {
       order, orderDetails: payload.products,
     };
   };
+
+  async updateStatusPayment(code: string, paymentStatus: PAYMENT_STATUS) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    return await order.update({ paymentStatus });
+  }
 
   async updateStatusOrder(code: string, status: ORDER_STATUS) {
     const order = await Order.findOne({ where: { code } });

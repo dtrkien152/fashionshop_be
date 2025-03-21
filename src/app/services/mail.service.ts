@@ -1,14 +1,13 @@
 import { injectable } from 'tsyringe';
 import nodemailer from 'nodemailer';
 import { ENV_CONFIG, TRANSPORTER } from '../config';
-import { IOrder, IOrderDetail } from '../models';
+import { IOrder } from '../models';
 import { OrderProduct } from '../dto/order.dto';
 
 @injectable()
 class MailService {
   private transporter: nodemailer.Transporter;
   private LOGO_URL: string = '';
-  private TRACKING_URL: string = '';
 
   constructor() {
     this.transporter = TRANSPORTER;
@@ -123,7 +122,7 @@ class MailService {
             <h3 style="color: #e74c3c; text-align: right; margin-top: 10px;">💰 Tổng thanh toán: ${order.totalPrice + order.shipFee} VND</h3>
 
             <div style="text-align: center; margin-top: 20px;">
-                <a href="${this.TRACKING_URL}" style="background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+                <a href="http://localhost:3000/order/tracking/${order.code}" style="background-color: #28a745; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
                     Theo dõi đơn hàng
                 </a>
             </div>

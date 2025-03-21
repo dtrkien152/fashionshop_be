@@ -4,4 +4,5 @@ export * from './mail.config';
 export * from './sequelize.config';
 export * from './session.config';
 export * from './swagger.config';
+export * from './vnpay.config';
 

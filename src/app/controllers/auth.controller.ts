@@ -76,7 +76,6 @@ class AuthController {
     }
   };
 
-
   changeMyPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { userId } = req.session;

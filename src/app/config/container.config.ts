@@ -6,7 +6,7 @@ import {
   OrderService,
   OtpService, PostService,
   ProductService, ShipFeeService,
-  UserService,
+  UserService, VNPayService,
   VoucherService,
 } from '../services';
 import { sequelize } from './sequelize.config';
@@ -35,6 +35,7 @@ container.register('CategoryService', { useClass: CategoryService });
 container.register('CartService', { useClass: CartService });
 container.register('FileService', { useClass: FileService });
 container.register('PostService', { useClass: PostService });
+container.register('VNPayService', { useClass: VNPayService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });

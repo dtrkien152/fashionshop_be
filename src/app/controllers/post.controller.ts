@@ -44,6 +44,8 @@ class PostController {
     }
   };
 
+
+
   getAllcategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const result = await this.postService.getAllCategoriesWithPostCount();

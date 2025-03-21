@@ -1,15 +1,29 @@
 import { inject, injectable } from 'tsyringe';
-import { MailService, OrderService } from '../services';
+import { MailService, OrderService, VNPayService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { OrderCreateRequest, OrderFilter } from '../dto/order.dto';
-import { ORDER_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 
 @injectable()
 class OrderController {
   constructor(@inject(OrderService) private orderService: OrderService,
-              @inject(MailService) private mailService: MailService) {
+              @inject(MailService) private mailService: MailService,
+              @inject(VNPayService) private vnPayService: VNPayService) {
   }
+
+  verifyPayment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const query = req.query;
+      const results = this.vnPayService.verifyReturnUrl(query);
+      if (results.isVerified && results.isSuccess) {
+        await this.orderService.updateStatusPayment(results.orderCode, PAYMENT_STATUS.PAID);
+      }
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   createMyOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -19,7 +33,8 @@ class OrderController {
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
       });
-      return res.json(results.order);
+      const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.totalPrice, req.ip);
+      return res.json({ order: results.order, paymentUrl });
     } catch (error) {
       next(error);
     }
@@ -34,7 +49,7 @@ class OrderController {
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
       });
-      return res.json(results.order);
+      return res.json({ order: results.order });
     } catch (error) {
       next(error);
     }

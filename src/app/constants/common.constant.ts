@@ -30,6 +30,6 @@ export enum PAYMENT_TYPE {
 
 export enum PAYMENT_STATUS {
   PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
+  PAID = 'PAID',
 }
 export const IMAGE_DEFAULT='https://cdn.vectorstock.com/i/750p/92/16/default-profile-picture-avatar-user-icon-vector-46389216.avif'

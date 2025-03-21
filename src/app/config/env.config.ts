@@ -38,5 +38,9 @@ export const ENV_CONFIG = {
   file:{
     connectionString:process.env.AZURE_STORAGE_CONNECTION_STRING,
     containerName:process.env.AZURE_CONTAINER_NAME
+  },
+  vnpay: {
+    tmnCode: process.env.VNPAY_TMNCODE,
+    hashSecret: process.env.VNPAY_HASH_SECRET
   }
 };
