@@ -19,6 +19,18 @@ class ProductController {
     }
   };
 
+  searchProductsAdmin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const model = req.body as IProductFilterParams;
+      const result = await this.productService.searchProductsForAdmin(model);
+      res.json(result);
+    } catch (error) {
+      console.error('Search Products Error:', error);
+      next(error);
+    }
+  };
+
+
   getProductDetail = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const productId = req.query.productId;
@@ -68,6 +80,22 @@ class ProductController {
     }
   };
 
+
+  updateStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const productId = Number(req.params.id);
+      const { status } = req.body;
+      const result = await this.productService.updateStatus(productId, status);
+      res.json(result);
+    } catch (error) {
+      console.error('Get recommended products error:', error);
+      next(error);
+    }
+  };
 }
 
 export default ProductController;

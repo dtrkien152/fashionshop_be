@@ -3,7 +3,12 @@ import { col, fn, Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
 
 import { Category, IProduct, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { injectable } from 'tsyringe';
-import { IProductDetailResponse, IProductFilterParams, IProductItemResponse } from '../dto/product.dto';
+import {
+  IProductDetailResponse,
+  IProductFilterParams,
+  IProductItem2Response,
+  IProductItemResponse,
+} from '../dto/product.dto';
 import { SORT_BY_ENUM } from '../constants';
 import { Sequelize } from 'sequelize-typescript';
 
@@ -18,7 +23,11 @@ class ProductService {
                          sortBy = SORT_BY_ENUM.NEWEST,
                          limit = 10,
                          page = 1,
-                       }: IProductFilterParams): Promise<{ data: IProductItemResponse[]; total: number; totalPages: number }> {
+                       }: IProductFilterParams): Promise<{
+    data: IProductItemResponse[];
+    total: number;
+    totalPages: number
+  }> {
     const where: WhereOptions<IProduct> = {};
     const offset = Math.max(0, (page - 1) * limit);
 
@@ -84,6 +93,7 @@ class ProductService {
         id: product.id,
         category: product.Category?.name || 'Unknown',
         productName: product.name || 'No name',
+        description: product.description || '...',
         salePrice: product.salePrice,
         originalPrice: product.originalPrice,
         flag: {
@@ -101,6 +111,7 @@ class ProductService {
 
     return { data, total: count, totalPages };
   }
+
   async getProductDetail(productId: number) {
     const where: WhereOptions<IProduct> = { id: productId };
 
@@ -401,6 +412,120 @@ class ProductService {
     }
 
     return categoryProducts;
+  }
+
+  async searchProductsForAdmin({
+                                 keyword,
+                                 categoryId,
+                                 sortBy = SORT_BY_ENUM.NEWEST,
+                                 limit = 10,
+                                 page = 1,
+                               }: IProductFilterParams): Promise<{
+    data: IProductItem2Response[];
+    total: number;
+    totalPages: number
+  }> {
+    const where: any = {};
+    const offset = Math.max(0, (Number(page) - 1) * Number(limit));
+
+    // Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
+    if (keyword) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${keyword}%` } },
+        { code: { [Op.like]: `%${keyword}%` } },
+      ];
+    }
+
+    // Lọc theo category
+    if (categoryId) {
+      where.categoryId = Number(categoryId);
+    }
+
+    // Sắp xếp
+    const order: any = [];
+    switch (sortBy) {
+      case 'price_asc':
+        order.push(['salePrice', 'ASC']);
+        break;
+      case 'price_desc':
+        order.push(['salePrice', 'DESC']);
+        break;
+      case 'newest':
+        order.push(['createdAt', 'DESC']);
+        break;
+      case 'latest':
+        order.push(['createdAt', 'ASC']);
+        break;
+      default:
+        order.push(['createdAt', 'DESC']);
+        break;
+    }
+
+    // Truy vấn sản phẩm
+    const { rows, count } = await Product.findAndCountAll({
+      where,
+      include: [
+        { model: Category, attributes: ['name'] },
+        { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+      ],
+      order,
+      limit: Number(limit),
+      offset,
+      distinct: true,
+    });
+
+    const data: IProductItem2Response[] = rows.map((product) => {
+      const colors = [
+        ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
+      ];
+      const sizes = [
+        ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
+      ];
+      const discountPercentage = product.originalPrice
+        ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)
+        : 0;
+      const unitOnStock = product.ProductSubDetails.reduce(
+        (total, subDetail) => total + (subDetail.Stocks?.reduce((sum, stock) => sum + stock.unit, 0) || 0),
+        0,
+      );
+
+
+      return {
+        id: product.id,
+        category: product.Category?.name || 'Unknown',
+        unitOnOrder: product.unitOnOrder,
+        unitInStock: unitOnStock,
+        productName: product.name || 'No name',
+        description: product.description,
+        salePrice: product.salePrice,
+        originalPrice: product.originalPrice,
+        discountPercentage: discountPercentage > 0 ? `${discountPercentage}%` : '0%',
+        thumbnailUrl: product.thumbnailUrl,
+        imageUrls: product.imageUrls || [],
+        colors,
+        size: sizes,
+      };
+    });
+
+    return {
+      data,
+      total: count,
+      totalPages: Math.ceil(count / Number(limit)),
+    };
+  }
+
+  catch(error) {
+    console.error('Error in searchProductsForAdmin:', error);
+    return [];
+  }
+
+  async updateStatus(productId: number, status: boolean) {
+    const product = await Product.findByPk(productId);
+    if (!product) return null;
+
+    product.isActive = status;
+    await product.save();
+    return product;
   }
 }
 

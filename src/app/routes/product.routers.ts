@@ -134,4 +134,48 @@ router.get('/top-selling', productController.getTopSellingProducts);
  *         description: Lỗi server
  */
 router.get('/recommended', productController.getRecommendedProducts);
+
+
+/**
+ * @swagger
+ * /api/products/search-for-admin:
+ *   post:
+ *     summary: Search and filter products
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keyword:
+ *                 type: string
+ *                 description: Keyword to search products
+ *               categoryId:
+ *                 type: integer
+ *                 description: Category ID to filter products
+ *               sortBy:
+ *                 type: string
+ *                 enum: [newest, price_asc, price_desc, latest]
+ *                 description: Sort by newest, price ascending, or price descending
+ *               limit:
+ *                 type: integer
+ *                 default: 10
+ *                 description: Limit number of results
+ *               page:
+ *                 type: integer
+ *                 default: 1
+ *                 description: Page number for pagination
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       500:
+ *         description: Internal server error
+ */
+
+router.post('/search-for-admin', productController.searchProductsAdmin);
+
+router.put('/update-status/:id', productController.updateStatus);
+
 export default router;

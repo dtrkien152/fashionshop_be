@@ -34,6 +34,7 @@ export interface IProductItemResponse {
   id: number;
   category: string;
   productName: string;
+  description?:string;
   salePrice: number;
   originalPrice: number;
   flag: {
@@ -44,4 +45,22 @@ export interface IProductItemResponse {
   imageUrls: string[]; // Ảnh đầu là thumbnailUrl của product, ảnh sau là 1 ảnh của subproduct
   colors: string[]; // Các thuộc tính của subproduct
   size: string[]; // Các thuộc tính của subproduct
+}
+
+export interface IProductItem2Response {
+  id?: number;
+  category?: string;
+  productName?: string;
+  description?: string;
+  salePrice?: number;
+  originalPrice?: number;
+  discountPercentage?: string;
+  thumbnailUrl?: string;
+  unitInStock?: number; //tổng unit on stock cac sub product
+  unitOnOrder?: number;
+  status?: boolean;
+  created_date?: boolean;
+  created_by?: string;
+  colors?: string[]; // Các thuộc tính của subproduct
+  size?: string[]; // Các thuộc tính của subproduct
 }

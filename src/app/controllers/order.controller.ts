@@ -2,7 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import { MailService, OrderService, VNPayService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { OrderCreateRequest, OrderFilter } from '../dto/order.dto';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 
 @injectable()
@@ -47,8 +47,11 @@ class OrderController {
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
       });
-      const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.totalPrice, req.ip);
-      return res.json({ order: results.order, paymentUrl });
+      if (payload.payment.type === PAYMENT_METHOD.VNPAY) {
+        const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.totalPrice, req.ip);
+        return res.json({ order: results.order, paymentUrl });
+      }
+      return res.json({ order: results.order });
     } catch (error) {
       next(error);
     }
