@@ -10,6 +10,15 @@ class VoucherController {
   constructor(@inject(VoucherService) private voucherService: VoucherService) {
   }
 
+  getAllVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const results = await this.voucherService.getAllVoucher();
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   addVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const payload: VoucherCreateRequest = req.body;

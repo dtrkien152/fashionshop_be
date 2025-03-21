@@ -8,6 +8,10 @@ class VoucherService {
   constructor() {
   }
 
+  async getAllVoucher() {
+    return await Voucher.findAll();
+  }
+
   async getByCode(code: string) {
     return Voucher.findOne({ where: { code, isActive: true } });
   }

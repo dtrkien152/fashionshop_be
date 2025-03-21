@@ -1,7 +1,7 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderDto, OrderFilter } from '../dto/order.dto';
 import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
-import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
+import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
@@ -138,7 +138,7 @@ class OrderService {
       where: whereCondition[Op.and].length ? whereCondition : undefined,
       include: [{
         model: OrderDetail,
-        attributes: ['unit', 'totalPrice'],
+        attributes: ['productSubDetailId', 'unit', 'totalPrice'],
         include: [{
           model: ProductSubDetail,
           attributes: ['color', 'size'],
@@ -158,7 +158,7 @@ class OrderService {
       where: { code: orderCode },
       include: [{
         model: OrderDetail,
-        attributes: ['unit', 'totalPrice'],
+        attributes: ['productSubDetailId', 'unit', 'totalPrice'],
         include: [{
           model: ProductSubDetail,
           attributes: ['color', 'size'],
@@ -192,7 +192,10 @@ class OrderService {
       paymentStatus: order.paymentStatus,
       status: order.status,
       shippedAt: order.shippedAt,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
       products: order.OrderDetails.map((el) => ({
+        productSubDetailId: el.productSubDetailId,
         productId: el.productSubDetail.productId,
         productName: el.productSubDetail.Product.name,
         size: el.productSubDetail.size,

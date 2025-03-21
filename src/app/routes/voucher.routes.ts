@@ -13,6 +13,8 @@ const router = Router();
  *   description: API quản lý thông tin voucher
  */
 
+router.get('', jwtMiddleware.verifyToken, voucherController.getAllVoucher);
+
 router.post('', jwtMiddleware.verifyToken, voucherController.addVoucher);
 
 router.put('', jwtMiddleware.verifyToken, voucherController.updateVoucher);
