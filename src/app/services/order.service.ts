@@ -4,7 +4,7 @@ import { CartService, ProductService, ShipFeeService, StockService, UserService,
 import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
-import { BadRequestError } from '../errors';
+import { BadRequestError, NotFoundError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
 
@@ -203,6 +203,14 @@ class OrderService {
         thumbnailUrl: el.productSubDetail.Product.thumbnailUrl,
       } as CartProduct)),
     } as OrderDto;
+  }
+
+  async getOrderTotalPriceByOrderCode(orderCode: string) {
+    const order = await Order.findOne({ where: { code: orderCode } });
+    if (!order) {
+      throw new NotFoundError('Order not found!');
+    }
+    return order.totalPrice;
   }
 }
 

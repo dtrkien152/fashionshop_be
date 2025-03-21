@@ -18,6 +18,9 @@ router.get('/my-orders', jwtMiddleware.verifyToken, productController.getAllMyOr
 
 router.post('/my-orders', jwtMiddleware.verifyToken, productController.createMyOrder);
 
+router.get('/vnpay/build-url', productController.buildUrlPayment);
+
 router.get('/vnpay/results', productController.verifyPayment);
+
 
 export default router;

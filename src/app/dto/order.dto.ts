@@ -1,5 +1,5 @@
 import { PageParams } from './paging.dto';
-import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_TYPE } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } from '../constants';
 import { CartProduct } from './cart.dto';
 
 export interface OrderCreateRequest {
@@ -12,7 +12,7 @@ export interface OrderCreateRequest {
 }
 
 export interface OrderPayment {
-  type: PAYMENT_TYPE;
+  type: PAYMENT_METHOD;
   status: PAYMENT_STATUS;
 }
 

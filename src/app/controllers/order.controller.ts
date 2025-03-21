@@ -12,6 +12,20 @@ class OrderController {
               @inject(VNPayService) private vnPayService: VNPayService) {
   }
 
+  buildUrlPayment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { orderCode } = req.query;
+      if (!orderCode) {
+        throw new BadRequestError('orderCode not found');
+      }
+      const totalPrice = await this.orderService.getOrderTotalPriceByOrderCode(orderCode as string);
+      const paymentUrl = this.vnPayService.buildUrlPayment(orderCode as string, totalPrice, req.ip);
+      return res.json({ paymentUrl });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   verifyPayment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const query = req.query;
