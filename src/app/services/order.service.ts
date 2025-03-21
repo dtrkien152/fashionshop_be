@@ -1,18 +1,18 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderDto, OrderFilter } from '../dto/order.dto';
-import { CartService, ProductService, ShipFeeService, UserService, VoucherService } from './index';
-import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail } from '../models';
+import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
+import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 import { Op } from 'sequelize';
-import cartService from './cart.service';
 import { CartProduct } from '../dto/cart.dto';
 
 @injectable()
 class OrderService {
   constructor(@inject(delay(() => UserService)) private userService: UserService,
               @inject(delay(() => CartService)) private cartService: CartService,
+              @inject(delay(() => StockService)) private stockService: StockService,
               @inject(delay(() => ProductService)) private productService: ProductService,
               @inject(delay(() => VoucherService)) private voucherService: VoucherService,
               @inject(delay(() => ShipFeeService)) private shipFeeService: ShipFeeService) {
@@ -66,6 +66,15 @@ class OrderService {
       } as IOrderDetail;
     }));
     await OrderDetail.bulkCreate(orderDetails);
+    // const stocks = await Promise.all(orderDetails.map(async (el) => {
+    //   const stock = await this.stockService.getStockByProductSubDetailIdAndSiteId(el.productSubDetailId, payload.siteId);
+    //   if (stock.unit < el.unit) {
+    //     throw new BadRequestError('Purchase order exceeds stock unit!');
+    //   }
+    //   stock.unit -= el.unit;
+    //   return stock;
+    // }));
+    // await Stock.bulkCreate(stocks);
     if (payload.cartCode) {
       await this.cartService.removeAllCartDetails(payload.cartCode);
     }

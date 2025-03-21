@@ -17,6 +17,7 @@ interface ICommentDetail {
   id: number;
   userId: number;
   fullName: string;
+  avatar: string;
   content: string;
   createdAt: Date;
 }
@@ -39,6 +40,7 @@ interface IPostQueryParams {
   categoryId: number;
   page?: number;
   size?: number;
+  keyword?: string;
 }
 
 interface ICategoryWithPostCount {

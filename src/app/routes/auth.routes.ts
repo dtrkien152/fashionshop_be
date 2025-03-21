@@ -138,7 +138,116 @@ router.get(
  *       200:
  *         description: Thông tin người dùng
  */
-router.get('/me',jwtMiddleware.verifyToken, userController.getUserProfile);
+router.get('/me', jwtMiddleware.verifyToken, userController.getUserProfile);
 
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     description: Allows an authenticated user to change their password.
+ *     tags: [User]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *                 description: The current password of the user.
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password to be set.
+ *     responses:
+ *       200:
+ *         description: Password changed successfully.
+ *       400:
+ *         description: Bad request, possibly invalid input.
+ *       401:
+ *         description: Unauthorized, user not authenticated.
+ *       500:
+ *         description: Internal server error.
+ */
+router.put('/change-password', jwtMiddleware.verifyToken, authController.changeMyPassword);
+
+/**
+ * @swagger
+ * /api/auth/forgot-password/send-mail:
+ *   get:
+ *     summary: Request a password reset OTP
+ *     description: Sends an OTP to the user's email for password reset.
+ *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The email address associated with the user account.
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request, possibly invalid email.
+ *       404:
+ *         description: User with the provided email not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.post('/forgot-password/send-mail', authController.sendMailForgotPassword);
+/**
+ * @swagger
+ * /api/auth/forgot-password/reset-password:
+ *   post:
+ *     summary: Reset password using OTP
+ *     description: Allows a user to reset their password using an OTP received via email.
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user's email address.
+ *               code:
+ *                 type: string
+ *                 description: The OTP code received via email.
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password to be set.
+ *     responses:
+ *       200:
+ *         description: Password changed successfully.
+ *       400:
+ *         description: Bad request, possibly invalid OTP or email.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.post('/forgot-password/reset-password', authController.resetForgotPassword);
 
 export default router;

@@ -1,9 +1,10 @@
 import { inject, injectable } from 'tsyringe';
 import CategoryService from '../services/category.service';
-import { Category } from '../models';
+import { Category, Post } from '../models';
 import { NextFunction, Request, Response } from 'express';
 import categoryService from '../services/category.service';
 import { PostService } from '../services';
+import { UnauthorizedError } from '../errors';
 
 @injectable()
 class PostController {
@@ -29,21 +30,20 @@ class PostController {
 
   getByCategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const categoryId = parseInt(req.params.categoryId);
-      const page = req.query.page ? parseInt(req.query.page as string) : 1;
-      const size = req.query.size ? parseInt(req.query.size as string) : 10;
+      const { categoryId, keyword = "", page = 1, size = 10 } = req.body;
 
-      if (isNaN(categoryId) || categoryId <= 0) {
+      if (categoryId !== null && (isNaN(categoryId) || categoryId <= 0)) {
         return res.status(400).json({ message: 'Invalid categoryId' });
       }
 
-      const result = await this.postService.getPostsByCategory({ categoryId, page, size });
+      const result = await this.postService.getPostsByCategory({ categoryId, keyword, page, size });
 
       return res.json(result);
     } catch (error) {
       next(error);
     }
   };
+
 
 
   getAllcategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -73,7 +73,23 @@ class PostController {
       next(error);
     }
   };
-
+  // ✅ API thêm bình luận
+   addComment=async(req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { postId, content } = req.body;
+      const { userId } = req.session;
+      if (!userId) {
+        throw new UnauthorizedError('Phiên đăng nhập hết hạn');
+      }
+      if (!postId || !content.trim()) {
+        return res.status(400).json({ message: "Thiếu thông tin bình luận" });
+      }
+      const comment = await this.postService.addComment(postId, userId, content);
+      return res.json(comment);
+    } catch (error) {
+      next(error);
+    }
+  }
 
 }
 
