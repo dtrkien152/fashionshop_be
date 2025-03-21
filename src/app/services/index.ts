@@ -9,3 +9,4 @@ export { default as ShipFeeService } from './ship_fee.service';
 export { default as CategoryService } from './category.service';
 export { default as CartService } from './cart.service';
 export { default as FileService } from './file.service';
+export { default as PostService } from './post.service';

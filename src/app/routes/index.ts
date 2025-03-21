@@ -6,3 +6,4 @@ export { default as voucherRoutes } from './voucher.routes';
 export { default as shipFeeRoutes } from './ship_fee.routes';
 export { default as categoryRoutes } from './category.routes';
 export { default as cartRoutes } from './cart.routes';
+export { default as PostRoutes } from './post.routers';

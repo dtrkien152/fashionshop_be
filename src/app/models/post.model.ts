@@ -1,19 +1,22 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, Model, Table, BelongsTo, HasMany } from 'sequelize-typescript';
+import { PostCategory } from './post_category.model';
+import { Comment } from './comment.model';
 
-interface IBlog {
+interface IPost {
   id?: number;
   code?: string;
   title?: string;
   author?: string;
   content?: string;
   thumbnailUrl?: string;
+  postCategoryId?: number;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-@Table({ tableName: 'blog', timestamps: true })
-class Blog extends Model<IBlog> {
+@Table({ tableName: 'post', timestamps: true })  // Đổi tên bảng cho đúng
+class Post extends Model<IPost> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -41,13 +44,13 @@ class Blog extends Model<IBlog> {
   author!: string;
 
   @Column({
-    type: DataType.STRING(5000),
+    type: DataType.TEXT,
     allowNull: true,
   })
   content!: string;
 
   @Column({
-    type: DataType.STRING(50),
+    type: DataType.STRING(255),  // Tăng độ dài URL
     allowNull: true,
   })
   thumbnailUrl!: string;
@@ -58,6 +61,19 @@ class Blog extends Model<IBlog> {
     defaultValue: false,
   })
   isActive!: boolean;
+
+  @ForeignKey(() => PostCategory)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  postCategoryId!: number;
+
+  @BelongsTo(() => PostCategory)  // Định nghĩa quan hệ với PostCategory
+  category!: PostCategory;
+
+  @HasMany(() => Comment)  // Định nghĩa quan hệ với PostCategory
+  comments!: Comment[];
 }
 
-export { IBlog, Blog };
+export { IPost, Post };

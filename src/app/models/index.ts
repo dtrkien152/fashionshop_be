@@ -1,5 +1,5 @@
-export * from "./blog.model";
-export * from "./blog_tag.model";
+export * from "./post.model";
+export * from "./post_category.model";
 export * from "./cart.model";
 export * from "./cart_detail.model";
 export * from "./category.model";

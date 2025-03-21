@@ -6,6 +6,8 @@ interface IUserAddress {
   userId?: number;
   city?: string;
   addressName?: string;
+  receiverName?: string;
+  receiverPhone?: string;
   fullAddress?: string;
   isDefault?: boolean;
   isActive?: boolean;
@@ -34,6 +36,18 @@ class UserAddress extends Model<IUserAddress> {
     allowNull: true,
   })
   city!: string;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: true,
+  })
+  receiverName!: string;
+
+  @Column({
+    type: DataType.STRING(11),
+    allowNull: true,
+  })
+  receiverPhone!: string;
 
   @Column({
     type: DataType.STRING(100),

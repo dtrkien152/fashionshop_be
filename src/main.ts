@@ -14,6 +14,7 @@ import {
 import swaggerUi from 'swagger-ui-express';
 import { corsMiddleware, errorMiddleware, passportMiddleware } from './app/middlewares';
 import bodyParser from 'body-parser';
+import postRouters from './app/routes/post.routers';
 
 const app = express();
 const port = ENV_CONFIG.server.port || 5000;
@@ -39,6 +40,7 @@ app.use('/api/vouchers', voucherRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/ship-fee', shipFeeRoutes);
 app.use('/api/carts', cartRoutes);
+app.use('/api/posts', postRouters);
 
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);
