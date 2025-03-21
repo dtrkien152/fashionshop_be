@@ -136,5 +136,4 @@ router.get('/gettopPostLastest', postController.getTop8LastestPost);
  *         description: Lỗi máy chủ
  */
 router.post("/add-comment", jwtMiddleware.verifyToken, postController.addComment);
-
 export default router;

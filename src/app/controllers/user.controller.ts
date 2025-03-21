@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { UserService } from '../services';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, RequestHandler } from 'express';
 import { ObjectUtils } from '../utils';
 import { UnauthorizedError } from '../errors';
 import { IUserAddress } from '../models';
