@@ -30,7 +30,7 @@ class PostController {
 
   getByCategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { categoryId, keyword = "", page = 1, size = 10 } = req.body;
+      const { categoryId, keyword = '', page = 1, size = 10 } = req.body;
 
       if (categoryId !== null && (isNaN(categoryId) || categoryId <= 0)) {
         return res.status(400).json({ message: 'Invalid categoryId' });
@@ -43,7 +43,6 @@ class PostController {
       next(error);
     }
   };
-
 
 
   getAllcategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -74,7 +73,7 @@ class PostController {
     }
   };
   // ✅ API thêm bình luận
-   addComment=async(req: Request, res: Response, next: NextFunction): Promise<any> => {
+  addComment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { postId, content } = req.body;
       const { userId } = req.session;
@@ -82,14 +81,14 @@ class PostController {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
       }
       if (!postId || !content.trim()) {
-        return res.status(400).json({ message: "Thiếu thông tin bình luận" });
+        return res.status(400).json({ message: 'Thiếu thông tin bình luận' });
       }
       const comment = await this.postService.addComment(postId, userId, content);
       return res.json(comment);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
 }
 

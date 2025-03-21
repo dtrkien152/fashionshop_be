@@ -6,3 +6,4 @@ export { default as VoucherController } from './voucher.controller';
 export { default as ShipFeeController } from './ship_fee.controller';
 export { default as CartController } from './cart.controller';
 export { default as PostController } from './post.controller';
+export { default as FileController } from './file.controller';

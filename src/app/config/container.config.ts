@@ -16,7 +16,7 @@ import {
   ProductController,
   OrderController,
   VoucherController,
-  ShipFeeController, CartController, PostController,
+  ShipFeeController, CartController, PostController, FileController,
 } from '../controllers';
 import CategoryController from "../controllers/category.controller";
 import FileService from '../services/file.service';
@@ -46,5 +46,6 @@ container.register('ShipFeeController', { useClass: ShipFeeController });
 container.register('CategoryController', { useClass: CategoryController });
 container.register('CartController', { useClass: CartController });
 container.register('PostController', { useClass: PostController });
+container.register('FileController', { useClass: FileController });
 
 export { container };

@@ -59,12 +59,12 @@ class ProductController {
       console.error('get top selling products error:', error);
       next(error);
     }
-  }
+  };
 
   getRecommendedProducts = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const { productId } = req.query;
@@ -84,7 +84,7 @@ class ProductController {
   updateStatus = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     try {
       const productId = Number(req.params.id);
@@ -93,6 +93,21 @@ class ProductController {
       res.json(result);
     } catch (error) {
       console.error('Get recommended products error:', error);
+      next(error);
+    }
+  };
+
+  createProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const payload: { productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts } = req.body;
+
+      if (!payload.thumbnailUrl || !Array.isArray(payload.imageUrls) || payload.imageUrls.length === 0) {
+        return res.status(400).json({ error: 'Thumbnail URL and image URLs are required' });
+      }
+      // Lưu sản phẩm vào database
+      const result=await this.productService.createProduct(payload);
+      res.json(result);
+    } catch (error) {
       next(error);
     }
   };

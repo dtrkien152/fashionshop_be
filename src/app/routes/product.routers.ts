@@ -178,4 +178,6 @@ router.post('/search-for-admin', productController.searchProductsAdmin);
 
 router.put('/update-status/:id', productController.updateStatus);
 
+router.post('/create', productController.createProducts);
+
 export default router;

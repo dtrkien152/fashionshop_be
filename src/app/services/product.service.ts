@@ -527,6 +527,43 @@ class ProductService {
     await product.save();
     return product;
   }
+
+  async createProduct({ productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts }) {
+    const transaction = await Product.sequelize?.transaction();
+    // Lưu sản phẩm vào database
+    const product = await Product.create(
+      {
+        name: productName,
+        categoryId,
+        originalPrice: price,
+        salePrice: price,
+        description,
+        thumbnailUrl,
+        imageUrls, // Lưu mảng URL ảnh phụ
+        isActive: false,
+        createdBy: 'admin',
+        updatedBy: 'admin',
+      },
+      { transaction }
+    );
+
+    // Lưu danh sách biến thể (không có quantity)
+    if (Array.isArray(subProducts) && subProducts.length > 0) {
+      await ProductSubDetail.bulkCreate(
+        subProducts.map(({ color, size }) => ({
+          productId: product.id,
+          color,
+          size,
+          isActive: true,
+          createdBy: 'admin',
+          updatedBy: 'admin',
+        })),
+        { transaction }
+      );
+    }
+
+    await transaction?.commit();
+  }
 }
 
 export default ProductService;
