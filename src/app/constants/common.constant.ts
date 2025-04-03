@@ -1,6 +1,8 @@
 export enum ROLE {
   USER = 'USER',
   ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
+  SALE = 'SALE',
 }
 
 export enum ACTION {
