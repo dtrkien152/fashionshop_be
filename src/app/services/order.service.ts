@@ -1,14 +1,12 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderDto, OrderFilter } from '../dto/order.dto';
 import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
-import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail } from '../models';
+import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
-import { PageResult } from '../dto';
-import moment from 'moment';
 
 @injectable()
 class OrderService {
@@ -94,7 +92,25 @@ class OrderService {
   async updateStatusOrder(code: string, status: ORDER_STATUS) {
     const order = await Order.findOne({ where: { code } });
     if (!order) throw new BadRequestError('Order not found!');
+    if (status == ORDER_STATUS.RETURN) {
+      await ReturnOrder.create({
+        orderId: order.id,
+        totalPrice: order.totalPrice,
+        reason: '',
+      });
+    }
     return await order.update({ status });
+  }
+
+  async handleReturnOrder(code: string, reason: string) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    await ReturnOrder.create({
+      orderId: order.id,
+      totalPrice: order.totalPrice,
+      reason: reason,
+    });
+    return await order.update({ status: ORDER_STATUS.RETURN });
   }
 
   async getAll(filter?: OrderFilter) {

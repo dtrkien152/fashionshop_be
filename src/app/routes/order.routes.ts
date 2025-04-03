@@ -14,6 +14,10 @@ router.post('', productController.createOrder);
 
 router.put('', jwtMiddleware.verifyToken, productController.updateStatusOrder);
 
+router.put('/payment', jwtMiddleware.verifyToken, productController.updateStatusPayment);
+
+router.put('/return', jwtMiddleware.verifyToken, productController.handleReturnOrder);
+
 router.get('/my-orders', jwtMiddleware.verifyToken, productController.getAllMyOrders);
 
 router.post('/my-orders', jwtMiddleware.verifyToken, productController.createMyOrder);

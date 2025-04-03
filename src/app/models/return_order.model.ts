@@ -23,7 +23,7 @@ class ReturnOrder extends Model<IReturnOrder> {
   orderId!: number;
 
   @Column({
-    type: DataType.STRING(6),
+    type: DataType.STRING(512),
     allowNull: true,
   })
   reason!: string;

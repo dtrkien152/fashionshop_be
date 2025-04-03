@@ -82,6 +82,26 @@ class OrderController {
     }
   };
 
+  updateStatusPayment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { code, status } = req.query;
+      const results = await this.orderService.updateStatusPayment(code as string, status as PAYMENT_STATUS);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  handleReturnOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { code, reason } = req.query;
+      const results = await this.orderService.handleReturnOrder(code as string, reason as string);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAllMyOrders = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const email = req.session['email'];
