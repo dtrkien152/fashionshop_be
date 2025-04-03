@@ -1,5 +1,5 @@
 import { delay, inject, injectable } from 'tsyringe';
-import { OrderCreateRequest, OrderDto, OrderFilter } from '../dto/order.dto';
+import { OrderCreateRequest, OrderCustomerFilter, OrderDto, OrderFilter } from '../dto/order.dto';
 import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
 import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
@@ -7,6 +7,7 @@ import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
+import { Sequelize } from 'sequelize-typescript';
 
 @injectable()
 class OrderService {
@@ -247,6 +248,55 @@ class OrderService {
       throw new NotFoundError('Order not found!');
     }
     return order.totalPrice;
+  }
+
+  async getAllCustomerOrders(filter: OrderCustomerFilter) {
+    const likeOp = `%${filter.searchTerm}%`;
+    const pageRequest = PageableUtils.pageRequest(filter.page, filter.limit, filter.orderBy, filter.orderDirection);
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    if (filter.searchTerm) {
+      if (filter.searchBy) {
+        whereCondition[Op.and].push({
+          [filter.searchBy]: { [Op.like]: likeOp },
+        });
+      } else {
+        whereCondition[Op.and].push({
+          [Op.or]: [
+            { email: { [Op.like]: likeOp } },
+          ],
+        });
+      }
+    }
+    if (filter.email) {
+      whereCondition[Op.and].push({
+        email: filter.email,
+      });
+    }
+
+    const count = await Order.count({
+      col: 'email',
+      distinct: true, // Chỉ đếm email duy nhất
+      where: {
+        email: { [Op.ne]: null },
+      },
+    });
+
+    const rows = await Order.findAll({
+      attributes: [
+        'email',
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
+        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+      ],
+      where: whereCondition,
+      group: ['email'],
+      order: [['email', 'DESC']],
+      offset: +pageRequest.offset,
+      limit: +pageRequest.limit,
+      raw: true,
+    });
+    return PageableUtils.pageResponse(filter.page, filter.limit, rows, count);
   }
 }
 

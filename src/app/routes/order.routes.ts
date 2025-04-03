@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('', jwtMiddleware.verifyToken, productController.getAllOrders);
 
+router.get('/customers', jwtMiddleware.verifyToken, productController.getAllCustomerOrders);
+
 router.get('/tracking/:orderCode', productController.getOrder);
 
 router.post('', productController.createOrder);
@@ -25,6 +27,5 @@ router.post('/my-orders', jwtMiddleware.verifyToken, productController.createMyO
 router.get('/vnpay/build-url', productController.buildUrlPayment);
 
 router.get('/vnpay/results', productController.verifyPayment);
-
 
 export default router;

@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { MailService, OrderService, VNPayService } from '../services';
 import { NextFunction, Request, Response } from 'express';
-import { OrderCreateRequest, OrderFilter } from '../dto/order.dto';
+import { OrderCreateRequest, OrderCustomerFilter, OrderFilter } from '../dto/order.dto';
 import { ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '../constants';
 import { BadRequestError } from '../errors';
 
@@ -128,6 +128,16 @@ class OrderController {
     try {
       const orderCode = req.params['orderCode'];
       const results = await this.orderService.getOrderByOrderCode(orderCode);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllCustomerOrders = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const filterParams = req.query as OrderCustomerFilter;
+      const results = await this.orderService.getAllCustomerOrders(filterParams);
       return res.json(results);
     } catch (error) {
       next(error);

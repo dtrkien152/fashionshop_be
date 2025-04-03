@@ -49,6 +49,12 @@ export interface OrderFilter extends PageParams {
   endAt?: string;
 }
 
+export interface OrderCustomerFilter extends PageParams {
+  searchTerm?: string;
+  searchBy?: string;
+  email?: string;
+}
+
 export interface OrderDto {
   products: CartProduct[];
   id: number;
