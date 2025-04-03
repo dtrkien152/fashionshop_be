@@ -1,9 +1,10 @@
 import { injectable } from 'tsyringe';
-import { Order, OrderDetail } from '../models';
+import { Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { BadRequestError } from '../errors';
-import { getISOWeek } from 'date-fns';
+import { differenceInDays, endOfWeek, format, getISOWeek, startOfWeek } from 'date-fns';
+import { StatsFilter } from '../dto';
 
 
 @injectable()
@@ -11,79 +12,74 @@ class StatsService {
   constructor() {
   }
 
-  async getRevenueStats(type: 'day' | 'week' | 'month' | 'year' | string) {
-    let dateFormat: string;
-    let whereCondition: any = {};
-
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Thứ 2 đầu tuần
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ nhật cuối tuần
-    let xField: string[] = []; // Danh sách trục X
-
-    switch (type) {
-      case 'day': {
-        dateFormat = '%Y-%m-%d'; // YYYY-MM-DD
-        whereCondition.createdAt = {
-          [Op.between]: [startOfWeek, endOfWeek], // Lọc theo tuần hiện tại
-        };
-
-        for (let i = 0; i < 7; i++) {
-          let d = new Date(startOfWeek);
-          d.setDate(startOfWeek.getDate() + i);
-          if (d <= today) {
-            xField.push(d.toISOString().split('T')[0]); // Định dạng YYYY-MM-DD
-          }
-        }
-        break;
-      }
-
-      case 'week': {
-        dateFormat = '%Y-%u'; // YYYY-WeekNumber
-        whereCondition.createdAt = {
-          [Op.gte]: new Date(today.getFullYear(), today.getMonth(), 1), // Đầu tháng
-          [Op.lte]: new Date(today.getFullYear(), today.getMonth() + 1, 0), // Cuối tháng
-        };
-
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = today < new Date(today.getFullYear(), today.getMonth() + 1, 0) ? today : new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        const firstWeek = getISOWeek(firstDay) + 1;
-        const lastWeek = getISOWeek(lastDay);
-
-        for (let i = firstWeek; i <= lastWeek; i++) {
-          xField.push(`${today.getFullYear()}-${i.toString().padStart(2, '0')}`);
-        }
-        break;
-      }
-
-      case 'month': {
-        dateFormat = '%Y-%m'; // YYYY-MM
-        whereCondition.createdAt = {
-          [Op.gte]: new Date(today.getFullYear(), 0, 1), // Từ 1/1 đến 31/12 năm hiện tại
-          [Op.lte]: today,
-        };
-
-        for (let i = 1; i <= today.getMonth() + 1; i++) {
-          xField.push(`${today.getFullYear()}-${i.toString().padStart(2, '0')}`);
-        }
-        break;
-      }
-
-      case 'year': {
-        dateFormat = '%Y'; // YYYY
-        const startYear = today.getFullYear() - 4;
-        for (let i = startYear; i <= today.getFullYear(); i++) {
-          xField.push(i.toString());
-        }
-        break;
-      }
-
-      default:
-        throw new BadRequestError('Unknown type ' + type);
+  async getRevenueStats(filter: StatsFilter) {
+    if (!filter.startAt || !filter.endAt || filter.startAt > filter.endAt) {
+      throw new BadRequestError('Invalid date range');
     }
 
+    const daysDiff = differenceInDays(filter.endAt, filter.startAt);
+    let dateFormat: string;
+    let whereCondition: any = {};
+    let periodType = 'DAY';
+    const xField: string[] = [];
+    const weekLabel = new Map<string, string>();
+
+    if (daysDiff <= 7) {
+      // Tìm kiếm theo ngày
+      dateFormat = '%Y-%m-%d';
+      let currentDate = new Date(filter.startAt);
+
+      while (currentDate <= filter.endAt) {
+        xField.push(format(currentDate, 'yyyy-MM-dd')); // YYYY-MM-DD
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      periodType = 'DAY';
+    } else if (daysDiff <= 31) {
+      // Tìm kiếm theo tuần
+      dateFormat = '%Y-%u';
+      let currentWeekStart = startOfWeek(filter.startAt, { weekStartsOn: 1 }); // Bắt đầu từ thứ 2
+      let currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+
+      while (currentWeekStart <= filter.endAt) {
+        xField.push(`${format(currentWeekStart, 'yyyy')}-${getISOWeek(currentWeekStart)}`);
+        weekLabel.set(`${format(currentWeekStart, 'yyyy')}-${getISOWeek(currentWeekStart)}`, `${format(currentWeekStart, 'yyyy-MM-dd')}->${format(currentWeekEnd, 'yyyy-MM-dd')}`);
+        currentWeekStart = new Date(currentWeekEnd);
+        currentWeekStart.setDate(currentWeekEnd.getDate() + 1);
+        currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+      }
+      periodType = 'WEEK';
+    } else if (daysDiff <= 365) {
+      // Tìm kiếm theo tháng
+      dateFormat = '%Y-%m';
+      let currentMonth = new Date(filter.startAt);
+
+      while (currentMonth <= filter.endAt) {
+        xField.push(format(currentMonth, 'yyyy-MM'));
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+      }
+      periodType = 'MONTH';
+    } else {
+      // Tìm kiếm theo năm
+      dateFormat = '%Y';
+      let currentYear = filter.startAt.getFullYear();
+      const endYear = filter.endAt.getFullYear();
+
+      while (currentYear <= endYear) {
+        xField.push(currentYear.toString());
+        currentYear++;
+      }
+      periodType = 'YEAR';
+    }
+
+    whereCondition.createdAt = {
+      [Op.between]: [filter.startAt, filter.endAt],
+    };
+
+    if (filter.siteId) {
+      whereCondition[Op.and].push({
+        siteId: +filter.siteId,
+      });
+    }
 
     const revenueStats = await Order.findAll({
       attributes: [
@@ -99,118 +95,224 @@ class StatsService {
     // 🔹 Ghép dữ liệu vào `xField`, nếu thiếu thì thêm `totalRevenue = 0`
     const revenueMap = new Map(revenueStats.map((item: any) => [item.timePeriod, item.totalRevenue]));
 
-    const result = xField.map(period => ({
-      timePeriod: period,
-      totalRevenue: revenueMap.get(period) || 0,
+    return xField.map(period => ({
+      timePeriod: periodType === 'WEEK' ? weekLabel.get(period) : period,
+      totalRevenue: +revenueMap.get(period) || 0,
     }));
-
-    return { revenueStats: result, xField };
   }
 
-  async getTopSellingProducts(type: 'day' | 'week' | 'month' | 'year' | string) {
-    let dateFormat: string;
-    let whereCondition: any = {};
-
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Thứ 2 đầu tuần
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Chủ nhật cuối tuần
-    let xField: string[] = []; // Danh sách trục X
-
-    switch (type) {
-      case 'day': {
-        dateFormat = '%Y-%m-%d'; // YYYY-MM-DD
-        whereCondition.createdAt = {
-          [Op.between]: [startOfWeek, endOfWeek], // Lọc theo tuần hiện tại
-        };
-
-        for (let i = 0; i < 7; i++) {
-          let d = new Date(startOfWeek);
-          d.setDate(startOfWeek.getDate() + i);
-          if (d <= today) {
-            xField.push(d.toISOString().split('T')[0]); // Định dạng YYYY-MM-DD
-          }
-        }
-        break;
-      }
-
-      case 'week': {
-        dateFormat = '%Y-%u'; // YYYY-WeekNumber
-        whereCondition.createdAt = {
-          [Op.gte]: new Date(today.getFullYear(), today.getMonth(), 1), // Đầu tháng
-          [Op.lte]: new Date(today.getFullYear(), today.getMonth() + 1, 0), // Cuối tháng
-        };
-
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = today < new Date(today.getFullYear(), today.getMonth() + 1, 0) ? today : new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        const firstWeek = getISOWeek(firstDay) + 1;
-        const lastWeek = getISOWeek(lastDay);
-
-        for (let i = firstWeek; i <= lastWeek; i++) {
-          xField.push(`${today.getFullYear()}-${i.toString().padStart(2, '0')}`);
-        }
-        break;
-      }
-
-      case 'month': {
-        dateFormat = '%Y-%m'; // YYYY-MM
-        whereCondition.createdAt = {
-          [Op.gte]: new Date(today.getFullYear(), 0, 1), // Từ 1/1 đến 31/12 năm hiện tại
-          [Op.lte]: today,
-        };
-
-        for (let i = 1; i <= today.getMonth() + 1; i++) {
-          xField.push(`${today.getFullYear()}-${i.toString().padStart(2, '0')}`);
-        }
-        break;
-      }
-
-      case 'year': {
-        dateFormat = '%Y'; // YYYY
-        const startYear = today.getFullYear() - 4;
-        for (let i = startYear; i <= today.getFullYear(); i++) {
-          xField.push(i.toString());
-        }
-        break;
-      }
-
-      default:
-        throw new BadRequestError('Unknown type ' + type);
+  async getTopSellingProducts(filter: StatsFilter) {
+    if (!filter.startAt || !filter.endAt || filter.startAt > filter.endAt) {
+      throw new BadRequestError('Invalid date range');
     }
+    let whereCondition: any = {};
+    whereCondition.createdAt = {
+      [Op.between]: [filter.startAt, filter.endAt],
+    };
+    // Tổng số lượng sản phẩm đã bán
+    const totalSoldData: any = await OrderDetail.findAll({
+      attributes: [[Sequelize.fn('SUM', Sequelize.col('unit')), 'totalSold']],
+      include: [
+        {
+          model: Order,
+          attributes: [],
+          where: whereCondition,
+        },
+      ],
+      raw: true,
+    });
 
+    const totalSold = totalSoldData[0]?.totalSold || 0;
+
+    // Lấy top 10 sản phẩm bán chạy nhất theo Product
     const topProducts = await OrderDetail.findAll({
       attributes: [
-        'productSubDetailId',
-        [Sequelize.fn('DATE_FORMAT', Sequelize.col('order.created_at'), dateFormat), 'timePeriod'],
+        [Sequelize.col('productSubDetail.Product.id'), 'productId'],
         [Sequelize.fn('SUM', Sequelize.col('unit')), 'totalSold'],
+        [Sequelize.col('productSubDetail.Product.name'), 'productName'],
       ],
       include: [
         {
           model: Order,
           attributes: [],
-          where: whereCondition, // Lọc theo ngày/tuần/tháng/năm
+          where: whereCondition,
+        },
+        {
+          model: ProductSubDetail,
+          attributes: [],
+          include: [
+            {
+              model: Product,
+              attributes: [],
+            },
+          ],
         },
       ],
-      group: ['productSubDetailId', 'timePeriod'],
+      group: ['productSubDetail.Product.id', 'productSubDetail.Product.name'],
       order: [[Sequelize.literal('totalSold'), 'DESC']],
-      limit: 10, // Lấy 10 sản phẩm bán chạy nhất
+      limit: 10,
       raw: true,
     });
-    // 🔹 Ghép dữ liệu với `xField`, nếu thiếu thì thêm `totalSold = 0`
-    const productMap = new Map(topProducts.map((item: any) => [`${item.productSubDetailId}-${item.timePeriod}`, item.totalSold]));
-    const topProductIds = [...new Set(topProducts.map((item: any) => item.productSubDetailId))];
 
-    const result = xField.map(period => {
-      return topProductIds.map(id => ({
-        productSubDetailId: id,
-        timePeriod: period,
-        totalSold: productMap.get(`${id}-${period}`) || 0,
-      }));
-    }).flat();
+    // Tổng số lượng của top 10 sản phẩm
+    const topSoldTotal = topProducts.reduce((sum, product: any) => sum + +product.totalSold, 0);
 
-    return { topProducts: result, xField };
+    // Tính phần còn lại (Other)
+    const otherSold = totalSold - topSoldTotal;
+
+    // Chuyển đổi dữ liệu sang định dạng Pie Chart
+    const chartData = topProducts.map((product: any) => ({
+      productName: product.productName,
+      totalSold: product.totalSold,
+      rate: +((product.totalSold / totalSold) * 100).toFixed(2),
+    }));
+
+    // Thêm "Other" nếu có phần còn lại
+    if (otherSold > 0) {
+      chartData.push({
+        productName: 'Other',
+        totalSold: otherSold,
+        rate: +(100 - chartData.reduce((acc, cur) => acc + cur.rate, 0)).toFixed(2),
+      });
+    }
+    return chartData;
+  }
+
+  async getStatsInMonth() {
+    // Xác định thời gian tháng hiện tại và tháng trước
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    // Truy vấn doanh thu & đơn hàng của tháng hiện tại
+    const currentMonthStats = await Order.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
+        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [
+          Sequelize.fn(
+            'COUNT',
+            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
+          ),
+          'totalReturnOrders',
+        ],
+      ],
+      where: {
+        createdAt: {
+          [Op.between]: [startOfCurrentMonth, endOfCurrentMonth],
+        },
+      },
+      raw: true,
+    });
+
+    // Truy vấn doanh thu & đơn hàng của tháng trước
+    const lastMonthStats = await Order.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
+        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [
+          Sequelize.fn(
+            'COUNT',
+            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
+          ),
+          'totalReturnOrders',
+        ],
+      ],
+      where: {
+        createdAt: {
+          [Op.between]: [startOfLastMonth, endOfLastMonth],
+        },
+      },
+      raw: true,
+    });
+
+    // Lấy dữ liệu từ query
+    const current: any = currentMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
+    const last: any = lastMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
+
+    // Tính phần trăm tăng trưởng (tránh chia cho 0)
+    const calculateGrowth = (currentValue: number, lastValue: number) => {
+      if (lastValue === 0) return currentValue > 0 ? 100 : 0;
+      return ((currentValue - lastValue) / lastValue) * 100;
+    };
+    return {
+      currentMonth: {
+        totalOrders: current.totalOrders,
+        totalRevenue: current.totalRevenue,
+        totalReturnOrders: current.totalReturnOrders,
+      },
+      lastMonth: {
+        totalOrders: last.totalOrders,
+        totalRevenue: last.totalRevenue,
+        totalReturnOrders: last.totalReturnOrders,
+      },
+      growth: {
+        orderGrowth: calculateGrowth(current.totalOrders, last.totalOrders),
+        revenueGrowth: calculateGrowth(current.totalRevenue, last.totalRevenue),
+        returnOrderGrowth: calculateGrowth(current.totalReturnOrders, last.totalReturnOrders),
+      },
+    };
+  }
+
+  async getTopStockProduct() {
+    // Lấy tổng số lượng tồn kho của tất cả sản phẩm
+    const totalStock: any = await Stock.findAll({
+      attributes: [[Sequelize.fn('SUM', Sequelize.col('unit')), 'total']],
+      raw: true,
+    });
+
+    const totalStockValue = totalStock[0]?.total || 0;
+
+    // Lấy top 10 sản phẩm có số lượng tồn kho nhiều nhất (gộp theo Product)
+    const topStocks = await Stock.findAll({
+      attributes: [
+        [Sequelize.col('productSubDetail.Product.id'), 'productId'],
+        [Sequelize.fn('SUM', Sequelize.col('unit')), 'totalStock'],
+        [Sequelize.col('productSubDetail.Product.name'), 'productName'],
+      ],
+      include: [
+        {
+          model: ProductSubDetail,
+          attributes: [],
+          include: [
+            {
+              model: Product,
+              attributes: [],
+            },
+          ],
+        },
+      ],
+      group: ['productSubDetail.Product.id', 'productSubDetail.Product.name'],
+      order: [[Sequelize.literal('totalStock'), 'DESC']],
+      limit: 10,
+      raw: true,
+    });
+
+    // Tính tổng số lượng của top 10 sản phẩm
+    const topStockTotal = topStocks.reduce((sum, stock: any) => sum + +stock.totalStock, 0);
+
+    // Tính phần còn lại (Other)
+    const otherStock = totalStockValue - topStockTotal;
+
+    // Chuyển đổi dữ liệu về dạng phù hợp cho Pie Chart
+    const chartData = topStocks.map((stock: any) => ({
+      productName: stock.productName,
+      totalStock: stock.totalStock,
+      rate: +((stock.totalStock / totalStockValue) * 100).toFixed(2),
+    }));
+
+    // Thêm "Other" nếu có phần còn lại
+    if (otherStock > 0) {
+      chartData.push({
+        productName: 'Other',
+        totalStock: otherStock,
+        rate: +(100 - chartData.reduce((acc, cur) => acc + cur.rate, 0)).toFixed(2),
+      });
+    }
+    return chartData;
   }
 }
 

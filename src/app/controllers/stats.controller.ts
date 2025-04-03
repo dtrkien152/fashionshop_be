@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { StatsService } from '../services';
 import { NextFunction, Request, Response } from 'express';
+import { StatsFilter } from '../dto';
 
 @injectable()
 class StatsController {
@@ -9,8 +10,13 @@ class StatsController {
 
   getRevenueStats = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      let { type } = req.query;
-      const results = await this.statsService.getRevenueStats(type as string);
+      const { startAt, endAt, siteId } = req.query;
+      const filterParams = {
+        startAt: new Date(+startAt),
+        endAt: new Date(+endAt),
+        siteId: siteId as string,
+      };
+      const results = await this.statsService.getRevenueStats(filterParams);
       return res.json(results);
     } catch (error) {
       next(error);
@@ -19,8 +25,33 @@ class StatsController {
 
   getTopSellingProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      let { type } = req.query;
-      const results = await this.statsService.getTopSellingProducts(type as string);
+      const { startAt, endAt, siteId } = req.query;
+      const filterParams = {
+        startAt: new Date(+startAt),
+        endAt: new Date(+endAt),
+        siteId: siteId as string,
+      };
+      const results = await this.statsService.getTopSellingProducts(filterParams);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getStatsInMonth = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { siteId } = req.query;
+      const results = await this.statsService.getStatsInMonth();
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getTopStockProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { siteId } = req.query;
+      const results = await this.statsService.getTopStockProduct();
       return res.json(results);
     } catch (error) {
       next(error);
