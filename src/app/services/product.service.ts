@@ -1,7 +1,7 @@
 // src/services/product.service.ts
 import { col, fn, Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
 
-import { Category, IProduct, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
+import { Category, IProduct, IProductSubDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
 import { injectable } from 'tsyringe';
 import {
   IProductDetailResponse,
@@ -12,6 +12,7 @@ import {
 import { SORT_BY_ENUM } from '../constants';
 import { Sequelize } from 'sequelize-typescript';
 import { sequelize } from '../config';
+import { GenerateUtils } from '../utils';
 
 @injectable()
 class ProductService {
@@ -44,8 +45,8 @@ class ProductService {
     if (categoryId) {
       where.categoryId = categoryId;
     }
-    where.isDelete=false;
-    where.isActive=true;
+    where.isDelete = false;
+    where.isActive = true;
     // Sắp xếp
     const order: SequelizeOrder = [];
     switch (sortBy) {
@@ -529,7 +530,8 @@ class ProductService {
       totalPages: Math.ceil(count / Number(limit)),
     };
   }
-  catch (error) {
+
+  catch(error) {
     console.error('Error in searchProductsForAdmin:', error);
     return { data: [], total: 0, totalPages: 0 };
   }
@@ -557,6 +559,7 @@ class ProductService {
         thumbnailUrl,
         imageUrls, // Lưu mảng URL ảnh phụ
         isActive: false,
+        code: GenerateUtils.code('PRD'),
         createdBy: 'admin',
         updatedBy: 'admin',
       },
@@ -583,7 +586,7 @@ class ProductService {
 
   async getProductByIdAdmin(id: number) {
     // Tìm sản phẩm theo ID
-    const where={id};
+    const where = { id };
     const product = await Product.findOne({
       where: where,
       include: [
@@ -605,7 +608,7 @@ class ProductService {
     });
 
     if (!product) {
-     throw ('Sản phẩm không tồn tại' );
+      throw ('Sản phẩm không tồn tại');
     }
 
     // Xử lý tổng số lượng sản phẩm trong kho
@@ -645,7 +648,7 @@ class ProductService {
       if (Array.isArray(updateData.subProducts)) {
         await Promise.all(
           updateData.subProducts.map(async (sub) => {
-            const where={ productId, color: sub.color, size: sub.size };
+            const where = { productId, color: sub.color, size: sub.size };
             const existingSubProduct = await ProductSubDetail.findOne({
               where: where,
             });
@@ -681,6 +684,7 @@ class ProductService {
       throw error;
     }
   }
+
   async deleteProductById(productId: number) {
     // Kiểm tra xem sản phẩm có tồn tại không
     const product = await Product.findByPk(productId);
@@ -691,12 +695,13 @@ class ProductService {
     // Đánh dấu sản phẩm là đã xóa
     await product.update({ isDelete: true });
 
-    const where={ productId };
+    const where = { productId };
     // Cập nhật tất cả sub-product thành isActive = false (status = 0)
     await ProductSubDetail.update({ isActive: false }, { where: where });
 
     return { message: 'Sản phẩm đã được đánh dấu là đã xóa' };
   }
+
   /**
    * Lấy số lượng sản phẩm theo trạng thái isDelete
    */
@@ -706,6 +711,10 @@ class ProductService {
     const deleted = await Product.count({ group: undefined, where: { isDelete: true } });
 
     return { total, available, deleted };
+  }
+
+  async createProductSubDetail(payload: IProductSubDetail) {
+    return ProductSubDetail.create({ ...payload, isActive: true });
   }
 }
 

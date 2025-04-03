@@ -7,3 +7,5 @@ export { default as shipFeeRoutes } from './ship_fee.routes';
 export { default as categoryRoutes } from './category.routes';
 export { default as cartRoutes } from './cart.routes';
 export { default as PostRoutes } from './post.routers';
+export { default as stockRoutes } from './stock.routes';
+export { default as siteRoutes } from './site.routes';

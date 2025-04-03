@@ -4,7 +4,7 @@ import { CartProduct } from './cart.dto';
 
 export interface OrderCreateRequest {
   siteId: number;
-  customer: OrderCustomer;
+  customer?: OrderCustomer;
   products: OrderProduct[];
   payment: OrderPayment;
   voucherCode?: string;
@@ -45,6 +45,8 @@ export interface OrderFilter extends PageParams {
   email?: string;
   status?: ORDER_STATUS;
   paymentStatus?: PAYMENT_STATUS;
+  startAt?: string;
+  endAt?: string;
 }
 
 export interface OrderDto {

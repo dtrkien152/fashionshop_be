@@ -27,7 +27,7 @@ class CategoryService {
     }
 
     // Lọc theo trạng thái danh mục
-    if (isActive !== null) {
+    if (isActive != null && isActive != 'null') {
       whereCondition.isActive = isActive === 'true';
     }
 
@@ -52,8 +52,9 @@ class CategoryService {
         },
       ],
       group: ['Category.id'],
-      limit: parseInt(limit), // Đảm bảo limit là số
-      offset: parseInt(String(offset)), // Đảm bảo offset là số
+      limit: parseInt(limit),
+      offset: parseInt(String(offset)),
+      order: [['createdAt', 'DESC']],
       subQuery: false,
     });
 
@@ -62,18 +63,37 @@ class CategoryService {
       data: result.rows,
     };
   }
-  async createCategory(data: any) {
+
+  async createCategory(data: { name: string; description?: string; isActive?: boolean; thumbnailUrl?: string }) {
     return await Category.create(data);
   }
 
   // Cập nhật danh mục
-  async updateCategory(id: number, data: any) {
-    const category = await Category.findByPk(id);
+  async updateCategory(payload: {
+    categoryId: number;
+    name?: string;
+    description?: string;
+    isActive?: boolean;
+    thumbnailUrl?: string
+  }) {
+    const category = await Category.findByPk(payload.categoryId);
     if (!category) throw new Error('Danh mục không tồn tại');
 
-    await category.update(data);
-    return category;
+    return await category.update({
+      name: payload.name || category.name,
+      description: payload.description || category.description,
+      isActive: payload.isActive !== undefined ? payload.isActive : category.isActive,
+      thumbnailUrl: payload.thumbnailUrl || category.thumbnailUrl,
+    });
   }
+
+  async getCategoryById(categoryId: number) {
+    return await Category.findOne({
+      rejectOnEmpty: undefined,
+      where: { id: categoryId },
+      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'isActive'],
+    });
+  };
 }
 
 export default CategoryService;

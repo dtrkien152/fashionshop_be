@@ -1,8 +1,10 @@
 import { container } from '../config';
 import { Router } from 'express';
 import CategoryController from '../controllers/category.controller';
+import multer from 'multer';
 
 const categoryController = container.resolve(CategoryController);
+const upload = multer(); // Middleware xử lý file upload
 const router = Router();
 
 /**
@@ -29,11 +31,17 @@ router.get('/getAll', categoryController.getAllCategory);
 
 // Lấy danh sách danh mục kèm số lượng sản phẩm
 router.post('/manager/search', categoryController.searchCategoriesForAdmin);
-
-// Tạo mới danh mục
-router.post('/manager/create', categoryController.createCategory);
+//
+// // Tạo mới danh mục
+// router.post('/manager/create', categoryController.createCategory);
 
 // Cập nhật danh mục
-router.put('/manager/update/:id', categoryController.updateCategory);
+router.put('/manager/update', categoryController.updateCategory);
+
+router.get('/manager/:categoryId', categoryController.getCategoryById);
+
+router.post('/manager/update', upload.single('thumbnail'), categoryController.updateCategory);
+
+router.post('/manager/create', upload.single('thumbnail'), categoryController.createCategory);
 
 export default router;

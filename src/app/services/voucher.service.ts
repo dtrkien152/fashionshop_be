@@ -1,16 +1,57 @@
 import { injectable } from 'tsyringe';
-import { IUserVoucher, IVoucher, User, UserVoucher, Voucher } from '../models';
-import { VoucherCreateRequest, VoucherUpdateRequest } from '../dto';
-import { GenerateUtils } from '../utils';
+import {
+  IUserVoucher,
+  IVoucher,
+  Order,
+  OrderDetail,
+  Product,
+  ProductSubDetail,
+  User,
+  UserVoucher,
+  Voucher,
+} from '../models';
+import { PageResult, VoucherCreateRequest, VoucherFilter, VoucherUpdateRequest } from '../dto';
+import { GenerateUtils, PageableUtils } from '../utils';
 import { ROLE } from '../constants';
+import { Op } from 'sequelize';
 
 @injectable()
 class VoucherService {
   constructor() {
   }
 
-  async getAllVoucher() {
-    return await Voucher.findAll();
+  async getAllVoucher(filter: VoucherFilter) {
+    const likeOp = `%${filter.searchTerm}%`;
+    const pageRequest = PageableUtils.pageRequest(filter.page, filter.limit, filter.orderBy, filter.orderDirection);
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    if (filter.searchTerm) {
+      if (filter.searchBy) {
+        whereCondition[Op.and].push({
+          [filter.searchBy]: { [Op.like]: likeOp },
+        });
+      } else {
+        whereCondition[Op.and].push({
+          [Op.or]: [
+            { code: { [Op.like]: likeOp } },
+          ],
+        });
+      }
+    }
+    if (filter.isActive) {
+      whereCondition[Op.and].push({
+        status: filter.isActive == 'true',
+      });
+    }
+    const { rows, count } = await Voucher.findAndCountAll({
+      order: pageRequest.order,
+      offset: +pageRequest.offset,
+      limit: +pageRequest.limit,
+      where: whereCondition[Op.and].length ? whereCondition : undefined,
+      distinct: true,
+    });
+    return PageableUtils.pageResponse(filter.page, filter.limit, rows, count);
   }
 
   async getByCode(code: string) {

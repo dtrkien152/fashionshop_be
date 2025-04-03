@@ -5,7 +5,7 @@ import {
   MailService,
   OrderService,
   OtpService, PostService,
-  ProductService, ShipFeeService,
+  ProductService, ShipFeeService, SiteService,
   UserService, VNPayService,
   VoucherService,
 } from '../services';
@@ -16,9 +16,9 @@ import {
   ProductController,
   OrderController,
   VoucherController,
-  ShipFeeController, CartController, PostController, FileController,
+  ShipFeeController, CartController, PostController, FileController, StockController, SiteController,
 } from '../controllers';
-import CategoryController from "../controllers/category.controller";
+import CategoryController from '../controllers/category.controller';
 import FileService from '../services/file.service';
 
 // Register dependencies
@@ -36,6 +36,7 @@ container.register('CartService', { useClass: CartService });
 container.register('FileService', { useClass: FileService });
 container.register('PostService', { useClass: PostService });
 container.register('VNPayService', { useClass: VNPayService });
+container.register('SiteService', { useClass: SiteService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });
@@ -46,6 +47,8 @@ container.register('ShipFeeController', { useClass: ShipFeeController });
 container.register('CategoryController', { useClass: CategoryController });
 container.register('CartController', { useClass: CartController });
 container.register('PostController', { useClass: PostController });
+container.register('StockController', { useClass: StockController });
 container.register('FileController', { useClass: FileController });
+container.register('SiteController', { useClass: SiteController });
 
 export { container };

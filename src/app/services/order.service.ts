@@ -7,6 +7,8 @@ import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
+import { PageResult } from '../dto';
+import moment from 'moment';
 
 @injectable()
 class OrderService {
@@ -46,9 +48,9 @@ class OrderService {
       email: email,
       voucherCode: payload.voucherCode,
       shipFee: shipFee.fee,
-      customerName: payload.customer.name,
-      customerAddress: payload.customer.address,
-      customerPhone: payload.customer.phone,
+      customerName: payload.customer?.name,
+      customerAddress: payload.customer?.address,
+      customerPhone: payload.customer?.phone,
       totalPrice: originTotalPrice - discountPrice,
       paymentType: payload.payment.type,
       paymentStatus: payload.payment.status,
@@ -116,6 +118,20 @@ class OrderService {
         });
       }
     }
+    if (filter.startAt) {
+      whereCondition[Op.and].push({
+        createdAt: {
+          [Op.gte]: +filter.startAt,
+        },
+      });
+    }
+    if (filter.endAt) {
+      whereCondition[Op.and].push({
+        createdAt: {
+          [Op.lte]: +filter.endAt,
+        },
+      });
+    }
     if (filter.status) {
       whereCondition[Op.and].push({
         status: filter.status,
@@ -131,10 +147,10 @@ class OrderService {
         email: filter.email,
       });
     }
-    const orders = await Order.findAll({
+    const { rows, count } = await Order.findAndCountAll({
       order: pageRequest.order,
-      offset: pageRequest.offset,
-      limit: pageRequest.limit,
+      offset: +pageRequest.offset,
+      limit: +pageRequest.limit,
       where: whereCondition[Op.and].length ? whereCondition : undefined,
       include: [{
         model: OrderDetail,
@@ -149,8 +165,9 @@ class OrderService {
         },
         ],
       }],
+      distinct: true,
     });
-    return orders.map(this.map2Dto);
+    return PageableUtils.pageResponse(filter.page, filter.limit, rows.map(this.map2Dto), count);
   }
 
   async getOrderByOrderCode(orderCode: string) {

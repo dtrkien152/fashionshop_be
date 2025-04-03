@@ -7,7 +7,7 @@ import {
   categoryRoutes,
   orderRoutes,
   productRoutes,
-  shipFeeRoutes,
+  shipFeeRoutes, siteRoutes, stockRoutes,
   userRoutes,
   voucherRoutes,
 } from './app/routes';
@@ -42,6 +42,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/ship-fee', shipFeeRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/api/posts', postRouters);
+app.use('/api/stocks', stockRoutes);
+app.use('/api/sites', siteRoutes);
 app.use('/api/files', fileRouter);
 
 // ✅ Thêm Error Handler Middleware

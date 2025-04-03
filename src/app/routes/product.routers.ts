@@ -190,9 +190,11 @@ router.put(
     { name: 'thumbnail', maxCount: 1 },
     { name: 'images', maxCount: 5 },
   ]),
-  productController.updateProduct as RequestHandler
+  productController.updateProduct as RequestHandler,
 );
 router.delete('/delete/:id', productController.deleteProduct);
 router.get('/countProducts', productController.countProducts);
+
+router.post('/sub', productController.createProductSubDetail);
 
 export default router;

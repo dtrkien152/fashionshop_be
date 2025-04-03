@@ -6,7 +6,7 @@ import { IProductFilterParams } from '../dto/product.dto';
 @injectable()
 class ProductController {
   constructor(@inject(ProductService) private productService: ProductService,
-              @inject(FileService) private fileService: FileService
+              @inject(FileService) private fileService: FileService,
   ) {
   }
 
@@ -107,7 +107,7 @@ class ProductController {
       //   return res.status(400).json({ error: 'Thumbnail URL and image URLs are required' });
       // }
       // Lưu sản phẩm vào database
-      const result=await this.productService.createProduct(payload);
+      const result = await this.productService.createProduct(payload);
       res.json(result);
     } catch (error) {
       next(error);
@@ -153,7 +153,7 @@ class ProductController {
 
         if (files.images) {
           const imageUrls = await Promise.all(
-            files.images.map((file) => this.fileService.uploadFileToAzure(file.buffer, file.mimetype, file.originalname))
+            files.images.map((file) => this.fileService.uploadFileToAzure(file.buffer, file.mimetype, file.originalname)),
           );
           updateData.imageUrls = imageUrls;
         }
@@ -186,13 +186,22 @@ class ProductController {
   };
   countProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-     const result=await this.productService.countProducts();
+      const result = await this.productService.countProducts();
       res.json(result);
     } catch (error) {
       next(error);
     }
   };
 
+  createProductSubDetail = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const payload = req.body;
+      const result = await this.productService.createProductSubDetail(payload);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 
 }
 

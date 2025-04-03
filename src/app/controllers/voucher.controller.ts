@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { NextFunction, Request, Response } from 'express';
 import { VoucherService } from '../services';
-import { UserVoucherCreateRequest, VoucherCreateRequest, VoucherUpdateRequest } from '../dto';
+import { UserVoucherCreateRequest, VoucherCreateRequest, VoucherFilter, VoucherUpdateRequest } from '../dto';
 import { BadRequestError } from '../errors';
 
 @injectable()
@@ -12,7 +12,8 @@ class VoucherController {
 
   getAllVoucher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const results = await this.voucherService.getAllVoucher();
+      const filterParams = req.query as VoucherFilter;
+      const results = await this.voucherService.getAllVoucher(filterParams);
       return res.json(results);
     } catch (error) {
       next(error);

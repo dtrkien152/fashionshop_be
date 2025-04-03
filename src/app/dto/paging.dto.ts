@@ -6,3 +6,10 @@ export interface PageParams {
   orderBy?: string;
   orderDirection?: OrderDirection;
 }
+
+export interface PageResult {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  data: Array<any>;
+}

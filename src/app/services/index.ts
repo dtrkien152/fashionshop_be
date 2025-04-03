@@ -11,4 +11,5 @@ export { default as CartService } from './cart.service';
 export { default as FileService } from './file.service';
 export { default as PostService } from './post.service';
 export { default as StockService } from './stock.service';
+export { default as SiteService } from './site.service';
 export { default as VNPayService } from './vnpay.service';

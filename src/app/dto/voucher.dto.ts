@@ -1,3 +1,5 @@
+import { PageParams } from './paging.dto';
+
 export interface VoucherCreateRequest {
   triggerPrice?: number;
   discountPercent?: number;
@@ -13,4 +15,11 @@ export interface VoucherUpdateRequest extends VoucherCreateRequest {
 export interface UserVoucherCreateRequest {
   userId: number;
   voucherCode: string;
+}
+
+export interface VoucherFilter extends PageParams {
+  searchTerm?: string;
+  searchBy?: string;
+  code?: string;
+  isActive?: string;
 }
