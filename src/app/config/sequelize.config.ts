@@ -21,7 +21,7 @@ import {
   ShipInfo,
   Site,
   Stock,
-  Tag,
+  Tags,
   User,
   UserAddress,
   UserVoucher,
@@ -55,7 +55,7 @@ const sequelize = new Sequelize(
     models: [
       Post, PostCategory, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
       Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
-      ReturnOrder, ShipInfo, Site, Stock, Tag, User, UserAddress, UserVoucher, Voucher,
+      ReturnOrder, ShipInfo, Site, Stock, Tags, User, UserAddress, UserVoucher, Voucher,
     ],
   },
 );

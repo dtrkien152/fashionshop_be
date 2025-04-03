@@ -1,9 +1,11 @@
-import express from 'express';
+import express, { RequestHandler, Router } from 'express';
 import { container } from '../config';
 import { PostController } from '../controllers';
 import { jwtMiddleware } from '../middlewares';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() }); // Lưu vào bộ nhớ để upload lên Azure
 const postController = container.resolve(PostController);
 
 /**
@@ -135,6 +137,25 @@ router.get('/gettopPostLastest', postController.getTop8LastestPost);
  *       500:
  *         description: Lỗi máy chủ
  */
-router.post("/add-comment", jwtMiddleware.verifyToken, postController.addComment);
+router.post('/add-comment', jwtMiddleware.verifyToken, postController.addComment);
+
+router.put(
+  '/update',
+  upload.fields([{ name: 'thumbnail', maxCount: 1 }]), // Hỗ trợ upload 1 thumbnail
+  postController.updatePost as RequestHandler,
+);
+
+router.put('/:postId/status', postController.updatePostStatus);
+
+router.post('/search-by-admin', postController.searchByAdmin);
+
+router.get('/tags/recommend', postController.getRecommendTag);
+
+router.post('/create',
+  upload.fields([{ name: 'thumbnail', maxCount: 1 }]), // Hỗ trợ upload thumbnail
+  postController.createPost as RequestHandler,
+);
+
+router.get('/admin/detail', postController.getPostDetailByADMIN);
 
 export default router;

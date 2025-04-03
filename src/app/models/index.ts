@@ -17,7 +17,7 @@ export * from "./return_order.model";
 export * from "./ship_info.model";
 export * from "./site.model";
 export * from "./stock.model";
-export * from "./tag.model";
+export * from "./tags.model";
 export * from "./user.model";
 export * from "./user_address.model";
 export * from "./user_voucher.model";

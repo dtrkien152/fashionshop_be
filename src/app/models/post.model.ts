@@ -1,6 +1,7 @@
 import { Column, DataType, ForeignKey, Model, Table, BelongsTo, HasMany } from 'sequelize-typescript';
 import { PostCategory } from './post_category.model';
 import { Comment } from './comment.model';
+import { Tags } from './tags.model';
 
 interface IPost {
   id?: number;
@@ -74,6 +75,9 @@ class Post extends Model<IPost> {
 
   @HasMany(() => Comment)  // Định nghĩa quan hệ với PostCategory
   comments!: Comment[];
+
+  @HasMany(() => Tags)
+  tags!: Tags[];
 }
 
 export { IPost, Post };

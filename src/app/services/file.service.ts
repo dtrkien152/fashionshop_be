@@ -27,7 +27,7 @@ class FileService {
    */
   async uploadFileToAzure(fileBuffer, mimeType, fileName): Promise<string> {
     try {
-      const blobName = `avatars/${fileName}`;
+      const blobName = `avatars/${encodeURIComponent(fileName)}`;
       const blockBlobClient =this.containerClient.getBlockBlobClient(blobName);
       await blockBlobClient.uploadData(fileBuffer, {
         blobHTTPHeaders: { blobContentType: mimeType },
