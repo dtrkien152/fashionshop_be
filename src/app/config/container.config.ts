@@ -1,22 +1,35 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
 import {
-  AuthService, CartService, CategoryService,
+  AuthService,
+  CartService,
+  CategoryService,
   MailService,
   OrderService,
-  OtpService, PostService,
-  ProductService, ShipFeeService, SiteService,
-  UserService, VNPayService,
+  OtpService,
+  PostService,
+  ProductService,
+  ShipFeeService,
+  SiteService,
+  StatsService,
+  UserService,
+  VNPayService,
   VoucherService,
 } from '../services';
 import { sequelize } from './sequelize.config';
 import {
   AuthController,
-  UserController,
-  ProductController,
+  CartController,
+  FileController,
   OrderController,
+  PostController,
+  ProductController,
+  ShipFeeController,
+  SiteController,
+  StatsController,
+  StockController,
+  UserController,
   VoucherController,
-  ShipFeeController, CartController, PostController, FileController, StockController, SiteController,
 } from '../controllers';
 import CategoryController from '../controllers/category.controller';
 import FileService from '../services/file.service';
@@ -37,6 +50,7 @@ container.register('FileService', { useClass: FileService });
 container.register('PostService', { useClass: PostService });
 container.register('VNPayService', { useClass: VNPayService });
 container.register('SiteService', { useClass: SiteService });
+container.register('StatsService', { useClass: StatsService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });
@@ -50,5 +64,6 @@ container.register('PostController', { useClass: PostController });
 container.register('StockController', { useClass: StockController });
 container.register('FileController', { useClass: FileController });
 container.register('SiteController', { useClass: SiteController });
+container.register('StatsController', { useClass: StatsController });
 
 export { container };

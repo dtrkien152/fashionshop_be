@@ -9,3 +9,4 @@ export { default as PostController } from './post.controller';
 export { default as StockController } from './stock.controller';
 export { default as FileController } from './file.controller';
 export { default as SiteController } from './site.controller';
+export { default as StatsController } from './stats.controller';
