@@ -27,9 +27,10 @@ class EmployeeService {
     const whereCondition: any = {
       role: { [Op.in]: ['STAFF', 'SALE'] },
     };
-
+    console.log('keyword', keyword);
     if (keyword) {
-      whereCondition.fullName = { [Op.like]: `%${keyword}%` };
+      // Sử dụng `Op.iLike` nếu dùng PostgreSQL để hỗ trợ tìm kiếm không phân biệt chữ hoa/thường
+      whereCondition.fullName = { [Op.like]: `%${keyword}%` };  // Nếu không phải PostgreSQL thì dùng `Op.like`
     }
 
     if (siteId) {
@@ -50,7 +51,7 @@ class EmployeeService {
 
     const { count, rows } = await Employee.findAndCountAll({
       where: whereCondition,
-      attributes: ['id', 'code', 'username', 'fullName', 'role', 'isActive', 'createdAt','avatar'],
+      attributes: ['id', 'code', 'username', 'fullName', 'role', 'isActive', 'createdAt', 'avatar'],
       include: [{ model: Site, attributes: ['id', 'name'] }],
       order: orderCondition,
       limit: Number(limit),
@@ -63,6 +64,7 @@ class EmployeeService {
       data: rows,
     };
   }
+
 
   async updateRoleAndSite(id: number, role: string, siteId: number) {
     if (!ALLOWED_ROLES.includes(role)) {

@@ -8,7 +8,7 @@
     "predev": "npm run build",
     "dev": "cross-env NODE_ENV=dev concurrently \"tsc --watch\" \"nodemon -q dist/main.js\"",
     "prestart": "npm run build",
-    "start": "cross-env NODE_ENV=prod node dist/main.js",
+    "start": "cross-env NODE_ENV=prod concurrently \"tsc --watch\" \"nodemon -q dist/main.js\"",
     "lint": "eslint 'src/**/*.ts' --fix"
   },
   "keywords": [],
