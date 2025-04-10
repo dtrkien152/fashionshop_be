@@ -1,6 +1,14 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderCustomerFilter, OrderDto, OrderFilter } from '../dto/order.dto';
-import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
+import {
+  CartService,
+  GhnService,
+  ProductService,
+  ShipFeeService,
+  StockService,
+  UserService,
+  VoucherService,
+} from './index';
 import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder, Stock } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
@@ -9,6 +17,7 @@ import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { sequelize } from '../config';
+import ghnService from './ghn.service';
 
 @injectable()
 class OrderService {
@@ -17,7 +26,8 @@ class OrderService {
               @inject(delay(() => StockService)) private stockService: StockService,
               @inject(delay(() => ProductService)) private productService: ProductService,
               @inject(delay(() => VoucherService)) private voucherService: VoucherService,
-              @inject(delay(() => ShipFeeService)) private shipFeeService: ShipFeeService) {
+              @inject(delay(() => ShipFeeService)) private shipFeeService: ShipFeeService,
+              @inject(delay(() => GhnService)) private ghnService: GhnService) {
   }
 
   create = async (email: string, payload: OrderCreateRequest) => {
@@ -119,6 +129,14 @@ class OrderService {
     return await order.update({ status: ORDER_STATUS.RETURN });
   }
 
+  async handleShippingOrder(code: string, weight: string, width: string, height: string) {
+    const order = await this.getOrderByOrderCode(code);
+    if (!order) throw new BadRequestError('Order not found!');
+    const shipResponse = await this.ghnService.createOrderShipping(order, +weight, +width, +height);
+    console.log(shipResponse);
+    return await Order.update({ status: ORDER_STATUS.SHIPPING }, { where: { code } });
+  }
+
   async getAll(filter?: OrderFilter) {
     const likeOp = `%${filter.searchTerm}%`;
     const pageRequest = PageableUtils.pageRequest(filter.page, filter.limit, filter.orderBy, filter.orderDirection);
@@ -192,7 +210,7 @@ class OrderService {
     return PageableUtils.pageResponse(filter.page, filter.limit, rows.map(this.map2Dto), count);
   }
 
-  async getOrderByOrderCode(orderCode: string) {
+  async getOrderByOrderCode(orderCode: string): Promise<OrderDto> {
     const order = await Order.findOne({
       where: { code: orderCode },
       include: [{

@@ -20,6 +20,8 @@ router.put('/payment', jwtMiddleware.verifyUserToken, productController.updateSt
 
 router.put('/return', jwtMiddleware.verifyUserToken, productController.handleReturnOrder);
 
+router.put('/shipping', jwtMiddleware.verifyUserToken, productController.handleShippingOrder);
+
 router.get('/my-orders', jwtMiddleware.verifyUserToken, productController.getAllMyOrders);
 
 router.post('/my-orders', jwtMiddleware.verifyUserToken, productController.createMyOrder);

@@ -3,7 +3,7 @@ import { container } from 'tsyringe';
 import {
   AuthService,
   CartService,
-  CategoryService, EmployeeService,
+  CategoryService, EmployeeService, GhnService,
   MailService,
   OrderService,
   OtpService,
@@ -52,6 +52,7 @@ container.register('VNPayService', { useClass: VNPayService });
 container.register('SiteService', { useClass: SiteService });
 container.register('StatsService', { useClass: StatsService });
 container.register('EmployeeService', { useClass: EmployeeService });
+container.register('GhnService', { useClass: GhnService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });

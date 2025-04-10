@@ -5,3 +5,4 @@ export * from './ship_fee.dto';
 export * from './paging.dto';
 export * from './stock.dto';
 export * from './stats.dto';
+export * from './ghn.dto';

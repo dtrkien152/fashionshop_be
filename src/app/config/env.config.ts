@@ -35,12 +35,17 @@ export const ENV_CONFIG = {
     secret: process.env.JWT_SECRET,
     issuer: process.env.JWT_ISSUER,
   },
-  file:{
-    connectionString:process.env.AZURE_STORAGE_CONNECTION_STRING,
-    containerName:process.env.AZURE_CONTAINER_NAME
+  file: {
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    containerName: process.env.AZURE_CONTAINER_NAME,
   },
   vnpay: {
     tmnCode: process.env.VNPAY_TMNCODE,
-    hashSecret: process.env.VNPAY_HASH_SECRET
-  }
+    hashSecret: process.env.VNPAY_HASH_SECRET,
+  },
+  ghn: {
+    token: process.env.GHN_TOKEN,
+    shopId: process.env.GHN_SHOP_ID,
+    baseUrl: process.env.GHN_BASE_URL,
+  },
 };

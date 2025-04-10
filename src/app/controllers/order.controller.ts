@@ -102,6 +102,16 @@ class OrderController {
     }
   };
 
+  handleShippingOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { code, weight, width, height } = req.query;
+      const results = await this.orderService.handleShippingOrder(code as string, weight as string, width as string, height as string);
+      return res.json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAllMyOrders = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const email = req.session['email'];

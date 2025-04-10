@@ -15,3 +15,4 @@ export { default as SiteService } from './site.service';
 export { default as VNPayService } from './vnpay.service';
 export { default as StatsService } from './stats.service';
 export { default as EmployeeService } from './employee.service';
+export { default as GhnService } from './ghn.service';
