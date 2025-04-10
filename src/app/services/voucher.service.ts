@@ -1,19 +1,10 @@
 import { injectable } from 'tsyringe';
-import {
-  IUserVoucher,
-  IVoucher,
-  Order,
-  OrderDetail,
-  Product,
-  ProductSubDetail,
-  User,
-  UserVoucher,
-  Voucher,
-} from '../models';
-import { PageResult, VoucherCreateRequest, VoucherFilter, VoucherUpdateRequest } from '../dto';
+import { IUserVoucher, IVoucher, User, UserVoucher, Voucher } from '../models';
+import { VoucherCreateRequest, VoucherFilter, VoucherUpdateRequest } from '../dto';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ROLE } from '../constants';
 import { Op } from 'sequelize';
+import moment from 'moment/moment';
 
 @injectable()
 class VoucherService {
@@ -96,7 +87,24 @@ class VoucherService {
   }
 
   async getVoucherInUser(userId: number) {
-    return await UserVoucher.findAll({ where: { userId, isActive: true } });
+    const now = moment().utc().toDate();
+    const userVouchers = await UserVoucher.findAll({
+      where: { userId },
+      attributes: ['isActive'],
+      include: [{
+        model: Voucher,
+        where: {
+          startAt: { [Op.lte]: now },
+          endAt: { [Op.gte]: now },
+          isActive: true,
+        },
+      }],
+    });
+
+    return userVouchers.map((uv) => ({
+      voucher: uv.voucher,
+      isUsed: !uv.isActive,
+    }));
   }
 
   async addVoucherForUser(userId: number, voucherCode: string) {

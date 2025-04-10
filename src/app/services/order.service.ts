@@ -1,13 +1,14 @@
 import { delay, inject, injectable } from 'tsyringe';
 import { OrderCreateRequest, OrderCustomerFilter, OrderDto, OrderFilter } from '../dto/order.dto';
 import { CartService, ProductService, ShipFeeService, StockService, UserService, VoucherService } from './index';
-import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder } from '../models';
+import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder, Stock } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
 import { Sequelize } from 'sequelize-typescript';
+import { sequelize } from '../config';
 
 @injectable()
 class OrderService {
@@ -20,6 +21,7 @@ class OrderService {
   }
 
   create = async (email: string, payload: OrderCreateRequest) => {
+    const t = await sequelize.transaction(); // Khởi tạo transaction
     if (!payload.products || !payload.products.length) throw new BadRequestError('Product is empty');
     const products = await Promise.all(payload.products.map(async (el) => {
       const product = await this.productService.getProductById(el.productId);
@@ -28,6 +30,7 @@ class OrderService {
       return product;
     }));
     const originTotalPrice = products.reduce((acc, cur) => acc + cur.salePrice, 0);
+    const shipFee = await this.shipFeeService.getFee(originTotalPrice);
     let discountPrice = 0;
     if (payload.voucherCode) {
       const voucher = await this.voucherService.getByCode(payload.voucherCode);
@@ -39,8 +42,6 @@ class OrderService {
         }
       } else throw new BadRequestError('Voucher is invalid!');
     }
-    const totalPrice = originTotalPrice - discountPrice;
-    const shipFee = await this.shipFeeService.getFee(totalPrice);
     const order: IOrder = {
       siteId: payload.siteId,
       code: GenerateUtils.code('ORD'),
@@ -55,7 +56,7 @@ class OrderService {
       paymentStatus: payload.payment.status,
       status: ORDER_STATUS.PENDING,
     };
-    const orderCreated = await Order.create(order);
+    const orderCreated = await Order.create(order, { transaction: t });
     const orderDetails = await Promise.all(payload.products.map(async (el) => {
       const subProduct = await this.productService.getSubProductByProductIdAndColorAndSize(el.productId, el.color, el.size);
       el.productSubDetailId = subProduct.id;
@@ -66,19 +67,23 @@ class OrderService {
         totalPrice: el.unit * el.priceInUnit,
       } as IOrderDetail;
     }));
-    await OrderDetail.bulkCreate(orderDetails);
-    // const stocks = await Promise.all(orderDetails.map(async (el) => {
-    //   const stock = await this.stockService.getStockByProductSubDetailIdAndSiteId(el.productSubDetailId, payload.siteId);
-    //   if (stock.unit < el.unit) {
-    //     throw new BadRequestError('Purchase order exceeds stock unit!');
-    //   }
-    //   stock.unit -= el.unit;
-    //   return stock;
-    // }));
-    // await Stock.bulkCreate(stocks);
+    await OrderDetail.bulkCreate(orderDetails, { transaction: t });
+    const stocks = await Promise.all(orderDetails.map(async (el) => {
+      const stock = await this.stockService.getStockByProductSubDetailIdAndSiteId(el.productSubDetailId, payload.siteId);
+      if (stock.unit < el.unit) {
+        throw new BadRequestError('Purchase order exceeds stock unit!');
+      }
+      return {
+        siteId: stock.siteId,
+        productSubDetailId: el.productSubDetailId,
+        unit: stock.unit - el.unit,
+      };
+    }));
+    await Stock.bulkCreate(stocks, { transaction: t, updateOnDuplicate: ['unit'] });
     if (payload.cartCode) {
       await this.cartService.removeAllCartDetails(payload.cartCode);
     }
+    await t.commit();
     return {
       order, orderDetails: payload.products,
     };

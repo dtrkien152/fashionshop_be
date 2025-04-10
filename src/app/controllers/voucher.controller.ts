@@ -57,7 +57,7 @@ class VoucherController {
     try {
       const userId = req.session['userId'];
       const vouchers = await this.voucherService.getVoucherInUser(+userId);
-      return res.json({ vouchers });
+      return res.json(vouchers);
     } catch (error) {
       next(error);
     }
@@ -78,7 +78,7 @@ class VoucherController {
     try {
       const userId = req.query['userId'];
       const vouchers = await this.voucherService.getVoucherInUser(+userId);
-      return res.json({ vouchers });
+      return res.json(vouchers);
     } catch (error) {
       next(error);
     }

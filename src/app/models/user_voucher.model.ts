@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { User } from './user.model';
 import { Voucher } from './voucher.model';
 
@@ -35,6 +35,9 @@ class UserVoucher extends Model<IUserVoucher> {
     defaultValue: false,
   })
   isActive!: boolean;
+
+  @BelongsTo(() => Voucher)
+  voucher!: Voucher;
 }
 
 export { UserVoucher, IUserVoucher };
