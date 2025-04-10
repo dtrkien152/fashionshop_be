@@ -41,7 +41,7 @@ class StatsController {
   getStatsInMonth = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { siteId } = req.query;
-      const results = await this.statsService.getStatsInMonth();
+      const results = await this.statsService.getStatsInMonth(siteId as string);
       return res.json(results);
     } catch (error) {
       next(error);
@@ -51,7 +51,7 @@ class StatsController {
   getTopStockProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { siteId } = req.query;
-      const results = await this.statsService.getTopStockProduct();
+      const results = await this.statsService.getTopStockProduct(siteId as string);
       return res.json(results);
     } catch (error) {
       next(error);

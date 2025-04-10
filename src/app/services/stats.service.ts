@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
+import { Order, OrderDetail, Product, ProductSubDetail, Site, Stock } from '../models';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { BadRequestError } from '../errors';
@@ -12,6 +12,95 @@ class StatsService {
   constructor() {
   }
 
+  async getStatsInMonth(siteId?: string) {
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    if (siteId) {
+      whereCondition[Op.and].push({
+        siteId: +siteId,
+      });
+    }
+    // Xác định thời gian tháng hiện tại và tháng trước
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    // Truy vấn doanh thu & đơn hàng của tháng hiện tại
+    const currentMonthStats = await Order.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
+        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [
+          Sequelize.fn(
+            'COUNT',
+            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
+          ),
+          'totalReturnOrders',
+        ],
+      ],
+      where: {
+        ...whereCondition,
+        createdAt: {
+          [Op.between]: [startOfCurrentMonth, endOfCurrentMonth],
+        },
+      },
+      raw: true,
+    });
+
+    // Truy vấn doanh thu & đơn hàng của tháng trước
+    const lastMonthStats = await Order.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
+        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [
+          Sequelize.fn(
+            'COUNT',
+            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
+          ),
+          'totalReturnOrders',
+        ],
+      ],
+      where: {
+        ...whereCondition,
+        createdAt: {
+          [Op.between]: [startOfLastMonth, endOfLastMonth],
+        },
+      },
+      raw: true,
+    });
+
+    // Lấy dữ liệu từ query
+    const current: any = currentMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
+    const last: any = lastMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
+
+    // Tính phần trăm tăng trưởng (tránh chia cho 0)
+    const calculateGrowth = (currentValue: number, lastValue: number) => {
+      if (lastValue === 0) return currentValue > 0 ? 100 : 0;
+      return ((currentValue - lastValue) / lastValue) * 100;
+    };
+    return {
+      totalRevenue: {
+        current: current.totalRevenue,
+        lastMonth: last.totalRevenue,
+        growth: calculateGrowth(current.totalRevenue, last.totalRevenue),
+      },
+      totalOrders: {
+        current: current.totalOrders,
+        lastMonth: last.totalOrders,
+        growth: calculateGrowth(current.totalOrders, last.totalOrders),
+      },
+      totalReturnOrders: {
+        current: current.totalReturnOrders,
+        lastMonth: last.totalReturnOrders,
+        growth: calculateGrowth(current.totalReturnOrders, last.totalReturnOrders),
+      },
+    };
+  }
+
   async getRevenueStats(filter: StatsFilter) {
     if (!filter.startAt || !filter.endAt || filter.startAt > filter.endAt) {
       throw new BadRequestError('Invalid date range');
@@ -19,7 +108,12 @@ class StatsService {
 
     const daysDiff = differenceInDays(filter.endAt, filter.startAt);
     let dateFormat: string;
-    let whereCondition: any = {};
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    let siteIdWhereCondition: any = {
+      [Op.and]: [],
+    };
     let periodType = 'DAY';
     const xField: string[] = [];
     const weekLabel = new Map<string, string>();
@@ -71,13 +165,18 @@ class StatsService {
       periodType = 'YEAR';
     }
 
-    whereCondition.createdAt = {
-      [Op.between]: [filter.startAt, filter.endAt],
-    };
+    whereCondition[Op.and].push({
+      createdAt: {
+        [Op.between]: [filter.startAt, filter.endAt],
+      },
+    });
 
     if (filter.siteId) {
       whereCondition[Op.and].push({
         siteId: +filter.siteId,
+      });
+      siteIdWhereCondition[Op.and].push({
+        id: +filter.siteId,
       });
     }
 
@@ -92,23 +191,32 @@ class StatsService {
       order: [[Sequelize.literal('timePeriod'), 'ASC']],
       raw: true,
     });
+    const sites = await Site.findAll({ where: siteIdWhereCondition, attributes: ['id', 'name'] });
     // 🔹 Ghép dữ liệu vào `xField`, nếu thiếu thì thêm `totalRevenue = 0`
-    const revenueMap = new Map(revenueStats.map((item: any) => [item.timePeriod, item.totalRevenue]));
+    const revenueMap = new Map(revenueStats.map((item: any) => [`${item.siteId}-${item.timePeriod}`, item.totalRevenue]));
 
-    return xField.map(period => ({
-      timePeriod: periodType === 'WEEK' ? weekLabel.get(period) : period,
-      totalRevenue: +revenueMap.get(period) || 0,
-    }));
+    return sites.map(site => {
+      return xField.map(period => ({
+        siteId: site.id,
+        siteName: site.name,
+        timePeriod: periodType === 'WEEK' ? weekLabel.get(period) : period,
+        totalRevenue: +revenueMap.get(`${site.id}-${period}`) || 0,
+      }));
+    }).flat();
   }
 
   async getTopSellingProducts(filter: StatsFilter) {
     if (!filter.startAt || !filter.endAt || filter.startAt > filter.endAt) {
       throw new BadRequestError('Invalid date range');
     }
-    let whereCondition: any = {};
-    whereCondition.createdAt = {
-      [Op.between]: [filter.startAt, filter.endAt],
+    const whereCondition = {
+      [Op.and]: [],
     };
+    whereCondition[Op.and].push({
+      createdAt: {
+        [Op.between]: [filter.startAt, filter.endAt],
+      },
+    });
     // Tổng số lượng sản phẩm đã bán
     const totalSoldData: any = await OrderDetail.findAll({
       attributes: [[Sequelize.fn('SUM', Sequelize.col('unit')), 'totalSold']],
@@ -121,6 +229,12 @@ class StatsService {
       ],
       raw: true,
     });
+
+    if (filter.siteId) {
+      whereCondition[Op.and].push({
+        siteId: +filter.siteId,
+      });
+    }
 
     const totalSold = totalSoldData[0]?.totalSold || 0;
 
@@ -178,88 +292,18 @@ class StatsService {
     return chartData;
   }
 
-  async getStatsInMonth() {
-    // Xác định thời gian tháng hiện tại và tháng trước
-    const now = new Date();
-    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-
-    // Truy vấn doanh thu & đơn hàng của tháng hiện tại
-    const currentMonthStats = await Order.findAll({
-      attributes: [
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
-        [
-          Sequelize.fn(
-            'COUNT',
-            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
-          ),
-          'totalReturnOrders',
-        ],
-      ],
-      where: {
-        createdAt: {
-          [Op.between]: [startOfCurrentMonth, endOfCurrentMonth],
-        },
-      },
-      raw: true,
-    });
-
-    // Truy vấn doanh thu & đơn hàng của tháng trước
-    const lastMonthStats = await Order.findAll({
-      attributes: [
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
-        [
-          Sequelize.fn(
-            'COUNT',
-            Sequelize.literal(`CASE WHEN status = 'RETURN' THEN 1 END`),
-          ),
-          'totalReturnOrders',
-        ],
-      ],
-      where: {
-        createdAt: {
-          [Op.between]: [startOfLastMonth, endOfLastMonth],
-        },
-      },
-      raw: true,
-    });
-
-    // Lấy dữ liệu từ query
-    const current: any = currentMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
-    const last: any = lastMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
-
-    // Tính phần trăm tăng trưởng (tránh chia cho 0)
-    const calculateGrowth = (currentValue: number, lastValue: number) => {
-      if (lastValue === 0) return currentValue > 0 ? 100 : 0;
-      return ((currentValue - lastValue) / lastValue) * 100;
+  async getTopStockProduct(siteId?: string) {
+    const whereCondition = {
+      [Op.and]: [],
     };
-    return {
-      currentMonth: {
-        totalOrders: current.totalOrders,
-        totalRevenue: current.totalRevenue,
-        totalReturnOrders: current.totalReturnOrders,
-      },
-      lastMonth: {
-        totalOrders: last.totalOrders,
-        totalRevenue: last.totalRevenue,
-        totalReturnOrders: last.totalReturnOrders,
-      },
-      growth: {
-        orderGrowth: calculateGrowth(current.totalOrders, last.totalOrders),
-        revenueGrowth: calculateGrowth(current.totalRevenue, last.totalRevenue),
-        returnOrderGrowth: calculateGrowth(current.totalReturnOrders, last.totalReturnOrders),
-      },
-    };
-  }
-
-  async getTopStockProduct() {
+    if (siteId) {
+      whereCondition[Op.and].push({
+        siteId: +siteId,
+      });
+    }
     // Lấy tổng số lượng tồn kho của tất cả sản phẩm
     const totalStock: any = await Stock.findAll({
+      where: whereCondition,
       attributes: [[Sequelize.fn('SUM', Sequelize.col('unit')), 'total']],
       raw: true,
     });
@@ -268,6 +312,7 @@ class StatsService {
 
     // Lấy top 10 sản phẩm có số lượng tồn kho nhiều nhất (gộp theo Product)
     const topStocks = await Stock.findAll({
+      where: whereCondition,
       attributes: [
         [Sequelize.col('productSubDetail.Product.id'), 'productId'],
         [Sequelize.fn('SUM', Sequelize.col('unit')), 'totalStock'],
