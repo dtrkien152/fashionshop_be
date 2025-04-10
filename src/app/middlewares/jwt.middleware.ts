@@ -6,8 +6,8 @@ import { ROLE } from '../constants';
 
 const authService = container.resolve(AuthService);
 
-const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<any> | void => {
-  let token = req.header("Authorization")?.split(" ")[1]; // Expecting 'Bearer <token>'
+const verifyUserToken = (req: Request, res: Response, next: NextFunction): Promise<any> | void => {
+  let token = req.header('Authorization')?.split(' ')[1]; // Expecting 'Bearer <token>'
 
   if (!token) {
     return Promise.resolve(res.status(403).json({ message: 'No token provided!' }));
@@ -19,6 +19,24 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): Promise<a
     }
     req.session['userId'] = Number(decoded.sub);
     req.session['email'] = decoded['email'];
+    req.session['role'] = ROLE.USER;
+    next();
+  });
+};
+
+const verifyEmployeeToken = (req: Request, res: Response, next: NextFunction): Promise<any> | void => {
+  let token = req.header('Authorization')?.split(' ')[1]; // Expecting 'Bearer <token>'
+
+  if (!token) {
+    return Promise.resolve(res.status(403).json({ message: 'No token provided!' }));
+  }
+
+  authService.decodeToken(token, (err: VerifyErrors, decoded: JwtPayload) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized!' });
+    }
+    req.session['employeeId'] = Number(decoded.sub);
+    req.session['username'] = decoded['username'];
     req.session['role'] = decoded['role'];
     next();
   });
@@ -42,7 +60,8 @@ const checkRole = (roles: string[]) => {
 
 
 const jwtMiddleware = {
-  verifyToken,
+  verifyUserToken,
+  verifyEmployeeToken,
   isUser: checkRole([ROLE.USER]),
   isAdmin: checkRole([ROLE.ADMIN]),
 };

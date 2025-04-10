@@ -38,6 +38,17 @@ class AuthController {
     }
   };
 
+  adminSignIn = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { username, password } = req.body;
+      const data = await this.authService.adminSignIn(username, password);
+      return res.json(data);
+    } catch (error) {
+      console.error('Login Error:', error);
+      next(error);
+    }
+  };
+
   signInWithGoogle = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
 
     try {

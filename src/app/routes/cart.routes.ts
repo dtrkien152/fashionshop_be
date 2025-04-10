@@ -8,7 +8,7 @@ const router = Router();
 
 router.get('/info/guest', cartController.getCartForGuest);
 
-router.get('/info', jwtMiddleware.verifyToken, cartController.getCart);
+router.get('/info', jwtMiddleware.verifyUserToken, cartController.getCart);
 
 router.get('', cartController.getCartDetails);
 

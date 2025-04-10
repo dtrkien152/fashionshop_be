@@ -13,7 +13,6 @@ class UserController {
 
   getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const session = req.session;
       const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
@@ -30,7 +29,6 @@ class UserController {
 
   updateMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const session = req.session;
       const { userId } = req.session;
       await this.userService.updateUserProfile(userId, req.body);
       res.status(200).send('Moderator Content.');
@@ -41,7 +39,6 @@ class UserController {
 
   getUserProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const session = req.session;
       const { userId } = req.session;
       if (!userId) {
         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
@@ -145,11 +142,11 @@ class UserController {
 
   uploadAvatar = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
+      const { userId } = req.session;
       const file = req.file;
       if (!file) {
         return res.status(400).json({ message: 'No file uploaded' });
       }
-      const { userId } = req.session;
       const result = await this.userService.uploadAvatar(userId, req.file.buffer, req.file.mimetype);
       res.status(200).json(result);
     } catch (error) {

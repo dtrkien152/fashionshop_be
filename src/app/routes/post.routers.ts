@@ -137,7 +137,7 @@ router.get('/gettopPostLastest', postController.getTop8LastestPost);
  *       500:
  *         description: Lỗi máy chủ
  */
-router.post('/add-comment', jwtMiddleware.verifyToken, postController.addComment);
+router.post('/add-comment', jwtMiddleware.verifyUserToken, postController.addComment);
 
 router.put(
   '/update',

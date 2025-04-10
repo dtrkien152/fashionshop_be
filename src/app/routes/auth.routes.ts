@@ -44,6 +44,7 @@ const userController = container.resolve(UserController);
  */
 router.post('/sign-up', authController.signUp);
 
+
 /**
  * @swagger
  * /api/auth/sign-in:
@@ -68,6 +69,8 @@ router.post('/sign-up', authController.signUp);
  *         description: Đăng nhập thành công
  */
 router.post('/sign-in', authController.signIn);
+
+router.post('/admin/sign-up', authController.adminSignIn);
 
 /**
  * @swagger
@@ -138,7 +141,7 @@ router.get(
  *       200:
  *         description: Thông tin người dùng
  */
-router.get('/me', jwtMiddleware.verifyToken, userController.getUserProfile);
+router.get('/me', jwtMiddleware.verifyUserToken, userController.getUserProfile);
 
 /**
  * @swagger
@@ -175,7 +178,7 @@ router.get('/me', jwtMiddleware.verifyToken, userController.getUserProfile);
  *       500:
  *         description: Internal server error.
  */
-router.put('/change-password', jwtMiddleware.verifyToken, authController.changeMyPassword);
+router.put('/change-password', jwtMiddleware.verifyUserToken, authController.changeMyPassword);
 
 /**
  * @swagger

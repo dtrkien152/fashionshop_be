@@ -6,23 +6,23 @@ import { jwtMiddleware } from '../middlewares';
 const productController = container.resolve(OrderController);
 const router = Router();
 
-router.get('', jwtMiddleware.verifyToken, productController.getAllOrders);
+router.get('', jwtMiddleware.verifyUserToken, productController.getAllOrders);
 
-router.get('/customers', jwtMiddleware.verifyToken, productController.getAllCustomerOrders);
+router.get('/customers', jwtMiddleware.verifyUserToken, productController.getAllCustomerOrders);
 
 router.get('/tracking/:orderCode', productController.getOrder);
 
 router.post('', productController.createOrder);
 
-router.put('', jwtMiddleware.verifyToken, productController.updateStatusOrder);
+router.put('', jwtMiddleware.verifyUserToken, productController.updateStatusOrder);
 
-router.put('/payment', jwtMiddleware.verifyToken, productController.updateStatusPayment);
+router.put('/payment', jwtMiddleware.verifyUserToken, productController.updateStatusPayment);
 
-router.put('/return', jwtMiddleware.verifyToken, productController.handleReturnOrder);
+router.put('/return', jwtMiddleware.verifyUserToken, productController.handleReturnOrder);
 
-router.get('/my-orders', jwtMiddleware.verifyToken, productController.getAllMyOrders);
+router.get('/my-orders', jwtMiddleware.verifyUserToken, productController.getAllMyOrders);
 
-router.post('/my-orders', jwtMiddleware.verifyToken, productController.createMyOrder);
+router.post('/my-orders', jwtMiddleware.verifyUserToken, productController.createMyOrder);
 
 router.get('/vnpay/build-url', productController.buildUrlPayment);
 

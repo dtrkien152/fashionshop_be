@@ -2,10 +2,11 @@ import express from 'express';
 import { container } from '../config';
 import { jwtMiddleware } from '../middlewares';
 import { UserController } from '../controllers';
-import multer from "multer"
+import multer from 'multer';
+
 const router = express.Router();
 const userController = container.resolve(UserController);
- const  upload=multer();
+const upload = multer();
 /**
  * @swagger
  * tags:
@@ -40,7 +41,7 @@ const userController = container.resolve(UserController);
  *       500:
  *         description: Lỗi server
  */
-router.get('/profile', jwtMiddleware.verifyToken, userController.getMyProfile);
+router.get('/profile', jwtMiddleware.verifyUserToken, userController.getMyProfile);
 
 /**
  * @swagger
@@ -68,7 +69,7 @@ router.get('/profile', jwtMiddleware.verifyToken, userController.getMyProfile);
  *       400: { description: Dữ liệu không hợp lệ }
  *       500: { description: Lỗi server }
  */
-router.put('/profile', jwtMiddleware.verifyToken, userController.updateMyProfile);
+router.put('/profile', jwtMiddleware.verifyUserToken, userController.updateMyProfile);
 
 /**
  * @swagger
@@ -102,7 +103,7 @@ router.put('/profile', jwtMiddleware.verifyToken, userController.updateMyProfile
  *       500:
  *         description: Lỗi server
  */
-router.post('/address', jwtMiddleware.verifyToken, userController.createAddress);
+router.post('/address', jwtMiddleware.verifyUserToken, userController.createAddress);
 
 /**
  * @swagger
@@ -145,7 +146,7 @@ router.post('/address', jwtMiddleware.verifyToken, userController.createAddress)
  *       500:
  *         description: Lỗi server
  */
-router.put('/address', jwtMiddleware.verifyToken, userController.updateAddress);
+router.put('/address', jwtMiddleware.verifyUserToken, userController.updateAddress);
 
 /**
  * @swagger
@@ -172,9 +173,9 @@ router.put('/address', jwtMiddleware.verifyToken, userController.updateAddress);
  *       500:
  *         description: Lỗi server
  */
-router.put('/address/:id/default', jwtMiddleware.verifyToken, userController.updateDefaultAddress);
+router.put('/address/:id/default', jwtMiddleware.verifyUserToken, userController.updateDefaultAddress);
 
-router.get('/address', jwtMiddleware.verifyToken, userController.getAddress);
+router.get('/address', jwtMiddleware.verifyUserToken, userController.getAddress);
 
 /**
  * @swagger
@@ -184,8 +185,8 @@ router.get('/address', jwtMiddleware.verifyToken, userController.getAddress);
  */
 
 // Xóa địa chỉ người dùng
-router.delete('/address/:id',jwtMiddleware.verifyToken, userController.deleteAddress);
+router.delete('/address/:id', jwtMiddleware.verifyUserToken, userController.deleteAddress);
 
 // Xóa địa chỉ người dùng
-router.post('/upload-avatar',upload.single('file'),jwtMiddleware.verifyToken, userController.uploadAvatar);
+router.post('/upload-avatar', upload.single('file'), jwtMiddleware.verifyUserToken, userController.uploadAvatar);
 export default router;

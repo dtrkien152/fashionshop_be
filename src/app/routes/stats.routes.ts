@@ -6,12 +6,12 @@ import { jwtMiddleware } from '../middlewares';
 const statsController = container.resolve(StatsController);
 const router = Router();
 
-router.get('/revenue', jwtMiddleware.verifyToken, statsController.getRevenueStats);
+router.get('/revenue', jwtMiddleware.verifyUserToken, statsController.getRevenueStats);
 
-router.get('/top-sell', jwtMiddleware.verifyToken, statsController.getTopSellingProducts);
+router.get('/top-sell', jwtMiddleware.verifyUserToken, statsController.getTopSellingProducts);
 
-router.get('/monthly', jwtMiddleware.verifyToken, statsController.getStatsInMonth);
+router.get('/monthly', jwtMiddleware.verifyUserToken, statsController.getStatsInMonth);
 
-router.get('/top-stock', jwtMiddleware.verifyToken, statsController.getTopStockProduct);
+router.get('/top-stock', jwtMiddleware.verifyUserToken, statsController.getTopStockProduct);
 
 export default router;

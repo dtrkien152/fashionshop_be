@@ -10,6 +10,7 @@ interface SearchParams {
   limit?: number;
   sortBy?: SORT_BY_ENUM;
 }
+
 const ALLOWED_ROLES = ['STAFF', 'SALE', 'ADMIN'];
 
 @injectable()
@@ -101,7 +102,7 @@ class EmployeeService {
         {
           model: Site,
           attributes: ['id', 'name'], // Ví dụ: name = 'Miền Bắc', 'Miền Nam'
-        }
+        },
       ],
       attributes: {
         exclude: ['password'], // Không trả về mật khẩu
@@ -121,6 +122,10 @@ class EmployeeService {
     await employee.save();
 
     return employee;
+  }
+
+  async getByUsername(username: string) {
+    return await Employee.findOne({ where: { username } });
   }
 }
 

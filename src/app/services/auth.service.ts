@@ -1,9 +1,9 @@
 import { delay, inject, injectable } from 'tsyringe';
-import { IUser, User } from '../models';
+import { IEmployee, IUser, User } from '../models';
 import bcrypt from 'bcryptjs';
 import { ACTION, ROLE } from '../constants';
 import { GenerateUtils } from '../utils';
-import { OtpService, UserService } from '../services';
+import { EmployeeService, OtpService, UserService } from '../services';
 import jwt, { JwtPayload, VerifyCallback } from 'jsonwebtoken';
 import { ENV_CONFIG } from '../config';
 import { BadRequestError, NotFoundError } from '../errors';
@@ -11,7 +11,8 @@ import { BadRequestError, NotFoundError } from '../errors';
 @injectable()
 class AuthService {
   constructor(@inject(delay(() => OtpService)) private otpService: OtpService,
-              @inject(delay(() => UserService)) private userService: UserService) {
+              @inject(delay(() => UserService)) private userService: UserService,
+              @inject(delay(() => EmployeeService)) private employeeService: EmployeeService) {
   }
 
   createToken = (user: IUser) => {
@@ -21,6 +22,19 @@ class AuthService {
     }, ENV_CONFIG.jwt.secret, {
       jwtid: GenerateUtils.uuid(),
       subject: user.id.toString(),
+      issuer: ENV_CONFIG.jwt.issuer,
+      algorithm: 'HS256',
+      expiresIn: '24h', // Token hết hạn sau 24 giờ
+    });
+  };
+
+  createAdminToken = (employee: IEmployee) => {
+    return jwt.sign({
+      role: employee.role,
+      username: employee.username,
+    }, ENV_CONFIG.jwt.secret, {
+      jwtid: GenerateUtils.uuid(),
+      subject: employee.id.toString(),
       issuer: ENV_CONFIG.jwt.issuer,
       algorithm: 'HS256',
       expiresIn: '24h', // Token hết hạn sau 24 giờ
@@ -52,10 +66,36 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
-      avatar:user.avatar,
-      phone:user.phone,
+      avatar: user.avatar,
+      phone: user.phone,
       token,
-      fullName:user.fullName
+      fullName: user.fullName,
+    };
+  };
+
+  adminSignIn = async (username: string, password: string) => {
+    // 🔍 Tìm user theo username
+    const employee = await this.employeeService.getByUsername(username);
+
+    if (!employee) {
+      throw new NotFoundError('Bạn đã nhập sai username');
+    }
+
+    // 🔑 Kiểm tra mật khẩu
+    const passwordIsValid = bcrypt.compareSync(password, employee.password);
+    if (!passwordIsValid) {
+      throw new NotFoundError('Bạn đã nhập sai password');
+    }
+
+    // 🛠️ Tạo JWT Token
+    const token = this.createAdminToken(employee);
+
+    return {
+      id: employee.id,
+      username: employee.username,
+      role: employee.role,
+      fullName: employee.fullName,
+      token,
     };
   };
 
@@ -71,10 +111,10 @@ class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
-      avatar:user.avatar,
-      phone:user.phone,
+      avatar: user.avatar,
+      phone: user.phone,
       token,
-      fullName:user.fullName
+      fullName: user.fullName,
     };
   };
 
