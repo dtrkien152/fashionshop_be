@@ -1,13 +1,16 @@
 import express from 'express';
 import { ENV_CONFIG, sequelize, SESSION_CONFIG, swaggerDocs } from './app/config';
-import cors from 'cors';
 import {
   authRoutes,
   cartRoutes,
   categoryRoutes,
+  employeeRoutes,
   orderRoutes,
   productRoutes,
-  shipFeeRoutes, siteRoutes, statsRoutes, stockRoutes,
+  shipFeeRoutes,
+  siteRoutes,
+  statsRoutes,
+  stockRoutes,
   userRoutes,
   voucherRoutes,
 } from './app/routes';
@@ -46,6 +49,7 @@ app.use('/api/stocks', stockRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/files', fileRouter);
+app.use('/api/employee', employeeRoutes);
 
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);

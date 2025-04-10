@@ -10,3 +10,4 @@ export { default as PostRoutes } from './post.routers';
 export { default as stockRoutes } from './stock.routes';
 export { default as siteRoutes } from './site.routes';
 export { default as statsRoutes } from './stats.routes';
+export { default as employeeRoutes } from './employee.routes';

@@ -1,19 +1,20 @@
 import { Sequelize } from 'sequelize-typescript';
 import { ENV_CONFIG } from './env.config';
 import {
-  Post,
-  PostCategory,
   Cart,
   CartDetail,
   Category,
   CategoryEvent,
   Comment,
+  Employee,
   Event,
   Notify,
   Order,
   OrderDetail,
   Otp,
   Payment,
+  Post,
+  PostCategory,
   Product,
   ProductSubDetail,
   ReturnOrder,
@@ -56,6 +57,7 @@ const sequelize = new Sequelize(
       Post, PostCategory, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
       Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
       ReturnOrder, ShipInfo, Site, Stock, Tags, User, UserAddress, UserVoucher, Voucher,
+      Employee,
     ],
   },
 );

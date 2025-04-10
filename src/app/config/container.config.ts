@@ -3,7 +3,7 @@ import { container } from 'tsyringe';
 import {
   AuthService,
   CartService,
-  CategoryService,
+  CategoryService, EmployeeService,
   MailService,
   OrderService,
   OtpService,
@@ -19,7 +19,7 @@ import {
 import { sequelize } from './sequelize.config';
 import {
   AuthController,
-  CartController,
+  CartController, EmployeeController,
   FileController,
   OrderController,
   PostController,
@@ -51,6 +51,7 @@ container.register('PostService', { useClass: PostService });
 container.register('VNPayService', { useClass: VNPayService });
 container.register('SiteService', { useClass: SiteService });
 container.register('StatsService', { useClass: StatsService });
+container.register('EmployeeService', { useClass: EmployeeService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });
@@ -65,5 +66,6 @@ container.register('StockController', { useClass: StockController });
 container.register('FileController', { useClass: FileController });
 container.register('SiteController', { useClass: SiteController });
 container.register('StatsController', { useClass: StatsController });
+container.register('EmployeeController', { useClass: EmployeeController });
 
 export { container };
