@@ -14,7 +14,7 @@ interface IEmployee {
   updatedAt?: Date;
 }
 
-@Table({ tableName: 'user', timestamps: true })
+@Table({ tableName: 'employee', timestamps: true })
 class Employee extends Model<IEmployee> {
   @Column({
     type: DataType.INTEGER,
