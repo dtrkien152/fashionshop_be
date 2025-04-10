@@ -6,8 +6,8 @@ export interface IProductFilterParams {
   sortBy?: SORT_BY_ENUM;
   limit?: number;
   page?: number;
-  isDelete?:boolean;
-  isActive?:boolean;
+  isDelete?: boolean;
+  isActive?: boolean;
 }
 
 export interface IProductSubDetailResponse {
@@ -15,7 +15,7 @@ export interface IProductSubDetailResponse {
   size: string;
   color: string;
   isActive: boolean;
-  totalQuantity: number;
+  unitInStocks: any;
 }
 
 export interface IProductDetailResponse {
@@ -36,7 +36,7 @@ export interface IProductItemResponse {
   id: number;
   category: string;
   productName: string;
-  description?:string;
+  description?: string;
   salePrice: number;
   originalPrice: number;
   flag: {

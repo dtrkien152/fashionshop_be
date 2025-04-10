@@ -6,6 +6,6 @@ import { jwtMiddleware } from '../middlewares';
 const siteController = container.resolve(SiteController);
 const router = Router();
 
-router.get('', jwtMiddleware.verifyToken, siteController.getAllSite);
+router.get('', siteController.getAllSite);
 
 export default router;

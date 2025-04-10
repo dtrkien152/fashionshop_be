@@ -1,10 +1,11 @@
-import {Column, DataType, HasMany, Model, Table} from 'sequelize-typescript';
-import {Stock} from "./stock.model";
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Stock } from './stock.model';
 
 interface ISite {
   id?: number;
   code?: string;
   name?: string;
+  phone?: string;
   address?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -31,6 +32,12 @@ class Site extends Model<ISite> {
     allowNull: true,
   })
   name!: string;
+
+  @Column({
+    type: DataType.STRING(11),
+    allowNull: true,
+  })
+  phone!: string;
 
   @Column({
     type: DataType.STRING(50),

@@ -1,7 +1,17 @@
 // src/services/product.service.ts
 import { col, fn, Op, Order as SequelizeOrder, WhereOptions } from 'sequelize';
 
-import { Category, IProduct, IProductSubDetail, Order, OrderDetail, Product, ProductSubDetail, Stock } from '../models';
+import {
+  Category,
+  IProduct,
+  IProductSubDetail,
+  Order,
+  OrderDetail,
+  Product,
+  ProductSubDetail,
+  Site,
+  Stock,
+} from '../models';
 import { injectable } from 'tsyringe';
 import {
   IProductDetailResponse,
@@ -132,7 +142,7 @@ class ProductService {
           include: [
             {
               model: Stock,
-              attributes: ['unit'],
+              attributes: ['siteId', 'unit'],
             },
           ],
         },
@@ -158,7 +168,10 @@ class ProductService {
         size: subDetail.size,
         color: subDetail.color,
         isActive: subDetail.isActive,
-        totalQuantity: subDetail.Stocks?.reduce((total, stock) => total + stock.unit, 0) || 0,
+        unitInStocks: subDetail.Stocks.reduce((acc, cur) => {
+          acc[+cur.siteId] = cur.unit;
+          return acc;
+        }, {}),
       })),
     };
 
