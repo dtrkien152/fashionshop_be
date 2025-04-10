@@ -17,8 +17,8 @@ import {
 import swaggerUi from 'swagger-ui-express';
 import { corsMiddleware, errorMiddleware, passportMiddleware } from './app/middlewares';
 import bodyParser from 'body-parser';
-import postRouters from './app/routes/post.routers';
 import fileRouter from './app/routes/file.router';
+import postRouters from './app/routes/post.routers';
 
 const app = express();
 const port = ENV_CONFIG.server.port || 5000;
@@ -49,7 +49,7 @@ app.use('/api/stocks', stockRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/files', fileRouter);
-app.use('/api/employee', employeeRoutes);
+app.use('/api/employees', employeeRoutes);
 
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);
