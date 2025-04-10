@@ -134,7 +134,11 @@ class OrderService {
     if (!order) throw new BadRequestError('Order not found!');
     const shipResponse = await this.ghnService.createOrderShipping(order, +weight, +width, +height);
     console.log(shipResponse);
-    return await Order.update({ status: ORDER_STATUS.SHIPPING }, { where: { code } });
+    await Order.update({
+      status: ORDER_STATUS.SHIPPING,
+      shipCode: shipResponse.data.data.order_code,
+    }, { where: { code } });
+    return { message: shipResponse.data.message_display };
   }
 
   async getAll(filter?: OrderFilter) {

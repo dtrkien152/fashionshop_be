@@ -8,21 +8,27 @@ class GhnService {
   axios: any;
 
   constructor() {
-    this.axios = axios.create({
-      baseURL: ENV_CONFIG.ghn.baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        Token: ENV_CONFIG.ghn.token,
-        ShopId: ENV_CONFIG.ghn.shopId,
+    this.axios = axios;
+    this.axios.interceptors.request.use(
+      function(config: any) {
+        config.headers = {
+          'Content-Type': 'application/json',
+          Token: ENV_CONFIG.ghn.token,
+          ShopId: ENV_CONFIG.ghn.shopId,
+        };
+        return config;
       },
-    });
+      function(error: any) {
+        return Promise.reject(error);
+      },
+    );
   }
 
   async createOrderShipping(order: OrderDto, weight: number, width: number, height: number) {
     const payload: CreateOrderGhnRequest = {
       payment_type_id: 1,
       service_type_id: 2,
-      required_note: 'Đồng kiểm hàng',
+      required_note: 'CHOXEMHANGKHONGTHU',
       from_name: 'Vebo Shop',
       from_phone: '0919737083',
       from_address: '10 Hồ Tùng Mậu, Hà Nội, Việt Nam',
@@ -44,7 +50,7 @@ class GhnService {
         quantity: el.unit,
       })),
     };
-    return await this.axios.post('/shipping-order/create', payload);
+    return await this.axios.post(ENV_CONFIG.ghn.baseUrl + '/shipping-order/create', payload);
   }
 }
 

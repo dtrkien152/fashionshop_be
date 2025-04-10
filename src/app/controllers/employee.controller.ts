@@ -1,7 +1,8 @@
 import { inject, injectable } from 'tsyringe';
-import { EmployeeService, FileService } from '../services';
+import { EmployeeService, FileService, PostService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { SORT_BY_ENUM } from '../constants';
+import bcrypt from 'bcryptjs';
 
 @injectable()
 class EmployeeController {
@@ -9,7 +10,6 @@ class EmployeeController {
   constructor(@inject(EmployeeService) private employeeService: EmployeeService,
               @inject(FileService) private fileService: FileService) {
   }
-
 
   search = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -82,20 +82,29 @@ class EmployeeController {
       next(error);
     }
   };
-  async createEmployee(req: Request, res: Response) {
+
+  createEmployee = async (req: Request, res: Response, next: NextFunction): Promise<any> =>{
     try {
       const data = req.body;
 
-      // Convert kiểu dữ liệu
-      const gender = data.gender === 'true' || data.gender === true;
+      const gender = data.gender==1;
       const dob = data.birthday ? new Date(data.birthday) : null;
       const siteId = data.siteId ? Number(data.siteId) : null;
 
-      let avatarUrl = null;
+      let avatarUrl: string | null = null;
+
       if (req.files && (req.files as any).avatar) {
         const file = (req.files as any).avatar[0];
-        avatarUrl = await this.fileService.uploadFileToAzure(file.buffer, file.mimetype, file.originalname);
+        avatarUrl = await this.fileService.uploadFileToAzure(
+          file.buffer,
+          file.mimetype,
+          file.originalname
+        );
       }
+
+      // Tạo mật khẩu mặc định và mã hóa
+      const rawPassword = '12345678'; // có thể random ở đây
+      const hashedPassword = bcrypt.hashSync(rawPassword, 8);
 
       const newEmployee = await this.employeeService.createEmployee({
         fullName: data.fullName,
@@ -105,16 +114,49 @@ class EmployeeController {
         gender,
         dob,
         siteId,
-        avatar: avatarUrl,
         isActive: true,
+        password: hashedPassword, // gán mật khẩu đã mã hóa
+        avatar: avatarUrl,
       });
 
-      res.json({ message: 'Tạo mới nhân viên thành công', employee: newEmployee });
+      res.status(200).json({ message: 'Tạo mới nhân viên thành công', employee: newEmployee });
     } catch (error: any) {
       console.error('Lỗi tạo mới employee:', error);
-      res.status(500).json({ message: 'Tạo employee thất bại', error: error.message });
+      next(error);
     }
   }
+
+  updateEmployee = async (req: Request, res: Response ,next: NextFunction): Promise<any> => {
+    try {
+      const id = Number(req.params.id);
+      const data = req.body;
+
+      let fileBuffer: Buffer | undefined;
+      let mimeType: string | undefined;
+      let fileName: string | undefined;
+
+      if (req.files && (req.files as any).avatar) {
+        const file = (req.files as any).avatar[0];
+        fileBuffer = file.buffer;
+        mimeType = file.mimetype;
+        fileName = file.originalname;
+      }
+
+      const updatedEmployee = await this.employeeService.updateEmployee(
+        id,
+        data,
+        fileBuffer,
+        mimeType,
+        fileName
+      );
+
+      res.status(200).json({ message: 'Cập nhật nhân viên thành công', employee: updatedEmployee });
+    } catch (error: any) {
+      console.error('Lỗi cập nhật employee:', error);
+      next(error);
+    }
+  };
+
 }
 
 export default EmployeeController;

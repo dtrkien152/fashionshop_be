@@ -19,4 +19,11 @@ router.post(
   employeeController.createEmployee
 );
 
+router.put(
+  '/update/:id',
+  upload.fields([{ name: 'avatar', maxCount: 1 }]),
+  employeeController.updateEmployee
+);
+
+
 export default router;

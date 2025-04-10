@@ -141,28 +141,76 @@ class EmployeeService {
 
   async createEmployee(data: any, fileBuffer?: Buffer, mimeType?: string, fileName?: string) {
     const mailService = new MailService();
+    const username = data.email;
+    const siteId = data.siteId ? Number(data.siteId) : null;
 
-    // Tạo mật khẩu random
+    // ✅ Kiểm tra username/email đã tồn tại
+    const existingEmployee = await Employee.findOne({ where: { username } });
+    if (existingEmployee) {
+      throw new Error('Email đã tồn tại, vui lòng dùng email khác');
+    }
+
+    // Tạo mật khẩu ngẫu nhiên
     const plainPassword = mailService.generateRandomPassword(8);
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     // Upload avatar nếu có
-    let avatarUrl: string | null = null;
+    // let avatarUrl: string | null = null;
+    // if (fileBuffer && mimeType && fileName) {
+    //   avatarUrl = await this.fileService.uploadFileToAzure(fileBuffer, mimeType, fileName);
+    // }
+
+    // Tạo employee
+    const newEmployee = await Employee.create({
+      ...data,
+      username,
+      phone:data.phoneNumber,
+      password: hashedPassword,
+      isActive: true,
+      siteId: data.siteId ?? null,
+      avatar: data.avatar,
+    });
+
+    // Gửi mail tài khoản
+    await mailService.sendNewEmployeeAccount(data.email, plainPassword, data.fullName);
+
+    return newEmployee;
+  }
+
+  async updateEmployee(id: number, data: any, fileBuffer?: Buffer, mimeType?: string, fileName?: string) {
+    // Tìm nhân viên theo ID
+    const employee = await Employee.findByPk(id);
+    if (!employee) {
+      throw new Error('Nhân viên không tồn tại');
+    }
+
+    // Kiểm tra nếu cập nhật email trùng với người khác
+    if (data.email && data.email !== employee.username) {
+      const existed = await Employee.findOne({ where: { username: data.email } });
+      if (existed && existed.id !== id) {
+        throw new Error('Email đã tồn tại, vui lòng dùng email khác');
+      }
+    }
+
+    // Upload avatar nếu có
+    let avatarUrl = employee.avatar;
     if (fileBuffer && mimeType && fileName) {
       avatarUrl = await this.fileService.uploadFileToAzure(fileBuffer, mimeType, fileName);
     }
 
-    const newEmployee = await Employee.create({
-      ...data,
-      password: hashedPassword,
+    const updatedEmployee = await employee.update({
+      fullName: data.fullName,
+      username: data.email,
+      role: data.role,
+      gender: data.gender == 1,
+      dob: data.birthday ? new Date(data.birthday) : null,
+      siteId: data.siteId ? Number(data.siteId) : null,
+      isActive: data.isActive,
+      phone:data.phoneNumber,
       avatar: avatarUrl,
-      isActive: true,
     });
 
-    // Gửi email với mật khẩu đã tạo
-    await mailService.sendNewEmployeeAccount(data.username, plainPassword, data.fullName);
-
-    return newEmployee;
+    return updatedEmployee;
   }
 }
 

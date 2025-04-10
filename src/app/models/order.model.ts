@@ -11,6 +11,7 @@ interface IOrder {
   voucherCode?: string;
   shippedAt?: Date;
   shipFee?: number;
+  shipCode?: string;
   customerName?: string;
   customerAddress?: string;
   customerPhone?: string;
@@ -70,6 +71,12 @@ class Order extends Model<IOrder> {
     allowNull: true,
   })
   shipFee!: number;
+
+  @Column({
+    type: DataType.STRING(32),
+    allowNull: true,
+  })
+  shipCode!: string;
 
   @Column({
     type: DataType.STRING(50),
