@@ -14,6 +14,8 @@ interface IEmployee {
   updatedAt?: Date;
   avatar?: string;
   address?: string;
+  dob?: Date;
+  gender?: boolean;
 }
 
 @Table({ tableName: 'employee', timestamps: true })
@@ -76,6 +78,18 @@ class Employee extends Model<IEmployee> {
   })
   address!: string;
 
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: true,
+  })
+  gender!: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  dob!: Date;
 
   @Column({
     type: DataType.BOOLEAN,

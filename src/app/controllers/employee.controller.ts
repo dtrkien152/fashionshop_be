@@ -1,11 +1,13 @@
 import { inject, injectable } from 'tsyringe';
-import { EmployeeService } from '../services';
+import { EmployeeService, FileService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { SORT_BY_ENUM } from '../constants';
 
 @injectable()
 class EmployeeController {
-  constructor(@inject(EmployeeService) private employeeService: EmployeeService) {
+
+  constructor(@inject(EmployeeService) private employeeService: EmployeeService,
+              @inject(FileService) private fileService: FileService) {
   }
 
 
@@ -17,14 +19,15 @@ class EmployeeController {
         page = 1,
         limit = 10,
         sortBy = 'NEWEST',
+        role
       } = req.body.params;
-      console.log('query',req.body);
       const result = await this.employeeService.searchByAdmin({
         keyword: keyword as string,
         siteId: siteId ? Number(siteId) : undefined,
         page: Number(page),
         limit: Number(limit),
         sortBy: sortBy as SORT_BY_ENUM,
+        role,
       });
 
       res.status(200).json({
@@ -79,7 +82,39 @@ class EmployeeController {
       next(error);
     }
   };
+  async createEmployee(req: Request, res: Response) {
+    try {
+      const data = req.body;
 
+      // Convert kiểu dữ liệu
+      const gender = data.gender === 'true' || data.gender === true;
+      const dob = data.birthday ? new Date(data.birthday) : null;
+      const siteId = data.siteId ? Number(data.siteId) : null;
+
+      let avatarUrl = null;
+      if (req.files && (req.files as any).avatar) {
+        const file = (req.files as any).avatar[0];
+        avatarUrl = await this.fileService.uploadFileToAzure(file.buffer, file.mimetype, file.originalname);
+      }
+
+      const newEmployee = await this.employeeService.createEmployee({
+        fullName: data.fullName,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        role: data.role,
+        gender,
+        dob,
+        siteId,
+        avatar: avatarUrl,
+        isActive: true,
+      });
+
+      res.json({ message: 'Tạo mới nhân viên thành công', employee: newEmployee });
+    } catch (error: any) {
+      console.error('Lỗi tạo mới employee:', error);
+      res.status(500).json({ message: 'Tạo employee thất bại', error: error.message });
+    }
+  }
 }
 
 export default EmployeeController;

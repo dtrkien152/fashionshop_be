@@ -147,6 +147,41 @@ class MailService {
       throw new Error('Không thể gửi email xác nhận đơn hàng.');
     }
   };
+
+  generateRandomPassword(length: number = 8): string {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  }
+
+  sendNewEmployeeAccount = async (email: string, password: string, fullName: string) => {
+    try {
+      const mailOptions = {
+        from: ENV_CONFIG.mail.user,
+        to: email,
+        subject: 'Thông tin tài khoản nhân viên mới',
+        html: `
+        <h2>Xin chào ${fullName},</h2>
+        <p>Tài khoản nhân viên của bạn tại hệ thống đã được tạo thành công.</p>
+        <p><b>Username:</b> ${email}</p>
+        <p><b>Mật khẩu:</b> ${password}</p>
+        <p>Vui lòng đăng nhập và thay đổi mật khẩu ngay sau khi đăng nhập lần đầu.</p>
+        <p>Trân trọng,</p>
+        <p><b>Phòng nhân sự</b></p>
+      `,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Email tài khoản nhân viên đã gửi tới: ${email}`);
+    } catch (error) {
+      console.error(`❌ Lỗi khi gửi email tài khoản: ${error.message}`);
+      throw new Error('Không thể gửi email tạo tài khoản.');
+    }
+  };
 }
 
 export default MailService;
