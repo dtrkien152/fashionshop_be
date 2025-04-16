@@ -98,6 +98,17 @@ class AuthController {
     }
   };
 
+  changeEmployeePassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { userId } = req.session;
+      const { oldPassword, newPassword } = req.body;
+      await this.userService.changeEmployeePassword(userId, oldPassword, newPassword);
+      res.status(200).json({ success: true, message: 'Đổi mật khẩu thành công!' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   sendMailForgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { email } = req.body;

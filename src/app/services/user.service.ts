@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import { IUser, IUserAddress, User, UserAddress } from '../models';
+import { Employee, IUser, IUserAddress, User, UserAddress } from '../models';
 import { ObjectUtils } from '../utils';
 import { NotFoundError } from '../errors';
 import FileService from './file.service';
@@ -126,6 +126,22 @@ class UserService {
     await user.update({ password: bcrypt.hashSync(newPassword, 8) });
     return { success: true };
   }
+  async changeEmployeePassword(userId: number, oldPassword: any, newPassword: any) {
+    const user = await Employee.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
+    }
+
+    // 🔑 Kiểm tra mật khẩu
+    const passwordIsValid = bcrypt.compareSync(oldPassword, user.password);
+    if (!passwordIsValid) {
+      throw new NotFoundError('Bạn đã nhập sai password');
+    }
+    await user.update({ password: bcrypt.hashSync(newPassword, 8) });
+    return { success: true };
+  }
+
 }
 
 

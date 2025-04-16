@@ -215,6 +215,7 @@ router.get('/admin/me', jwtMiddleware.verifyEmployeeToken, userController.getUse
  *         description: Internal server error.
  */
 router.put('/change-password', jwtMiddleware.verifyUserToken, authController.changeMyPassword);
+router.put('/employee/change-password', jwtMiddleware.verifyUserToken, authController.changeEmployeePassword);
 
 /**
  * @swagger

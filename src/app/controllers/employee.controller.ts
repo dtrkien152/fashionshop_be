@@ -3,6 +3,7 @@ import { EmployeeService, FileService, PostService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { SORT_BY_ENUM } from '../constants';
 import bcrypt from 'bcryptjs';
+import { UnauthorizedError } from '../errors';
 
 @injectable()
 class EmployeeController {
@@ -156,7 +157,41 @@ class EmployeeController {
       next(error);
     }
   };
+   updateProfile = async (req: Request, res: Response,next:NextFunction):Promise<any> => {
+     try {
+       const { userId } = req.session;
+       if (!userId) {
+         throw new UnauthorizedError('Phiên đăng nhập hết hạn');
+       }
+       const payload = req.body;
 
+       const updatedEmployee =  this.employeeService.updateProfile(userId, payload);
+
+       return res.status(200).json({
+         message: 'Cập nhật thông tin thành công',
+         data: updatedEmployee,
+       });
+     } catch (error) {
+       console.error('Lỗi cập nhật thông tin cá nhân:', error);
+       return res.status(500).json({
+         message: 'Cập nhật thông tin thất bại',
+       });
+     }
+  };
+
+  uploadAvatar = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { userId } = req.session;
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+      const result = await this.employeeService.uploadAvatar(userId, req.file.buffer, req.file.mimetype);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default EmployeeController;

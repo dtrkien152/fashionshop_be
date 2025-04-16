@@ -95,6 +95,10 @@ class AuthService {
       email: employee.email,
       role: employee.role,
       fullName: employee.fullName,
+      dob:employee.dob,
+      address:employee.address,
+      gender:employee.gender,
+      avatar:employee.avatar,
       token,
     };
   };

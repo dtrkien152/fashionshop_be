@@ -187,6 +187,5 @@ router.get('/address', jwtMiddleware.verifyUserToken, userController.getAddress)
 // Xóa địa chỉ người dùng
 router.delete('/address/:id', jwtMiddleware.verifyUserToken, userController.deleteAddress);
 
-// Xóa địa chỉ người dùng
 router.post('/upload-avatar', upload.single('file'), jwtMiddleware.verifyUserToken, userController.uploadAvatar);
 export default router;

@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { SORT_BY_ENUM } from '../constants';
 import { Op } from 'sequelize';
-import { Employee, Site, User } from '../models';
+import { Employee, Site } from '../models';
 import bcrypt from 'bcryptjs';
 import { NotFoundError } from '../errors';
 import { FileService, MailService } from './index';
@@ -110,6 +110,7 @@ class EmployeeService {
 
   async getDetail(id: number) {
     const employee = await Employee.findOne({
+      rejectOnEmpty: undefined,
       where: { id },
       include: [
         {
@@ -119,7 +120,7 @@ class EmployeeService {
       ],
       attributes: {
         exclude: ['password'], // Không trả về mật khẩu
-      },
+      }
     });
 
     return employee;
@@ -155,7 +156,7 @@ class EmployeeService {
     const siteId = data.siteId ? Number(data.siteId) : null;
 
     // ✅ Kiểm tra username/email đã tồn tại
-    const existingEmployee = await Employee.findOne({ where: { email: email } });
+    const existingEmployee = await Employee.findOne({ rejectOnEmpty: undefined, where: { email: email } });
     if (existingEmployee) {
       throw new Error('Email đã tồn tại, vui lòng dùng email khác');
     }
@@ -197,7 +198,7 @@ class EmployeeService {
 
     // Kiểm tra nếu cập nhật email trùng với người khác
     if (data.email && data.email !== employee.email) {
-      const existed = await Employee.findOne({ where: { email: data.email } });
+      const existed = await Employee.findOne({ rejectOnEmpty: undefined, where: { email: data.email } });
       if (existed && existed.id !== id) {
         throw new Error('Email đã tồn tại, vui lòng dùng email khác');
       }
@@ -222,6 +223,39 @@ class EmployeeService {
     });
 
     return updatedEmployee;
+  };
+
+   updateProfile = async (employeeId: number, payload: Partial<Employee>) => {
+    const employee = await Employee.findByPk(employeeId);
+
+    if (!employee) throw new Error('Không tìm thấy nhân viên');
+
+    await employee.update({
+      fullName: payload.fullName,
+      dob: payload.dob,
+      gender: payload.gender,
+      phone: payload.phone,
+      address: payload.address,
+    });
+
+    return employee;
+  };
+
+  async uploadAvatar(userId: number, fileBuffer: Buffer, mimeType: string): Promise<string> {
+    // Kiểm tra xem user có tồn tại không
+    const user = await Employee.findByPk(userId);
+    if (!user) {
+      throw new NotFoundError('User không tồn tại!');
+    }
+
+    // Upload avatar lên Azure
+    const fileName = `avatar-${userId}-${Date.now()}.jpg`; // Tên file theo ID user
+    const avatar = await this.fileService.uploadFileToAzure(fileBuffer, mimeType, fileName);
+
+    // Cập nhật URL avatar vào database
+    await user.update({ avatar });
+
+    return avatar; // Trả về URL avatar mới
   }
 }
 

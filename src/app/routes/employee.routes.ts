@@ -2,6 +2,7 @@ import { container } from '../config';
 import { EmployeeController, SiteController } from '../controllers';
 import { Router } from 'express';
 import multer from 'multer';
+import { jwtMiddleware } from '../middlewares';
 
 const employeeController = container.resolve(EmployeeController);
 const siteController = container.resolve(SiteController);
@@ -25,5 +26,9 @@ router.put(
   employeeController.updateEmployee
 );
 
+// Cập nhật thông tin cá nhân
+router.put('/profile', jwtMiddleware.verifyUserToken, employeeController.updateProfile);
+
+router.post('/upload-avatar', upload.single('file'), jwtMiddleware.verifyUserToken, employeeController.uploadAvatar);
 
 export default router;
