@@ -70,7 +70,30 @@ router.post('/sign-up', authController.signUp);
  */
 router.post('/sign-in', authController.signIn);
 
-router.post('/admin/sign-up', authController.adminSignIn);
+/**
+ * @swagger
+ * /api/auth/admin/sign-in:
+ *   post:
+ *     summary: Đăng nhập hệ thống quản trị
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "hapego8519@calmpros.com"
+ *               password:
+ *                 type: "string"
+ *                 example: "Vebo123$%^"
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công
+ */
+router.post('/admin/sign-in', authController.adminSignIn);
 
 /**
  * @swagger
@@ -142,6 +165,19 @@ router.get(
  *         description: Thông tin người dùng
  */
 router.get('/me', jwtMiddleware.verifyUserToken, userController.getUserProfile);
+
+/**
+ * @swagger
+ * /api/auth/admin/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Lấy thông tin người dùng quản trị hiện tại
+ *     description: API này trả về thông tin người dùng quản trị sau khi xác thực thành công bằng Google SSO.
+ *     responses:
+ *       200:
+ *         description: Thông tin người dùng
+ */
+router.get('/admin/me', jwtMiddleware.verifyEmployeeToken, userController.getUserAdminProfile);
 
 /**
  * @swagger

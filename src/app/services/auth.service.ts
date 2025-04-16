@@ -31,7 +31,7 @@ class AuthService {
   createAdminToken = (employee: IEmployee) => {
     return jwt.sign({
       role: employee.role,
-      username: employee.username,
+      email: employee.email,
     }, ENV_CONFIG.jwt.secret, {
       jwtid: GenerateUtils.uuid(),
       subject: employee.id.toString(),
@@ -73,12 +73,12 @@ class AuthService {
     };
   };
 
-  adminSignIn = async (username: string, password: string) => {
-    // 🔍 Tìm user theo username
-    const employee = await this.employeeService.getByUsername(username);
+  adminSignIn = async (email: string, password: string) => {
+    // 🔍 Tìm user theo email
+    const employee = await this.employeeService.getByEmail(email);
 
     if (!employee) {
-      throw new NotFoundError('Bạn đã nhập sai username');
+      throw new NotFoundError('Bạn đã nhập sai email');
     }
 
     // 🔑 Kiểm tra mật khẩu
@@ -92,7 +92,7 @@ class AuthService {
 
     return {
       id: employee.id,
-      username: employee.username,
+      email: employee.email,
       role: employee.role,
       fullName: employee.fullName,
       token,

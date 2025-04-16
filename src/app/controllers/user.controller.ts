@@ -1,14 +1,15 @@
 import { inject, injectable } from 'tsyringe';
-import { UserService } from '../services';
+import { EmployeeService, UserService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { ObjectUtils } from '../utils';
 import { UnauthorizedError } from '../errors';
-import { IUserAddress } from '../models';
+import { Employee, IUserAddress } from '../models';
 
 @injectable()
 class UserController {
 
-  constructor(@inject(UserService) private userService: UserService) {
+  constructor(@inject(UserService) private userService: UserService,
+              @inject(EmployeeService) private employeeService: EmployeeService) {
   }
 
   getMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -52,6 +53,31 @@ class UserController {
           fullName: user.fullName,
           role: user.role,
           avatar: user.avatar,
+        };
+        res.json({ data });
+        return;
+      }
+      res.json(null);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getUserAdminProfile = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { employeeId } = req.session;
+      if (!employeeId) {
+        throw new UnauthorizedError('Phiên đăng nhập hết hạn');
+      }
+
+      const employee = await this.employeeService.getById(employeeId);
+      if (employee) {
+        const data = {
+          id: employee.id,
+          email: employee.email,
+          fullName: employee.fullName,
+          role: employee.role,
+          avatar: employee.avatar,
         };
         res.json({ data });
         return;

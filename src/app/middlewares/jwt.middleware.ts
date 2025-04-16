@@ -36,7 +36,7 @@ const verifyEmployeeToken = (req: Request, res: Response, next: NextFunction): P
       return res.status(401).json({ message: 'Unauthorized!' });
     }
     req.session['employeeId'] = Number(decoded.sub);
-    req.session['username'] = decoded['username'];
+    req.session['email'] = decoded['email'];
     req.session['role'] = decoded['role'];
     next();
   });

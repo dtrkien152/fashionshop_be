@@ -8,11 +8,11 @@ const router = Router();
 
 router.get('', shipFeeController.getAll);
 
-router.post('', jwtMiddleware.verifyUserToken, shipFeeController.create);
+router.post('', jwtMiddleware.verifyEmployeeToken, shipFeeController.create);
 
-router.put('', jwtMiddleware.verifyUserToken, shipFeeController.update);
+router.put('', jwtMiddleware.verifyEmployeeToken, shipFeeController.update);
 
-router.delete('/:id', jwtMiddleware.verifyUserToken, shipFeeController.deactivate);
+router.delete('/:id', jwtMiddleware.verifyEmployeeToken, shipFeeController.deactivate);
 
 router.get('/calculator', shipFeeController.getFee);
 

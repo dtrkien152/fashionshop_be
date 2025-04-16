@@ -2,6 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import { StatsService } from '../services';
 import { NextFunction, Request, Response } from 'express';
 import { StatsFilter } from '../dto';
+import bcrypt from 'bcryptjs';
 
 @injectable()
 class StatsController {

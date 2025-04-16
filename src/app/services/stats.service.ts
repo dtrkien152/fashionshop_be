@@ -80,7 +80,7 @@ class StatsService {
     // Tính phần trăm tăng trưởng (tránh chia cho 0)
     const calculateGrowth = (currentValue: number, lastValue: number) => {
       if (lastValue === 0) return currentValue > 0 ? 100 : 0;
-      return ((currentValue - lastValue) / lastValue) * 100;
+      return (((currentValue - lastValue) / lastValue) * 100).toFixed(2);
     };
     return {
       totalRevenue: {

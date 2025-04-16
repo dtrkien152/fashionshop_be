@@ -7,8 +7,8 @@ const stockController = container.resolve(StockController);
 
 const router = Router();
 
-router.get('', jwtMiddleware.verifyUserToken, stockController.getAllStock);
+router.get('', jwtMiddleware.verifyEmployeeToken, stockController.getAllStock);
 
-router.post('', jwtMiddleware.verifyUserToken, stockController.upsertStock);
+router.post('', jwtMiddleware.verifyEmployeeToken, stockController.upsertStock);
 
 export default router;

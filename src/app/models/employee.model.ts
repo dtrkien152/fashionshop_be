@@ -5,7 +5,7 @@ interface IEmployee {
   id?: number;
   siteId?: number;
   code?: string;
-  username?: string;
+  email?: string;
   password?: string;
   fullName?: string;
   role?: string;
@@ -47,7 +47,7 @@ class Employee extends Model<IEmployee> {
     allowNull: true,
     unique: true,
   })
-  username!: string;
+  email!: string;
 
   @Column({
     type: DataType.STRING(64),

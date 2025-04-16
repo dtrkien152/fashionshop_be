@@ -1,10 +1,11 @@
 import { inject, injectable } from 'tsyringe';
 import { SORT_BY_ENUM } from '../constants';
 import { Op } from 'sequelize';
-import { Employee, Site } from '../models';
+import { Employee, Site, User } from '../models';
 import bcrypt from 'bcryptjs';
 import { NotFoundError } from '../errors';
 import { FileService, MailService } from './index';
+import { GenerateUtils } from '../utils';
 
 interface SearchParams {
   keyword?: string;
@@ -21,8 +22,9 @@ const ALLOWED_ROLES = ['STAFF', 'SALE', 'ADMIN'];
 class EmployeeService {
   constructor(
     @inject(FileService) private fileService: FileService,
-    @inject(MailService) private mailService: MailService
-  ) {}
+    @inject(MailService) private mailService: MailService,
+  ) {
+  }
 
   async searchByAdmin({
                         keyword,
@@ -33,7 +35,7 @@ class EmployeeService {
                         sortBy = SORT_BY_ENUM.NEWEST,
                       }: SearchParams) {
     const whereCondition: any = {};
-    if (role&&role!="all") {
+    if (role && role != 'all') {
       whereCondition.role = role;
     } else {
       // Nếu không có role, mặc định chỉ lấy STAFF và SALE
@@ -63,7 +65,7 @@ class EmployeeService {
 
     const { count, rows } = await Employee.findAndCountAll({
       where: whereCondition,
-      attributes: ['id', 'code', 'username', 'fullName', 'role', 'isActive', 'createdAt', 'avatar'],
+      attributes: ['id', 'code', 'email', 'fullName', 'role', 'isActive', 'createdAt', 'avatar'],
       include: [{ model: Site, attributes: ['id', 'name'] }],
       order: orderCondition,
       limit: Number(limit),
@@ -135,17 +137,25 @@ class EmployeeService {
     return employee;
   }
 
-  async getByUsername(username: string) {
-    return await Employee.findOne({ where: { username } });
+  async getByEmail(email: string) {
+    return await Employee.findOne({ where: { email: email } });
+  }
+
+  async getById(id: number): Promise<Employee> {
+    const employee = await Employee.findByPk(id);
+    if (!employee) {
+      throw new NotFoundError('User không tồn tại!');
+    }
+    return employee;
   }
 
   async createEmployee(data: any, fileBuffer?: Buffer, mimeType?: string, fileName?: string) {
     const mailService = new MailService();
-    const username = data.email;
+    const email = data.email;
     const siteId = data.siteId ? Number(data.siteId) : null;
 
     // ✅ Kiểm tra username/email đã tồn tại
-    const existingEmployee = await Employee.findOne({ where: { username } });
+    const existingEmployee = await Employee.findOne({ where: { email: email } });
     if (existingEmployee) {
       throw new Error('Email đã tồn tại, vui lòng dùng email khác');
     }
@@ -163,8 +173,9 @@ class EmployeeService {
     // Tạo employee
     const newEmployee = await Employee.create({
       ...data,
-      username,
-      phone:data.phoneNumber,
+      code: GenerateUtils.code('EMP'),
+      email: email,
+      phone: data.phoneNumber,
       password: hashedPassword,
       isActive: true,
       siteId: data.siteId ?? null,
@@ -185,8 +196,8 @@ class EmployeeService {
     }
 
     // Kiểm tra nếu cập nhật email trùng với người khác
-    if (data.email && data.email !== employee.username) {
-      const existed = await Employee.findOne({ where: { username: data.email } });
+    if (data.email && data.email !== employee.email) {
+      const existed = await Employee.findOne({ where: { email: data.email } });
       if (existed && existed.id !== id) {
         throw new Error('Email đã tồn tại, vui lòng dùng email khác');
       }
@@ -200,13 +211,13 @@ class EmployeeService {
 
     const updatedEmployee = await employee.update({
       fullName: data.fullName,
-      username: data.email,
+      email: data.email,
       role: data.role,
       gender: data.gender == 1,
       dob: data.birthday ? new Date(data.birthday) : null,
       siteId: data.siteId ? Number(data.siteId) : null,
       isActive: data.isActive,
-      phone:data.phoneNumber,
+      phone: data.phoneNumber,
       avatar: avatarUrl,
     });
 

@@ -57,11 +57,11 @@ class VoucherService {
   async add(payload: VoucherCreateRequest, addForAll?: boolean) {
     const voucher: IVoucher = { ...payload, code: GenerateUtils.code('VOU').toUpperCase(), isActive: true };
     const voucherAdded = await Voucher.create(voucher);
-    if (!addForAll) {
+    if (addForAll) {
       const userIds = await User.findAll({ where: { role: ROLE.USER }, attributes: ['id'] });
       const userVoucher = userIds.map((u) => ({
         userId: u.id,
-        voucherId: voucher.id,
+        voucherId: voucherAdded.id,
         isActive: false,
       } as IUserVoucher));
       await UserVoucher.bulkCreate(userVoucher);
