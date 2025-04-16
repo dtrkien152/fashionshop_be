@@ -66,7 +66,7 @@ class PostController {
         return res.status(404).json({ message: 'Post not found' });
       }
 
-      return res.json(postDetail);
+      return res.status(200).json(postDetail);
     } catch (error) {
       next(error);
     }

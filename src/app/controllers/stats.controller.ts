@@ -1,8 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { StatsService } from '../services';
 import { NextFunction, Request, Response } from 'express';
-import { StatsFilter } from '../dto';
-import bcrypt from 'bcryptjs';
 
 @injectable()
 class StatsController {
@@ -18,7 +16,7 @@ class StatsController {
         siteId: siteId as string,
       };
       const results = await this.statsService.getRevenueStats(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -33,7 +31,7 @@ class StatsController {
         siteId: siteId as string,
       };
       const results = await this.statsService.getTopSellingProducts(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -43,7 +41,7 @@ class StatsController {
     try {
       const { siteId } = req.query;
       const results = await this.statsService.getStatsInMonth(siteId as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -53,7 +51,7 @@ class StatsController {
     try {
       const { siteId } = req.query;
       const results = await this.statsService.getTopStockProduct(siteId as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

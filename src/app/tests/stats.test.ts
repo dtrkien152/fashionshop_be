@@ -1,11 +1,18 @@
 import { container } from '../config';
+import { StatsController } from '../controllers';
 import { NextFunction, Request, Response } from 'express';
-import { ProductController } from '../controllers';
+import process from 'node:process';
 
-const controller = container.resolve(ProductController);
+const controller = container.resolve(StatsController);
+const token = process.env.TOKEN_TEST;
 
-describe('ProductController - getAllCategory', () => {
-  const mockReq = { body: { keyword: '' } } as Request;
+describe('StatsController - getStatsInMonth', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: { siteId: 0 },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -18,14 +25,19 @@ describe('ProductController - getAllCategory', () => {
   });
 
   it('Status success', async () => {
-    await controller.searchProducts(mockReq, mockRes, mockNext);
+    await controller.getStatsInMonth(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - getProductById', () => {
-  const mockReq = { params: { id: '1' } } as unknown as Request;
+describe('StatsController - getTopStockProduct', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: { siteId: 0 },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -38,14 +50,23 @@ describe('ProductController - getProductById', () => {
   });
 
   it('Status success', async () => {
-    await controller.getProductById(mockReq, mockRes, mockNext);
+    await controller.getTopStockProduct(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - countProducts', () => {
-  const mockReq = {} as unknown as Request;
+describe('StatsController - getTopSellingProducts', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: {
+      startAt: '1741971600000',
+      endAt: '1744649999999',
+      siteId: 0,
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -58,14 +79,23 @@ describe('ProductController - countProducts', () => {
   });
 
   it('Status success', async () => {
-    await controller.countProducts(mockReq, mockRes, mockNext);
+    await controller.getTopSellingProducts(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - getProductById', () => {
-  const mockReq = { params: { id: 1 } } as unknown as Request;
+describe('StatsController - getRevenueStats', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: {
+      startAt: '1741971600000',
+      endAt: '1744649999999',
+      siteId: 0,
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -78,7 +108,7 @@ describe('ProductController - getProductById', () => {
   });
 
   it('Status success', async () => {
-    await controller.getProductById(mockReq, mockRes, mockNext);
+    await controller.getRevenueStats(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });

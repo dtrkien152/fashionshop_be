@@ -20,7 +20,7 @@ class OrderController {
       }
       const totalPrice = await this.orderService.getOrderTotalPriceByOrderCode(orderCode as string);
       const paymentUrl = this.vnPayService.buildUrlPayment(orderCode as string, totalPrice, req.ip);
-      return res.json({ paymentUrl });
+      return res.status(200).json({ paymentUrl });
     } catch (error) {
       next(error);
     }
@@ -33,7 +33,7 @@ class OrderController {
       if (results.isVerified && results.isSuccess) {
         await this.orderService.updateStatusPayment(results.orderCode, PAYMENT_STATUS.PAID);
       }
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -49,9 +49,9 @@ class OrderController {
       });
       if (payload.payment.type === PAYMENT_METHOD.VNPAY) {
         const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.totalPrice, req.ip);
-        return res.json({ order: results.order, paymentUrl });
+        return res.status(200).json({ order: results.order, paymentUrl });
       }
-      return res.json({ order: results.order });
+      return res.status(200).json({ order: results.order });
     } catch (error) {
       next(error);
     }
@@ -66,7 +66,7 @@ class OrderController {
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
       });
-      return res.json({ order: results.order });
+      return res.status(200).json({ order: results.order });
     } catch (error) {
       next(error);
     }
@@ -76,7 +76,7 @@ class OrderController {
     try {
       const { code, status } = req.query;
       const results = await this.orderService.updateStatusOrder(code as string, status as ORDER_STATUS);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -86,7 +86,7 @@ class OrderController {
     try {
       const { code, status } = req.query;
       const results = await this.orderService.updateStatusPayment(code as string, status as PAYMENT_STATUS);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -96,7 +96,7 @@ class OrderController {
     try {
       const { code, reason } = req.query;
       const results = await this.orderService.handleReturnOrder(code as string, reason as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -106,7 +106,7 @@ class OrderController {
     try {
       const { code, weight, width, height } = req.query;
       const results = await this.orderService.handleShippingOrder(code as string, weight as string, width as string, height as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -118,7 +118,7 @@ class OrderController {
       const filterParams = req.query as OrderFilter;
       filterParams.email = email;
       const results = await this.orderService.getAll(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -128,7 +128,7 @@ class OrderController {
     try {
       const filterParams = req.query as OrderFilter;
       const results = await this.orderService.getAll(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -138,7 +138,7 @@ class OrderController {
     try {
       const orderCode = req.params['orderCode'];
       const results = await this.orderService.getOrderByOrderCode(orderCode);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -148,7 +148,7 @@ class OrderController {
     try {
       const filterParams = req.query as OrderCustomerFilter;
       const results = await this.orderService.getAllCustomerOrders(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

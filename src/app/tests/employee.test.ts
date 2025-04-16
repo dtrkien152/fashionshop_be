@@ -1,11 +1,20 @@
 import { container } from '../config';
-import { CartController } from '../controllers';
+import { EmployeeController, OrderController, StatsController } from '../controllers';
+import process from 'node:process';
 import { NextFunction, Request, Response } from 'express';
 
-const controller = container.resolve(CartController);
+const controller = container.resolve(EmployeeController);
+const token = process.env.TOKEN_TEST;
 
-describe('CartController - getCartForGuest', () => {
-  const mockReq = { query: { fingerprint: 'e8d37bd4968c4d1f9c54ad16e0de8e7b' } } as unknown as Request;
+describe('EmployeeController - search', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    body: {
+      params: { siteId: 1, role: undefined },
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -18,14 +27,21 @@ describe('CartController - getCartForGuest', () => {
   });
 
   it('Status success', async () => {
-    await controller.getCartForGuest(mockReq, mockRes, mockNext);
+    await controller.search(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('CartController - getCart', () => {
-  const mockReq = { query: { fingerprint: 'e8d37bd4968c4d1f9c54ad16e0de8e7b' } } as unknown as Request;
+describe('EmployeeController - getDetail', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    body: {
+      params: { siteId: 1, role: undefined },
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -38,7 +54,7 @@ describe('CartController - getCart', () => {
   });
 
   it('Status success', async () => {
-    await controller.getCartForGuest(mockReq, mockRes, mockNext);
+    await controller.search(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });

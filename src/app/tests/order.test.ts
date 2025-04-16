@@ -1,11 +1,20 @@
 import { container } from '../config';
+import { OrderController, StatsController } from '../controllers';
+import process from 'node:process';
 import { NextFunction, Request, Response } from 'express';
-import { ProductController } from '../controllers';
 
-const controller = container.resolve(ProductController);
+const controller = container.resolve(OrderController);
+const token = process.env.TOKEN_TEST;
 
-describe('ProductController - getAllCategory', () => {
-  const mockReq = { body: { keyword: '' } } as Request;
+describe('OrderController - getOrder', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    params: {
+      orderCode: 'ORD3v8y69k8vwou',
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -18,14 +27,21 @@ describe('ProductController - getAllCategory', () => {
   });
 
   it('Status success', async () => {
-    await controller.searchProducts(mockReq, mockRes, mockNext);
+    await controller.getOrder(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - getProductById', () => {
-  const mockReq = { params: { id: '1' } } as unknown as Request;
+describe('OrderController - createOrder', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    params: {
+      orderCode: 'ORD3v8y69k8vwou',
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -38,14 +54,21 @@ describe('ProductController - getProductById', () => {
   });
 
   it('Status success', async () => {
-    await controller.getProductById(mockReq, mockRes, mockNext);
+    await controller.getOrder(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - countProducts', () => {
-  const mockReq = {} as unknown as Request;
+describe('OrderController - getAllMyOrders', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    params: {
+      orderCode: 'ORD3v8y69k8vwou',
+    },
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -58,14 +81,19 @@ describe('ProductController - countProducts', () => {
   });
 
   it('Status success', async () => {
-    await controller.countProducts(mockReq, mockRes, mockNext);
+    await controller.getOrder(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('ProductController - getProductById', () => {
-  const mockReq = { params: { id: 1 } } as unknown as Request;
+describe('OrderController - getAllCustomerOrders', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: {},
+  } as unknown as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -78,7 +106,7 @@ describe('ProductController - getProductById', () => {
   });
 
   it('Status success', async () => {
-    await controller.getProductById(mockReq, mockRes, mockNext);
+    await controller.getAllCustomerOrders(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });

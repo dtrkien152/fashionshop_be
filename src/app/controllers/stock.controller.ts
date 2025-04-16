@@ -13,7 +13,7 @@ class StockController {
     try {
       const filterParams = req.query as StockFilter;
       const results = await this.stockService.getAll(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

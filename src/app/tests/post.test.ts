@@ -63,3 +63,23 @@ describe('PostController - getByCategory', () => {
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
+
+describe('PostController - getPostDetailByCode', () => {
+  const mockReq = { params: { code: 'thuong-hieu-thoi-trang-noi-tieng-giam-gia-lon-don-nam-moi' } } as unknown as Request;
+  const mockRes = {
+    json: jest.fn(),
+    status: jest.fn().mockReturnThis(),
+  } as unknown as Response;
+
+  const mockNext = jest.fn() as NextFunction;
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('Status success', async () => {
+    await controller.getPostDetailByCode(mockReq, mockRes, mockNext);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+});

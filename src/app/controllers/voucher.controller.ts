@@ -14,7 +14,7 @@ class VoucherController {
     try {
       const filterParams = req.query as VoucherFilter;
       const results = await this.voucherService.getAllVoucher(filterParams);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -25,7 +25,7 @@ class VoucherController {
       const payload: VoucherCreateRequest = req.body;
       const addForAll = req.query['addForAll'] == 'true';
       const results = await this.voucherService.add(payload, addForAll);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -35,7 +35,7 @@ class VoucherController {
     try {
       const payload: VoucherUpdateRequest = req.body;
       const results = await this.voucherService.update(payload);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -47,7 +47,7 @@ class VoucherController {
       const status = req.query.status === 'true';
       if (!id) throw new BadRequestError('Voucher id is required');
       const results = await this.voucherService.updateStatusVoucher(+id, !!status);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -57,7 +57,7 @@ class VoucherController {
     try {
       const userId = req.session['userId'];
       const vouchers = await this.voucherService.getVoucherInUser(+userId);
-      return res.json(vouchers);
+      return res.status(200).json(vouchers);
     } catch (error) {
       next(error);
     }
@@ -68,7 +68,7 @@ class VoucherController {
       const userId = req.session['userId'];
       const voucherCode = req.query['voucherCode'];
       const results = await this.voucherService.addVoucherForUser(userId, voucherCode as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -78,7 +78,7 @@ class VoucherController {
     try {
       const userId = req.query['userId'];
       const vouchers = await this.voucherService.getVoucherInUser(+userId);
-      return res.json(vouchers);
+      return res.status(200).json(vouchers);
     } catch (error) {
       next(error);
     }
@@ -88,7 +88,7 @@ class VoucherController {
     try {
       const { userId, voucherCode } = req.body as UserVoucherCreateRequest;
       const results = await this.voucherService.addVoucherForUser(userId, voucherCode);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -98,7 +98,7 @@ class VoucherController {
     try {
       const { userVoucherId } = req.params;
       const results = await this.voucherService.deactivateVoucherForUser(+userVoucherId);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

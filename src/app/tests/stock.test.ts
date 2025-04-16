@@ -1,11 +1,18 @@
 import { container } from '../config';
-import { CartController } from '../controllers';
 import { NextFunction, Request, Response } from 'express';
+import { SiteController, StockController } from '../controllers';
+import process from 'node:process';
 
-const controller = container.resolve(CartController);
+const controller = container.resolve(StockController);
 
-describe('CartController - getCartForGuest', () => {
-  const mockReq = { query: { fingerprint: 'e8d37bd4968c4d1f9c54ad16e0de8e7b' } } as unknown as Request;
+const token = process.env.TOKEN_TEST;
+describe('StockController - getAllStock', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: {},
+  } as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -18,14 +25,19 @@ describe('CartController - getCartForGuest', () => {
   });
 
   it('Status success', async () => {
-    await controller.getCartForGuest(mockReq, mockRes, mockNext);
+    await controller.getAllStock(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
 });
 
-describe('CartController - getCart', () => {
-  const mockReq = { query: { fingerprint: 'e8d37bd4968c4d1f9c54ad16e0de8e7b' } } as unknown as Request;
+describe('StockController - getAllStockInSite', () => {
+  const mockReq = {
+    headers: {
+      'authorization': 'Bearer ' + token,
+    },
+    query: {},
+  } as Request;
   const mockRes = {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -38,7 +50,7 @@ describe('CartController - getCart', () => {
   });
 
   it('Status success', async () => {
-    await controller.getCartForGuest(mockReq, mockRes, mockNext);
+    await controller.getAllStock(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
