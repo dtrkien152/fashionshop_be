@@ -317,6 +317,7 @@ class ProductService {
         { code: { [Op.iLike as any]: `%${keyword}%` } },
       ];
     }
+    where.isDelete = false;
 
 // Lọc theo category
     if (categoryId) {
@@ -407,6 +408,7 @@ class ProductService {
       where: {
         categoryId,
         id: { [Op.ne]: productId },
+        isDelete: false,
       },
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -419,6 +421,7 @@ class ProductService {
           id: {
             [Op.notIn]: [productId, ...categoryProducts.map((p) => p.id)],
           },
+          isDelete: false,
         },
         limit: 5 - categoryProducts.length,
         order: [['createdAt', 'DESC']],
