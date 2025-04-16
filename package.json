@@ -10,7 +10,8 @@
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=prod concurrently \"tsc --watch\" \"nodemon -q dist/main.js\"",
     "lint": "eslint 'src/**/*.ts' --fix",
-    "test": "jest --coverage"
+    "test": "cross-env NODE_ENV=test jest --coverage",
+    "test:watch": "cross-env NODE_ENV=test jest --watch"
   },
   "keywords": [],
   "author": "",
