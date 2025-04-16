@@ -13,7 +13,7 @@ class CartController {
       const userId = req.session['userId'];
       const fingerprint = req.query['fingerprint'];
       const results = await this.cartService.getCart(fingerprint as string, userId);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -23,7 +23,7 @@ class CartController {
     try {
       const fingerprint = req.query['fingerprint'];
       const results = await this.cartService.getCart(fingerprint as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -33,7 +33,7 @@ class CartController {
     try {
       const { cartCode } = req.query;
       const results = await this.cartService.getCartDetails(cartCode as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -43,7 +43,7 @@ class CartController {
     try {
       const payload: CartDetailRequest = req.body;
       const results = await this.cartService.addToCartDetail(payload.cartCode, payload.products);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -53,7 +53,7 @@ class CartController {
     try {
       const payload: CartDetailRequest = req.body;
       const results = await this.cartService.updateToCartDetail(payload.cartCode, payload.products);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -63,7 +63,7 @@ class CartController {
     try {
       const payload: CartDetailRequest = req.body;
       const results = await this.cartService.syncCartDetail(payload.products, payload.cartCode);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -73,7 +73,7 @@ class CartController {
     try {
       const { cartCode, productId, color, size } = req.query;
       const results = await this.cartService.removeCartDetail(cartCode as string, +productId, color as string, size as string);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

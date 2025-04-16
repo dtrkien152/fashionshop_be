@@ -14,7 +14,7 @@ class CategoryController {
   getAllCategory = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const result = await this.categoryService.getAllCategories();
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -33,7 +33,7 @@ class CategoryController {
       };
 
       const categories = await this.categoryService.searchForAdmin(filters);
-      res.json(categories);
+      res.status(200).json(categories);
     } catch (error) {
       next(error);
     }
@@ -67,7 +67,7 @@ class CategoryController {
       return res.status(200).json({ message: 'Tạo danh mục thành công', data: newCategory });
     } catch (error) {
       console.error('❌ Lỗi khi tạo danh mục:', error);
-      next(error)
+      next(error);
     }
   };
 
@@ -76,7 +76,7 @@ class CategoryController {
       const { categoryId } = req.params;
 
       const category = await this.categoryService.getCategoryById(Number(categoryId));
-      res.json(category);
+      res.status(200).json(category);
     } catch (error) {
       next(error);
     }
@@ -104,7 +104,7 @@ class CategoryController {
         thumbnailUrl,
       });
 
-      return res.json({ message: 'Cập nhật danh mục thành công', data: updatedCategory });
+      return res.status(200).json({ message: 'Cập nhật danh mục thành công', data: updatedCategory });
     } catch (error) {
       console.error('Lỗi khi cập nhật danh mục:', error);
       return res.status(500).json({ message: 'Lỗi server' });

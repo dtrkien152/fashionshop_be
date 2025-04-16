@@ -11,7 +11,7 @@ class SiteController {
   getAllSite = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const results = await this.siteService.getAll();
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

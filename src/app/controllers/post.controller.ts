@@ -13,7 +13,7 @@ class PostController {
   getTop5LastestPost = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const result = await this.postService.getTopPostLastest(5);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -129,7 +129,7 @@ class PostController {
   updatePost = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       let updateData = req.body;
-      const postId  = updateData.postId; // 🛠 Lấy postId từ params
+      const postId = updateData.postId; // 🛠 Lấy postId từ params
       if (!postId) {
         res.status(400).json({ message: 'Thiếu ID bài viết' });
         return;
@@ -186,7 +186,7 @@ class PostController {
       // ✅ Kiểm tra `categoryId`
       const postCategoryId = parseInt(postData.categoryId, 10);
       if (isNaN(postCategoryId)) {
-         res.status(400).json({ message: 'Danh mục không hợp lệ' });
+        res.status(400).json({ message: 'Danh mục không hợp lệ' });
       }
 
 
@@ -223,7 +223,7 @@ class PostController {
       console.error('Lỗi khi lấy chi tiết bài viết:', error);
       res.status(500).json({ message: 'Đã xảy ra lỗi khi lấy chi tiết bài viết', error: error.message });
     }
-  }
+  };
 }
 
 export default PostController;

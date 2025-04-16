@@ -14,7 +14,7 @@ class ProductController {
     try {
       const model = req.body as IProductFilterParams;
       const result = await this.productService.searchProducts(model);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('Search Products Error:', error);
       next(error);
@@ -25,7 +25,7 @@ class ProductController {
     try {
       const model = req.body as IProductFilterParams;
       const result = await this.productService.searchProductsForAdmin(model);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('Search Products Error:', error);
       next(error);
@@ -37,7 +37,7 @@ class ProductController {
     try {
       const productId = req.query.productId;
       const result = await this.productService.getProductDetail(Number(productId));
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('Search Products Error:', error);
       next(error);
@@ -56,7 +56,7 @@ class ProductController {
         page: page ? Number(page) : 1,
       });
 
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('get top selling products error:', error);
       next(error);
@@ -75,7 +75,7 @@ class ProductController {
         productId: Number(productId),
       });
 
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('Get recommended products error:', error);
       next(error);
@@ -92,7 +92,7 @@ class ProductController {
       const productId = Number(req.params.id);
       const { status } = req.body;
       const result = await this.productService.updateStatus(productId, status);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       console.error('Get recommended products error:', error);
       next(error);
@@ -108,7 +108,7 @@ class ProductController {
       // }
       // Lưu sản phẩm vào database
       const result = await this.productService.createProduct(payload);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -126,7 +126,7 @@ class ProductController {
         return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
       }
 
-      res.json(product);
+      res.status(200).json(product);
     } catch (error) {
       next(error);
     }
@@ -162,8 +162,8 @@ class ProductController {
       // Cập nhật sản phẩm
       const updatedProduct = await this.productService.updateProduct(productId, updateData);
 
-      // ✅ **KHÔNG return res.json(), chỉ gọi res.json()**
-      res.json({ message: 'Cập nhật sản phẩm thành công', product: updatedProduct });
+      // ✅ **KHÔNG return res.status200.json(), chỉ gọi res.status200.json()**
+      res.status(200).json({ message: 'Cập nhật sản phẩm thành công', product: updatedProduct });
 
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
@@ -179,7 +179,7 @@ class ProductController {
       }
 
       const result = await this.productService.deleteProductById(productId);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -187,7 +187,7 @@ class ProductController {
   countProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const result = await this.productService.countProducts();
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -197,7 +197,7 @@ class ProductController {
     try {
       const payload = req.body;
       const result = await this.productService.createProductSubDetail(payload);
-      res.json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

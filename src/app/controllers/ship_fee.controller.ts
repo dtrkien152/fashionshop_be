@@ -13,7 +13,7 @@ class ShipFeeController {
     try {
       const payload: ShipFeeCreateRequest = req.body;
       const results = await this.shipFeeService.create(payload);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -23,7 +23,7 @@ class ShipFeeController {
     try {
       const payload: ShipFeeUpdateRequest = req.body;
       const results = await this.shipFeeService.update(payload);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -33,7 +33,7 @@ class ShipFeeController {
     try {
       const { id } = req.params;
       const results = await this.shipFeeService.deactivate(+id);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
@@ -42,7 +42,7 @@ class ShipFeeController {
   getAll = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const shipFees = await this.shipFeeService.getAll();
-      return res.json(shipFees);
+      return res.status(200).json(shipFees);
     } catch (error) {
       next(error);
     }
@@ -52,7 +52,7 @@ class ShipFeeController {
     try {
       const { price } = req.query;
       const results = await this.shipFeeService.getFee(+price);
-      return res.json(results);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }
