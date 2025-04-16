@@ -3,7 +3,7 @@ import path from 'path';
 import * as process from 'node:process';
 
 // Determine which environment file to use
-const envFile = `.env.dev`;
+const envFile = `.env.${process.env.NODE_ENV}`;
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 export const ENV_CONFIG = {
