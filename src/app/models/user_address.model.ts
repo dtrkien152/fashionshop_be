@@ -13,6 +13,9 @@ interface IUserAddress {
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  provinceId?: number;
+  districtId?: number;
+  wardCode?: number;
 }
 
 @Table({ tableName: 'user_address', timestamps: true })
@@ -60,6 +63,25 @@ class UserAddress extends Model<IUserAddress> {
     allowNull: true,
   })
   fullAddress!: string;
+
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  provinceId!: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  districtId!: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  wardCode!: number;
 
   @Column({
     type: DataType.BOOLEAN,

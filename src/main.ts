@@ -4,7 +4,7 @@ import {
   authRoutes,
   cartRoutes,
   categoryRoutes,
-  employeeRoutes,
+  employeeRoutes, ghnRoutes,
   orderRoutes,
   productRoutes,
   shipFeeRoutes,
@@ -50,7 +50,7 @@ app.use('/api/sites', siteRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/files', fileRouter);
 app.use('/api/employees', employeeRoutes);
-
+app.use('/api/ghn', ghnRoutes);
 // ✅ Thêm Error Handler Middleware
 app.use(errorMiddleware.errorHandler);
 

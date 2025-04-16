@@ -11,3 +11,4 @@ export { default as FileController } from './file.controller';
 export { default as SiteController } from './site.controller';
 export { default as StatsController } from './stats.controller';
 export { default as EmployeeController } from './employee.controller';
+export { default as GHNController } from './ghn.controller';

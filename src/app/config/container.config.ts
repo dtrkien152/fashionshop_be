@@ -20,7 +20,7 @@ import { sequelize } from './sequelize.config';
 import {
   AuthController,
   CartController, EmployeeController,
-  FileController,
+  FileController, GHNController,
   OrderController,
   PostController,
   ProductController,
@@ -68,5 +68,6 @@ container.register('FileController', { useClass: FileController });
 container.register('SiteController', { useClass: SiteController });
 container.register('StatsController', { useClass: StatsController });
 container.register('EmployeeController', { useClass: EmployeeController });
+container.register('GHNController', { useClass: GHNController });
 
 export { container };

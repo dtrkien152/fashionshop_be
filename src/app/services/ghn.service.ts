@@ -50,7 +50,22 @@ class GhnService {
         quantity: el.unit,
       })),
     };
-    return await this.axios.post(ENV_CONFIG.ghn.baseUrl + '/shipping-order/create', payload);
+    return await this.axios.post(ENV_CONFIG.ghn.baseUrl + '/v2/shipping-order/create', payload);
+  }
+
+  async getProvince() {
+    // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/province');
+    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province');
+  }
+
+  async getWard(districtId: number) {
+    // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/ward?district_id='+districtId);
+    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id='+districtId);
+  }
+
+  async getDistrict(provinceId: number) {
+    // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/district?province_id='+provinceId);
+    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id='+provinceId);
   }
 }
 

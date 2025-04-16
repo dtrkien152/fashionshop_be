@@ -53,16 +53,16 @@ class AuthController {
 
     try {
       if (!req.user) {
-        return res.redirect('http://localhost:3000/login');
+        return res.redirect('http://localhost:3100/login');
       }
       const user = req.user;
       const data = await this.authService.signInWithGoogle(user['email']);
       console.log('data ', data);
       // Chuyển hướng về frontend kèm theo JWT token
-      res.redirect(`http://localhost:3000/login?token=${data?.token}`);
+      res.redirect(`http://localhost:3100/login?token=${data?.token}`);
     } catch (error) {
       console.error('Lỗi đăng nhập Google:', error);
-      res.redirect('http://localhost:3000/login');
+      res.redirect('http://localhost:3100/login');
     }
 
     // try {
