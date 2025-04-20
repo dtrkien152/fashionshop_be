@@ -48,7 +48,7 @@ class OrderController {
         console.log('Send mail confirm successfully');
       });
       if (payload.payment.type === PAYMENT_METHOD.VNPAY) {
-        const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.totalPrice, req.ip);
+        const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.originTotalPrice - results.order.voucherDiscountPrice, req.ip);
         return res.status(200).json({ order: results.order, paymentUrl });
       }
       return res.status(200).json({ order: results.order });

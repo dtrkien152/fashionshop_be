@@ -86,7 +86,6 @@ class MailService {
 
   sendConfirmOrder = async (email: string, order: IOrder, orderDetails: OrderProduct[]) => {
     try {
-      const originTotalPrice = orderDetails.reduce((acc, cur) => acc + (cur.unit * cur.priceInUnit), 0);
       const itemList = orderDetails.map(item => `
           <tr>
               <td style="padding: 8px;">${item.productName}</td>
@@ -102,7 +101,7 @@ class MailService {
                 <img src="${this.LOGO_URL}" alt="Cửa hàng Vebo" style="max-width: 150px; margin-bottom: 20px;">
             </div>
             
-            <h2 style="color: #3f51b5; text-align: center;">Xác nhận đơn hàng thành công</h2>
+            <h2 style="color: #3f51b5; text-align: center;">Tạo đơn hàng thành công</h2>
             <p>Xin chào <b>${order.customerName}</b>,</p>
             <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi! Dưới đây là thông tin đơn hàng của bạn:</p>
             
@@ -116,10 +115,10 @@ class MailService {
             </table>
 
             <h3 style="margin-top: 20px;">Chi tiết thanh toán</h3>
-            <p>🛒 <b>Tổng tiền hàng:</b> ${originTotalPrice} VND</p>
-            ${order.voucherCode ? `<p>🎟 <b>Voucher (${order.voucherCode}):</b> -${originTotalPrice - order.totalPrice} VND</p>` : ''}
+            <p>🛒 <b>Tổng tiền hàng:</b> ${order.originTotalPrice} VND</p>
+            ${order.voucherCode ? `<p>🎟 <b>Voucher (${order.voucherCode}):</b> -${order.voucherDiscountPrice} VND</p>` : ''}
             <p>🚚 <b>Phí vận chuyển:</b> ${order.shipFee} VND</p>
-            <h3 style="color: #e74c3c; text-align: right; margin-top: 10px;">💰 Tổng thanh toán: ${order.totalPrice + order.shipFee} VND</h3>
+            <h3 style="color: #e74c3c; text-align: right; margin-top: 10px;">💰 Tổng thanh toán: ${order.originTotalPrice - order.voucherDiscountPrice + order.shipFee} VND</h3>
 
             <div style="text-align: center; margin-top: 20px;">
                 <a href="http://localhost:3000/order/tracking/${order.code}" style="background-color: #3f51b5; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
@@ -136,7 +135,7 @@ class MailService {
       const mailOptions = {
         from: ENV_CONFIG.mail.user,
         to: email,
-        subject: 'Xác nhận đơn hàng thành công',
+        subject: 'Tạo đơn hàng thành công',
         html: htmlContent,
       };
 

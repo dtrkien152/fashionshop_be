@@ -10,13 +10,16 @@ interface IOrder {
   code?: string;
   email?: string;
   voucherCode?: string;
+  voucherDiscountPrice?: number;
   shippedAt?: Date;
   shipFee?: number;
   shipCode?: string;
   customerName?: string;
   customerAddress?: string;
   customerPhone?: string;
-  totalPrice?: number;
+  customerDistrictId?: number;
+  customerWardCode?: string;
+  originTotalPrice?: number;
   paymentType?: string;
   paymentStatus?: string;
   status?: string;
@@ -62,6 +65,12 @@ class Order extends Model<IOrder> {
   voucherCode!: string;
 
   @Column({
+    type: DataType.BIGINT,
+    allowNull: true,
+  })
+  voucherDiscountPrice!: number;
+
+  @Column({
     type: DataType.DATE,
     allowNull: true,
   })
@@ -92,6 +101,18 @@ class Order extends Model<IOrder> {
   customerAddress!: string;
 
   @Column({
+    type: DataType.STRING(50),
+    allowNull: true,
+  })
+  customerWardCode!: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  customerDistrictId!: number;
+
+  @Column({
     type: DataType.STRING(11),
     allowNull: true,
   })
@@ -101,7 +122,7 @@ class Order extends Model<IOrder> {
     type: DataType.BIGINT,
     allowNull: true,
   })
-  totalPrice!: number;
+  originTotalPrice!: number;
 
   @Column({
     type: DataType.STRING(32),

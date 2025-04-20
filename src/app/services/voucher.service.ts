@@ -62,7 +62,7 @@ class VoucherService {
       const userVoucher = userIds.map((u) => ({
         userId: u.id,
         voucherId: voucherAdded.id,
-        isActive: false,
+        isActive: true,
       } as IUserVoucher));
       await UserVoucher.bulkCreate(userVoucher);
     }

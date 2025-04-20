@@ -33,7 +33,8 @@ class StatsService {
     const currentMonthStats = await Order.findAll({
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('origin_total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('voucher_discount_price')), 'totalDiscountRevenue'],
         [
           Sequelize.fn(
             'COUNT',
@@ -55,7 +56,8 @@ class StatsService {
     const lastMonthStats = await Order.findAll({
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('origin_total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('voucher_discount_price')), 'totalDiscountRevenue'],
         [
           Sequelize.fn(
             'COUNT',
@@ -74,8 +76,18 @@ class StatsService {
     });
 
     // Lấy dữ liệu từ query
-    const current: any = currentMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
-    const last: any = lastMonthStats[0] || { totalOrders: 0, totalRevenue: 0, totalReturnOrders: 0 };
+    const current: any = currentMonthStats[0] || {
+      totalOrders: 0,
+      totalRevenue: 0,
+      totalReturnOrders: 0,
+      totalDiscountRevenue: 0,
+    };
+    const last: any = lastMonthStats[0] || {
+      totalOrders: 0,
+      totalRevenue: 0,
+      totalReturnOrders: 0,
+      totalDiscountRevenue: 0,
+    };
 
     // Tính phần trăm tăng trưởng (tránh chia cho 0)
     const calculateGrowth = (currentValue: number, lastValue: number) => {
@@ -84,9 +96,9 @@ class StatsService {
     };
     return {
       totalRevenue: {
-        current: current.totalRevenue,
-        lastMonth: last.totalRevenue,
-        growth: calculateGrowth(current.totalRevenue, last.totalRevenue),
+        current: current.totalRevenue - current.totalDiscountRevenue,
+        lastMonth: last.totalRevenue - last.totalDiscountRevenue,
+        growth: calculateGrowth(current.totalRevenue - current.totalDiscountRevenue, last.totalRevenue - last.totalDiscountRevenue),
       },
       totalOrders: {
         current: current.totalOrders,
@@ -184,7 +196,8 @@ class StatsService {
       attributes: [
         'siteId',
         [Sequelize.fn('DATE_FORMAT', Sequelize.col('created_at'), dateFormat), 'timePeriod'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('origin_total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('voucher_discount_price')), 'totalDiscountRevenue'],
       ],
       where: whereCondition, // Lọc dữ liệu theo thời gian
       group: ['siteId', 'timePeriod'],
@@ -193,7 +206,7 @@ class StatsService {
     });
     const sites = await Site.findAll({ where: siteIdWhereCondition, attributes: ['id', 'name'] });
     // 🔹 Ghép dữ liệu vào `xField`, nếu thiếu thì thêm `totalRevenue = 0`
-    const revenueMap = new Map(revenueStats.map((item: any) => [`${item.siteId}-${item.timePeriod}`, item.totalRevenue]));
+    const revenueMap = new Map(revenueStats.map((item: any) => [`${item.siteId}-${item.timePeriod}`, item.totalRevenue - item.totalDiscountRevenue]));
 
     return sites.map(site => {
       return xField.map(period => ({

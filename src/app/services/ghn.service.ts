@@ -38,9 +38,9 @@ class GhnService {
       to_name: order.customerName,
       to_phone: order.customerPhone,
       to_address: order.customerAddress,
-      to_ward_code: '20308',
-      to_district_id: 1444,
-      cod_amount: order.totalPrice,
+      to_ward_code: order.customerWardCode,
+      to_district_id: order.customerDistrictId,
+      cod_amount: order.originTotalPrice - order.voucherDiscountPrice,
       weight: weight,
       length: 1,
       width: width,
@@ -60,12 +60,12 @@ class GhnService {
 
   async getWard(districtId: number) {
     // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/ward?district_id='+districtId);
-    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id='+districtId);
+    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=' + districtId);
   }
 
   async getDistrict(provinceId: number) {
     // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/district?province_id='+provinceId);
-    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id='+provinceId);
+    return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=' + provinceId);
   }
 }
 

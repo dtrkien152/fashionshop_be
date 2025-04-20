@@ -30,6 +30,8 @@ export interface OrderCustomer {
   name: string;
   address: string;
   phone: string;
+  districtId?: number;
+  wardCode?: string;
 }
 
 export interface OrderDetailDto {
@@ -69,13 +71,16 @@ export interface OrderDto {
   code: string;
   email: string;
   voucherCode: string;
+  voucherDiscountPrice: number;
   shippedAt: Date;
   shipFee: number;
   shipCode?: string;
   customerName: string;
-  customerAddress: string;
   customerPhone: string;
-  totalPrice: number;
+  customerAddress: string;
+  customerDistrictId?: number;
+  customerWardCode?: string;
+  originTotalPrice: number;
   paymentType: string;
   paymentStatus: string;
   status: string;

@@ -15,8 +15,8 @@ import {
   Order,
   OrderDetail,
   Product,
-  ProductSubDetailReview,
   ProductSubDetail,
+  ProductSubDetailReview,
   ReturnOrder,
   Stock,
 } from '../models';
@@ -48,7 +48,7 @@ class OrderService {
       el.productName = product.name;
       return product;
     }));
-    const originTotalPrice = products.reduce((acc, cur) => acc + cur.salePrice, 0);
+    const originTotalPrice = payload.products.reduce((acc, cur) => acc + cur.priceInUnit * cur.unit, 0);
     const shipFee = await this.shipFeeService.getFee(originTotalPrice);
     let discountPrice = 0;
     if (payload.voucherCode) {
@@ -66,11 +66,14 @@ class OrderService {
       code: GenerateUtils.code('ORD'),
       email: email,
       voucherCode: payload.voucherCode,
+      voucherDiscountPrice: discountPrice,
       shipFee: shipFee.fee,
       customerName: payload.customer?.name,
       customerAddress: payload.customer?.address,
       customerPhone: payload.customer?.phone,
-      totalPrice: originTotalPrice - discountPrice,
+      customerDistrictId: payload.customer?.districtId,
+      customerWardCode: payload.customer?.wardCode,
+      originTotalPrice: originTotalPrice,
       paymentType: payload.payment.type,
       paymentStatus: payload.payment.status,
       status: ORDER_STATUS.PENDING,
@@ -120,7 +123,7 @@ class OrderService {
     if (status == ORDER_STATUS.RETURN) {
       await ReturnOrder.create({
         orderId: order.id,
-        totalPrice: order.totalPrice,
+        totalPrice: order.originTotalPrice,
         reason: '',
       });
     }
@@ -132,7 +135,7 @@ class OrderService {
     if (!order) throw new BadRequestError('Order not found!');
     await ReturnOrder.create({
       orderId: order.id,
-      totalPrice: order.totalPrice,
+      totalPrice: order.originTotalPrice,
       reason: reason,
     });
     return await order.update({ status: ORDER_STATUS.RETURN });
@@ -258,11 +261,14 @@ class OrderService {
       code: order.code,
       email: order.email,
       voucherCode: order.voucherCode,
+      voucherDiscountPrice: order.voucherDiscountPrice,
       shipFee: order.shipFee,
       customerName: order.customerName,
       customerAddress: order.customerAddress,
       customerPhone: order.customerPhone,
-      totalPrice: order.totalPrice,
+      customerDistrictId: order.customerDistrictId,
+      customerWardCode: order.customerWardCode,
+      originTotalPrice: order.originTotalPrice,
       paymentType: order.paymentType,
       paymentStatus: order.paymentStatus,
       status: order.status,
@@ -288,11 +294,14 @@ class OrderService {
   }
 
   async getOrderTotalPriceByOrderCode(orderCode: string) {
-    const order = await Order.findOne({ where: { code: orderCode } });
+    const order = await Order.findOne({
+      where: { code: orderCode },
+      attributes: ['originTotalPrice', 'voucherDiscountPrice'],
+    });
     if (!order) {
       throw new NotFoundError('Order not found!');
     }
-    return order.totalPrice;
+    return order.originTotalPrice - order.voucherDiscountPrice;
   }
 
   async getAllCustomerOrders(filter: OrderCustomerFilter) {
