@@ -81,11 +81,31 @@ class UserService {
 
   async deleteAddress(addressId: number): Promise<void> {
     const address = await UserAddress.findByPk(addressId);
+
     if (!address) {
       throw new Error('Địa chỉ không tồn tại!');
     }
+
+    const isDefault = address.isDefault;
+    const userId = address.userId;
+
+    // Xoá địa chỉ
     await address.destroy();
+
+    // Nếu địa chỉ bị xoá là mặc định, tìm địa chỉ gần nhất để set mặc định mới
+    if (isDefault) {
+      const nextDefault = await UserAddress.findOne({
+        where: { userId, isActive: true },
+        order: [['createdAt', 'DESC']],
+      });
+
+      if (nextDefault) {
+        nextDefault.isDefault = true;
+        await nextDefault.save();
+      }
+    }
   }
+
 
   /**
    * Upload avatar cho user và cập nhật vào database
