@@ -1,4 +1,4 @@
-import { Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
 import { Payment } from './payment.model';
 import { Site } from './site.model';
 import { OrderDetail } from './order_detail.model';
@@ -153,6 +153,9 @@ class Order extends Model<IOrder> {
     allowNull: true,
   })
   updatedBy!: string;
+
+  @BelongsTo(() => Site)
+  site!: Site;
 
   @HasMany(() => OrderDetail)
   OrderDetails!: OrderDetail[];

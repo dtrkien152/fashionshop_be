@@ -49,6 +49,7 @@ export interface OrderFilter extends PageParams {
   paymentStatus?: PAYMENT_STATUS;
   startAt?: string;
   endAt?: string;
+  siteId?: string;
 }
 
 export interface OrderCustomerFilter extends PageParams {
@@ -68,6 +69,7 @@ export interface OrderDto {
   products: CartProduct[];
   id: number;
   siteId: number;
+  siteName: string;
   code: string;
   email: string;
   voucherCode: string;

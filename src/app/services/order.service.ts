@@ -17,7 +17,7 @@ import {
   Product,
   ProductSubDetail,
   ProductSubDetailReview,
-  ReturnOrder,
+  ReturnOrder, Site,
   Stock,
 } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
@@ -197,6 +197,11 @@ class OrderService {
         status: filter.status,
       });
     }
+    if (filter.siteId) {
+      whereCondition[Op.and].push({
+        siteId: +filter.siteId,
+      });
+    }
     if (filter.paymentStatus) {
       whereCondition[Op.and].push({
         paymentStatus: filter.paymentStatus,
@@ -224,7 +229,11 @@ class OrderService {
           }],
         },
         ],
-      }],
+      }, {
+        model: Site,
+        attributes: ['name'],
+      },
+      ],
       distinct: true,
     });
     return PageableUtils.pageResponse(filter.page, filter.limit, rows.map(this.map2Dto), count);
@@ -250,6 +259,10 @@ class OrderService {
         {
           model: ProductSubDetailReview,
         },
+        {
+          model: Site,
+          attributes: ['name'],
+        },
       ],
     });
     if (!order) {
@@ -262,6 +275,7 @@ class OrderService {
     return {
       id: order.id,
       siteId: order.siteId,
+      siteName: order.site.name,
       code: order.code,
       email: order.email,
       voucherCode: order.voucherCode,
@@ -345,7 +359,8 @@ class OrderService {
       attributes: [
         'email',
         [Sequelize.fn('COUNT', Sequelize.col('id')), 'totalOrders'],
-        [Sequelize.fn('SUM', Sequelize.col('total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('origin_total_price')), 'totalRevenue'],
+        [Sequelize.fn('SUM', Sequelize.col('voucher_discount_price')), 'totalDiscountRevenue'],
       ],
       where: whereCondition,
       group: ['email'],
@@ -354,8 +369,16 @@ class OrderService {
       limit: +pageRequest.limit,
       raw: true,
     });
-    return PageableUtils.pageResponse(filter.page, filter.limit, rows, count);
+    return PageableUtils.pageResponse(filter.page, filter.limit, rows.map(this.map2CustomerOrderDto), count);
   }
+
+  map2CustomerOrderDto(payload: any) {
+    return {
+      email: payload.email,
+      totalOrders: payload.totalOrders,
+      totalRevenue: payload.totalRevenue - payload.totalDiscountRevenue,
+    };
+  };
 }
 
 export default OrderService;

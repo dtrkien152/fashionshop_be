@@ -32,6 +32,7 @@ class AuthService {
     return jwt.sign({
       role: employee.role,
       email: employee.email,
+      siteId: employee.siteId,
     }, ENV_CONFIG.jwt.secret, {
       jwtid: GenerateUtils.uuid(),
       subject: employee.id.toString(),
@@ -95,10 +96,11 @@ class AuthService {
       email: employee.email,
       role: employee.role,
       fullName: employee.fullName,
-      dob:employee.dob,
-      address:employee.address,
-      gender:employee.gender,
-      avatar:employee.avatar,
+      dob: employee.dob,
+      address: employee.address,
+      gender: employee.gender,
+      avatar: employee.avatar,
+      siteId: employee.siteId,
       token,
     };
   };
