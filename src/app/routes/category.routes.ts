@@ -39,6 +39,7 @@ router.post('/manager/search', categoryController.searchCategoriesForAdmin);
 router.put('/manager/update', categoryController.updateCategory);
 
 router.get('/manager/:categoryId', categoryController.getCategoryById);
+router.put('/manager/updateStatus', categoryController.updateStatus);
 
 router.post('/manager/update', upload.single('thumbnail'), categoryController.updateCategory);
 

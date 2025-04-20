@@ -94,6 +94,14 @@ class CategoryService {
       attributes: ['id', 'name', 'description', 'thumbnailUrl', 'isActive'],
     });
   };
+
+  async updateStatus(categoryId: number, isActive?: boolean) {
+    const category = await Category.findByPk(categoryId);
+    if (!category) throw new Error('Danh mục không tồn tại');
+    await category.update({
+      isActive: isActive,
+    });
+  }
 }
 
 export default CategoryService;
