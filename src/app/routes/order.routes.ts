@@ -3,31 +3,31 @@ import { OrderController } from '../controllers';
 import { Router } from 'express';
 import { jwtMiddleware } from '../middlewares';
 
-const productController = container.resolve(OrderController);
+const orderController = container.resolve(OrderController);
 const router = Router();
 
-router.get('', jwtMiddleware.verifyEmployeeToken, productController.getAllOrders);
+router.get('', jwtMiddleware.verifyEmployeeToken, orderController.getAllOrders);
 
-router.get('/customers', jwtMiddleware.verifyEmployeeToken, productController.getAllCustomerOrders);
+router.get('/customers', jwtMiddleware.verifyEmployeeToken, orderController.getAllCustomerOrders);
 
-router.get('/tracking/:orderCode', productController.getOrder);
+router.get('/tracking/:orderCode', orderController.getOrder);
 
-router.post('', productController.createOrder);
+router.post('', orderController.createOrder);
 
-router.put('', jwtMiddleware.verifyEmployeeToken, productController.updateStatusOrder);
+router.put('', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusOrder);
 
-router.put('/payment', jwtMiddleware.verifyEmployeeToken, productController.updateStatusPayment);
+router.put('/payment', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusPayment);
 
-router.put('/return', jwtMiddleware.verifyEmployeeToken, productController.handleReturnOrder);
+router.put('/return', jwtMiddleware.verifyEmployeeToken, orderController.handleReturnOrder);
 
-router.put('/shipping', jwtMiddleware.verifyEmployeeToken, productController.handleShippingOrder);
+router.put('/shipping', jwtMiddleware.verifyEmployeeToken, orderController.handleShippingOrder);
 
-router.get('/my-orders', jwtMiddleware.verifyEmployeeToken, productController.getAllMyOrders);
+router.get('/my-orders', jwtMiddleware.verifyEmployeeToken, orderController.getAllMyOrders);
 
-router.post('/my-orders', jwtMiddleware.verifyEmployeeToken, productController.createMyOrder);
+router.post('/my-orders', jwtMiddleware.verifyEmployeeToken, orderController.createMyOrder);
 
-router.get('/vnpay/build-url', productController.buildUrlPayment);
+router.get('/vnpay/build-url', orderController.buildUrlPayment);
 
-router.get('/vnpay/results', productController.verifyPayment);
+router.get('/vnpay/results', orderController.verifyPayment);
 
 export default router;

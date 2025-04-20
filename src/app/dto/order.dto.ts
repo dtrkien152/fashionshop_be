@@ -55,6 +55,13 @@ export interface OrderCustomerFilter extends PageParams {
   email?: string;
 }
 
+export interface OrderProductReview {
+  productSubDetailId: number;
+  orderId: number;
+  comment: string;
+  rating: number;
+}
+
 export interface OrderDto {
   products: CartProduct[];
   id: number;
@@ -64,6 +71,7 @@ export interface OrderDto {
   voucherCode: string;
   shippedAt: Date;
   shipFee: number;
+  shipCode?: string;
   customerName: string;
   customerAddress: string;
   customerPhone: string;

@@ -2,6 +2,7 @@ import { RequestHandler, Router } from 'express';
 import { container } from '../config';
 import { ProductController } from '../controllers';
 import multer from 'multer';
+import { jwtMiddleware } from '../middlewares';
 
 const productController = container.resolve(ProductController);
 const router = Router();
@@ -196,5 +197,11 @@ router.delete('/delete/:id', productController.deleteProduct);
 router.get('/countProducts', productController.countProducts);
 
 router.post('/sub', productController.createProductSubDetail);
+
+router.get('/review', productController.getReviewProduct);
+
+router.post('/review', jwtMiddleware.verifyUserToken, productController.addReviewProduct);
+
+router.put('/review', jwtMiddleware.verifyUserToken, productController.editReviewProduct);
 
 export default router;

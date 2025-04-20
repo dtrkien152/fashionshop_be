@@ -7,7 +7,7 @@ import {
   MailService,
   OrderService,
   OtpService,
-  PostService,
+  PostService, ProductSubDetailReviewService,
   ProductService,
   ShipFeeService,
   SiteService,
@@ -53,6 +53,7 @@ container.register('SiteService', { useClass: SiteService });
 container.register('StatsService', { useClass: StatsService });
 container.register('EmployeeService', { useClass: EmployeeService });
 container.register('GhnService', { useClass: GhnService });
+container.register('ProductReviewService', { useClass: ProductSubDetailReviewService });
 
 container.register('UserController', { useClass: UserController });
 container.register('AuthController', { useClass: AuthController });

@@ -24,3 +24,4 @@ export * from './user_voucher.model';
 export * from './voucher.model';
 export * from './ship_fee.model';
 export * from './employee.model';
+export * from './product_sub_detail_review.model';

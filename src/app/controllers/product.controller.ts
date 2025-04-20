@@ -1,12 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { FileService, ProductService } from '../services';
+import { FileService, ProductService, ProductSubDetailReviewService } from '../services';
 import { IProductFilterParams } from '../dto/product.dto';
+import { OrderProductReview } from '../dto';
+import { IProductSubDetailReview } from '../models';
 
 @injectable()
 class ProductController {
   constructor(@inject(ProductService) private productService: ProductService,
               @inject(FileService) private fileService: FileService,
+              @inject(ProductSubDetailReviewService) private productSubDetailReviewService: ProductSubDetailReviewService,
   ) {
   }
 
@@ -198,6 +201,36 @@ class ProductController {
       const payload = req.body;
       const result = await this.productService.createProductSubDetail(payload);
       res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getReviewProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { productId, page, limit } = req.query;
+      const results = await this.productSubDetailReviewService.searchByProductId(+productId, +page, +limit);
+      return res.status(200).json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  addReviewProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const payload = req.body as OrderProductReview;
+      const results = await this.productSubDetailReviewService.createReview(payload);
+      return res.status(200).json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  editReviewProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const payload = req.body as IProductSubDetailReview;
+      const results = await this.productSubDetailReviewService.editReview(payload);
+      return res.status(200).json(results);
     } catch (error) {
       next(error);
     }

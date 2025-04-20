@@ -16,6 +16,7 @@ import {
   Post,
   PostCategory,
   Product,
+  ProductSubDetailReview,
   ProductSubDetail,
   ReturnOrder,
   ShipFee,
@@ -57,7 +58,7 @@ const sequelize = new Sequelize(
       Post, PostCategory, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
       Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
       ReturnOrder, ShipInfo, Site, Stock, Tags, User, UserAddress, UserVoucher, Voucher,
-      Employee,
+      Employee, ProductSubDetailReview,
     ],
   },
 );

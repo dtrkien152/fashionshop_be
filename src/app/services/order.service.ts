@@ -9,7 +9,17 @@ import {
   UserService,
   VoucherService,
 } from './index';
-import { IOrder, IOrderDetail, Order, OrderDetail, Product, ProductSubDetail, ReturnOrder, Stock } from '../models';
+import {
+  IOrder,
+  IOrderDetail,
+  Order,
+  OrderDetail,
+  Product,
+  ProductSubDetailReview,
+  ProductSubDetail,
+  ReturnOrder,
+  Stock,
+} from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
@@ -17,7 +27,6 @@ import { Op } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { sequelize } from '../config';
-import ghnService from './ghn.service';
 
 @injectable()
 class OrderService {
@@ -201,10 +210,10 @@ class OrderService {
         attributes: ['productSubDetailId', 'unit', 'totalPrice'],
         include: [{
           model: ProductSubDetail,
-          attributes: ['color', 'size'],
+          attributes: ['id', 'color', 'size'],
           include: [{
             model: Product,
-            attributes: ['name', 'thumbnailUrl', 'originalPrice'],
+            attributes: ['id', 'name', 'thumbnailUrl', 'originalPrice'],
           }],
         },
         ],
@@ -217,19 +226,24 @@ class OrderService {
   async getOrderByOrderCode(orderCode: string): Promise<OrderDto> {
     const order = await Order.findOne({
       where: { code: orderCode },
-      include: [{
-        model: OrderDetail,
-        attributes: ['productSubDetailId', 'unit', 'totalPrice'],
-        include: [{
-          model: ProductSubDetail,
-          attributes: ['color', 'size'],
+      include: [
+        {
+          model: OrderDetail,
+          attributes: ['productSubDetailId', 'unit', 'totalPrice'],
           include: [{
-            model: Product,
-            attributes: ['name', 'thumbnailUrl', 'originalPrice'],
-          }],
+            model: ProductSubDetail,
+            attributes: ['id', 'color', 'size'],
+            include: [{
+              model: Product,
+              attributes: ['id', 'name', 'thumbnailUrl', 'originalPrice'],
+            }],
+          },
+          ],
         },
-        ],
-      }],
+        {
+          model: ProductSubDetailReview,
+        },
+      ],
     });
     if (!order) {
       throw new BadRequestError('Order not found!');
@@ -255,9 +269,10 @@ class OrderService {
       shippedAt: order.shippedAt,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
+      shipCode: order.shipCode,
       products: order.OrderDetails.map((el) => ({
         productSubDetailId: el.productSubDetailId,
-        productId: el.productSubDetail.productId,
+        productId: el.productSubDetail.Product.id,
         productName: el.productSubDetail.Product.name,
         size: el.productSubDetail.size,
         color: el.productSubDetail.color,
@@ -265,6 +280,9 @@ class OrderService {
         totalPrice: el.totalPrice,
         originalPrice: el.totalPrice,
         thumbnailUrl: el.productSubDetail.Product.thumbnailUrl,
+        review: order.productSubDetailReviews
+          ? order.productSubDetailReviews.find((review) => review.productSubDetailId === el.productSubDetailId)
+          : undefined,
       } as CartProduct)),
     } as OrderDto;
   }

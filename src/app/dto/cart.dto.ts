@@ -1,3 +1,5 @@
+import { IProductSubDetailReview } from '../models';
+
 export interface CartDetailRequest {
   cartCode: string;
   products: CartProduct[];
@@ -13,4 +15,5 @@ export interface CartProduct {
   color: string;
   size: string;
   unit: number;
+  review?: IProductSubDetailReview;
 }

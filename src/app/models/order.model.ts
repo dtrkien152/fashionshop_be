@@ -2,6 +2,7 @@ import { Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-t
 import { Payment } from './payment.model';
 import { Site } from './site.model';
 import { OrderDetail } from './order_detail.model';
+import { ProductSubDetailReview } from './product_sub_detail_review.model';
 
 interface IOrder {
   id?: number;
@@ -134,6 +135,9 @@ class Order extends Model<IOrder> {
 
   @HasMany(() => OrderDetail)
   OrderDetails!: OrderDetail[];
+
+  @HasMany(() => ProductSubDetailReview)
+  productSubDetailReviews!: ProductSubDetailReview[];
 }
 
 export { IOrder, Order };

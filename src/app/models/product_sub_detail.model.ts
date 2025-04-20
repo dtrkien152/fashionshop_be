@@ -11,6 +11,7 @@ import { Product } from './product.model';
 import { Category } from './category.model';
 import { Stock } from './stock.model';
 import { OrderDetail } from './order_detail.model';
+import { ProductSubDetailReview } from './product_sub_detail_review.model';
 
 interface IProductSubDetail {
   id?: number;
@@ -77,8 +78,11 @@ class ProductSubDetail extends Model<IProductSubDetail> {
   @HasMany(() => Stock)
   Stocks!: Stock[];
 
-  @HasMany(() =>OrderDetail)
+  @HasMany(() => OrderDetail)
   OrderDetails!: OrderDetail[];
+
+  @HasMany(() => ProductSubDetailReview)
+  productSubDetailReviews!: ProductSubDetailReview[];
 }
 
 export { IProductSubDetail, ProductSubDetail };
