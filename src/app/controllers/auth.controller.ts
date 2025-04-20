@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ACTION } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import bcrypt from 'bcryptjs';
+import { ENV_CONFIG } from '../config';
 
 @injectable()
 class AuthController {
@@ -53,16 +54,16 @@ class AuthController {
 
     try {
       if (!req.user) {
-        return res.redirect('http://localhost:3100/login');
+        return res.redirect(`${ENV_CONFIG.server.shopBaseUrl}/login`);
       }
       const user = req.user;
       const data = await this.authService.signInWithGoogle(user['email']);
       console.log('data ', data);
       // Chuyển hướng về frontend kèm theo JWT token
-      res.redirect(`http://localhost:3100/login?token=${data?.token}`);
+      res.redirect(`${ENV_CONFIG.server.shopBaseUrl}/login?token=${data?.token}`);
     } catch (error) {
       console.error('Lỗi đăng nhập Google:', error);
-      res.redirect('http://localhost:3100/login');
+      res.redirect(`${ENV_CONFIG.server.shopBaseUrl}/login`);
     }
 
     // try {

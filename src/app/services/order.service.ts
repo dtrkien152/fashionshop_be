@@ -138,6 +138,10 @@ class OrderService {
       totalPrice: order.originTotalPrice,
       reason: reason,
     });
+    const orderDetails = await OrderDetail.findAll({ where: { orderId: order.id } });
+    await Promise.all(orderDetails.map((el) => {
+      return this.stockService.updateUnitInStock(el.productSubDetailId, order.siteId, el.unit);
+    }));
     return await order.update({ status: ORDER_STATUS.RETURN });
   }
 

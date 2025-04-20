@@ -95,6 +95,11 @@ class StockService {
     return Stock.upsert(payload);
   }
 
+  async updateUnitInStock(productSubDetailId: number, siteId: number, unitChanged: number) {
+    const stock = await this.getStockByProductSubDetailIdAndSiteId(productSubDetailId, siteId);
+    return stock.update({ unit: stock.unit + unitChanged });
+  }
+
 }
 
 export default StockService;

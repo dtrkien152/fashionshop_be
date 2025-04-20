@@ -1,5 +1,5 @@
 import express from 'express';
-import { container } from '../config';
+import { container, ENV_CONFIG } from '../config';
 import { AuthController, UserController } from '../controllers';
 import { passportMiddleware } from '../middlewares';
 import { jwtMiddleware } from '../middlewares';
@@ -147,7 +147,7 @@ router.get('/google', passportMiddleware.authenticate('google', { scope: ['profi
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: 'http://localhost:3000/login',
+    failureRedirect: `${ENV_CONFIG.server.shopBaseUrl}/login`,
     session: false, // Đặt session false nếu dùng JWT thay vì cookie
   }),
   authController.signInWithGoogle,

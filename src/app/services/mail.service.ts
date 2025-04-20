@@ -69,7 +69,7 @@ class MailService {
         html: `
                     <h2>Chào mừng bạn đến với FashionShop!</h2>
                     <p>Nhấn vào liên kết bên dưới để đổi mật khẩu tài khoản của bạn:</p>
-                    <a href="http://localhost:3000/forgot-password/change-password?email=${email}&code=${otp}">
+                    <a href="${ENV_CONFIG.server.shopBaseUrl}/forgot-password/change-password?email=${email}&code=${otp}">
                         Thay đổi mật khâẩu
                     </a>
                     <p>Nếu bạn không yêu cầu thay đổi mật khẩu, vui lòng bỏ qua email này.</p>
@@ -121,7 +121,7 @@ class MailService {
             <h3 style="color: #e74c3c; text-align: right; margin-top: 10px;">💰 Tổng thanh toán: ${order.originTotalPrice - order.voucherDiscountPrice + order.shipFee} VND</h3>
 
             <div style="text-align: center; margin-top: 20px;">
-                <a href="http://localhost:3000/order/tracking/${order.code}" style="background-color: #3f51b5; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+                <a href="${ENV_CONFIG.server.shopBaseUrl}/order/tracking/${order.code}" style="background-color: #3f51b5; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
                     Theo dõi đơn hàng
                 </a>
             </div>

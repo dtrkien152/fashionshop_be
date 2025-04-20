@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { vnpay } from '../config';
+import { ENV_CONFIG, vnpay } from '../config';
 import { ProductCode, VerifyReturnUrl, VnpLocale } from 'vnpay';
 
 @injectable()
@@ -14,7 +14,7 @@ class VNPayService {
       vnp_TxnRef: orderCode,
       vnp_OrderInfo: `Thanh toan don hang ${orderCode}`,
       vnp_OrderType: ProductCode.Other,
-      vnp_ReturnUrl: `http://localhost:3000/vnpay/results`, // Đường dẫn nên là của frontend
+      vnp_ReturnUrl: `${ENV_CONFIG.server.shopBaseUrl}/vnpay/results`, // Đường dẫn nên là của frontend
       vnp_Locale: VnpLocale.VN,
     });
   }

@@ -9,6 +9,7 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 export const ENV_CONFIG = {
   server: {
     port: process.env.SERVER_PORT || 5000,
+    shopBaseUrl: process.env.SHOP_BASE_URL,
   },
   logLevel: process.env.LOG_LEVEL || 'info',
   db: {
