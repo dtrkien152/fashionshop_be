@@ -16,7 +16,7 @@ router.post('', cartController.addToCartDetails);
 
 router.put('', cartController.updateToCartDetails);
 
-router.post('', cartController.syncCartDetails);
+router.post('/sync', cartController.syncCartDetails);
 
 router.delete('', cartController.removeCartDetail);
 
