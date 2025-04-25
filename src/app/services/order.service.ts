@@ -17,7 +17,8 @@ import {
   Product,
   ProductSubDetail,
   ProductSubDetailReview,
-  ReturnOrder, Site,
+  ReturnOrder,
+  Site,
   Stock,
 } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
@@ -76,7 +77,7 @@ class OrderService {
       originTotalPrice: originTotalPrice,
       paymentType: payload.payment.type,
       paymentStatus: payload.payment.status,
-      status: ORDER_STATUS.PENDING,
+      status: payload.status ?? ORDER_STATUS.PENDING,
     };
     const orderCreated = await Order.create(order, { transaction: t });
     const orderDetails = await Promise.all(payload.products.map(async (el) => {
@@ -120,20 +121,42 @@ class OrderService {
   async updateStatusOrder(code: string, status: ORDER_STATUS) {
     const order = await Order.findOne({ where: { code } });
     if (!order) throw new BadRequestError('Order not found!');
-    if (status == ORDER_STATUS.RETURN) {
-      await ReturnOrder.create({
-        orderId: order.id,
-        totalPrice: order.originTotalPrice,
-        reason: '',
-      });
+    switch (status) {
+      case ORDER_STATUS.PENDING:
+      case ORDER_STATUS.CONFIRMED:
+      case ORDER_STATUS.COMPLETED:
+        return await order.update({ status });
+      case ORDER_STATUS.REJECTED:
+        return this.handleRejectOrder(code);
+      case ORDER_STATUS.RETURN:
+        return this.handleReturnOrder(code, '');
+      case ORDER_STATUS.SHIPPING:
+        return this.handleShippingOrder(code, 10, 20, 100);
     }
-    return await order.update({ status });
+  }
+
+  async getReturnOrder(code: string) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    const returnOrder = ReturnOrder.findByPk(order.id);
+    if (!returnOrder) throw new BadRequestError('Return order not found!');
+    return returnOrder;
+  }
+
+  async handleRejectOrder(code: string) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    const orderDetails = await OrderDetail.findAll({ where: { orderId: order.id } });
+    await Promise.all(orderDetails.map((el) => {
+      return this.stockService.updateUnitInStock(el.productSubDetailId, order.siteId, el.unit);
+    }));
+    return await order.update({ status: ORDER_STATUS.REJECTED });
   }
 
   async handleReturnOrder(code: string, reason: string) {
     const order = await Order.findOne({ where: { code } });
     if (!order) throw new BadRequestError('Order not found!');
-    await ReturnOrder.create({
+    await ReturnOrder.upsert({
       orderId: order.id,
       totalPrice: order.originTotalPrice,
       reason: reason,
@@ -145,7 +168,7 @@ class OrderService {
     return await order.update({ status: ORDER_STATUS.RETURN });
   }
 
-  async handleShippingOrder(code: string, weight: string, width: string, height: string) {
+  async handleShippingOrder(code: string, weight: string | number, width: string | number, height: string | number) {
     const order = await this.getOrderByOrderCode(code);
     if (!order) throw new BadRequestError('Order not found!');
     const shipResponse = await this.ghnService.createOrderShipping(order, +weight, +width, +height);

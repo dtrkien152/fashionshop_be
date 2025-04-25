@@ -9,6 +9,7 @@ export interface OrderCreateRequest {
   payment: OrderPayment;
   voucherCode?: string;
   cartCode?: string;
+  status?: ORDER_STATUS;
 }
 
 export interface OrderPayment {

@@ -28,6 +28,8 @@ interface IProduct {
   updatedBy?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  gender?: string;
+  otherInfo?: string;
 }
 
 @Table({ tableName: 'product', timestamps: true })
@@ -125,6 +127,18 @@ class Product extends Model<IProduct> {
     allowNull: true,
   })
   updatedBy!: string;
+
+  @Column({
+    type: DataType.STRING(100),
+    allowNull: true,
+  })
+  gender!: string;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  otherInfo!: string;
 
   @BelongsTo(() => Category)
   Category!: Category;

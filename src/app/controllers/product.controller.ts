@@ -104,7 +104,7 @@ class ProductController {
 
   createProducts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const payload: { productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts } = req.body;
+      const payload: { productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts,brand,gender,otherInfo } = req.body;
 
       // if (!payload.thumbnailUrl || !Array.isArray(payload.imageUrls) || payload.imageUrls.length === 0) {
       //   return res.status(400).json({ error: 'Thumbnail URL and image URLs are required' });

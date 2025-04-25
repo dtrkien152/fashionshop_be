@@ -2,6 +2,7 @@ import { injectable } from 'tsyringe';
 import axios from 'axios';
 import { ENV_CONFIG } from '../config';
 import { CreateOrderGhnRequest, OrderDto } from '../dto';
+import { PAYMENT_METHOD } from '../constants';
 
 @injectable()
 class GhnService {
@@ -40,7 +41,7 @@ class GhnService {
       to_address: order.customerAddress,
       to_ward_code: order.customerWardCode,
       to_district_id: order.customerDistrictId,
-      cod_amount: order.originTotalPrice - order.voucherDiscountPrice,
+      cod_amount: order.paymentType == PAYMENT_METHOD.COD ? order.originTotalPrice - order.voucherDiscountPrice : 0,
       weight: weight,
       length: 1,
       width: width,

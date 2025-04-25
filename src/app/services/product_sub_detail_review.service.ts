@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe';
 import { OrderProductReview } from '../dto';
-import { IProductSubDetailReview, Order, ProductSubDetail, ProductSubDetailReview } from '../models';
+import { IProductSubDetailReview, Order, ProductSubDetail, ProductSubDetailReview, User } from '../models';
 import { PageableUtils } from '../utils';
 
 @injectable()
@@ -10,6 +10,7 @@ class ProductSubDetailReviewService {
 
   async searchByProductId(productId: number, page: number, limit: number) {
     const pageRequest = PageableUtils.pageRequest(page, limit);
+
     const { rows, count } = await ProductSubDetailReview.findAndCountAll({
       include: [
         {
@@ -22,17 +23,38 @@ class ProductSubDetailReviewService {
         },
         {
           model: Order,
-          attributes: ['customerName'],
+          attributes: ['customerName', 'email'],
         },
       ],
       order: pageRequest.order,
       offset: +pageRequest.offset,
       limit: +pageRequest.limit,
     });
-    return PageableUtils.pageResponse(page, pageRequest.limit, rows.map(this.map2Dto), count);
+
+    const mappedRows = await Promise.all(
+      rows.map(async (item) => {
+        const email = item.order?.email;
+        let avatar = null;
+
+        if (email) {
+          const user = await User.findOne({
+            where: { email },
+            attributes: ['avatar'],
+          });
+
+          if (user?.avatar) {
+            avatar = user.avatar;
+          }
+        }
+
+        return this.map2Dto(item, avatar);
+      })
+    );
+
+    return PageableUtils.pageResponse(page, pageRequest.limit,mappedRows, count);
   }
 
-  map2Dto(review: ProductSubDetailReview) {
+  map2Dto(review: ProductSubDetailReview,avatar) {
     return {
       id: review.id,
       orderId: review.orderId,
@@ -42,6 +64,8 @@ class ProductSubDetailReviewService {
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
       customerName: review.order.customerName,
+      email: review.order.email,
+      avatar:avatar||null
     };
   }
 

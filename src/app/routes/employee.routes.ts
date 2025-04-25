@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() }); // Lưu vào bộ nh
 router.post('/search', employeeController.search);
 router.put('/update-role-site', employeeController.updateRoleSite);
 router.get('/detail/:id', employeeController.getDetail);
-router.patch('/update-status', employeeController.updateStatus);
+router.put('/update-status', employeeController.updateStatus);
 router.get('/sites', siteController.getAllSite);
 router.post(
   '/create',

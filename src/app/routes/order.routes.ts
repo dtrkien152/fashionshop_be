@@ -18,6 +18,8 @@ router.put('', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusOr
 
 router.put('/payment', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusPayment);
 
+router.get('/return', jwtMiddleware.verifyEmployeeToken, orderController.getReturnOrder);
+
 router.put('/return', jwtMiddleware.verifyEmployeeToken, orderController.handleReturnOrder);
 
 router.put('/shipping', jwtMiddleware.verifyEmployeeToken, orderController.handleShippingOrder);

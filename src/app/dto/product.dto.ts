@@ -23,12 +23,18 @@ export interface IProductDetailResponse {
   productName: string;
   description: string;
   categoryId: number;
+  brand?: string;
+  gender?: string;
+  weight?: string;
   category_name: string;
+  other_info?: string;
   unitOnOrder: number;
   salePrice: number;
   originalPrice: number;
   thumbnailUrl: string;
+  averageRating?: number;
   imageUrls?: string[];
+  totalAvailable?: number;
   productSubDetails: IProductSubDetailResponse[];
 }
 

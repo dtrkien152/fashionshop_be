@@ -130,7 +130,7 @@ class ProductService {
 
     const product: Product = await Product.findOne({
       where,
-      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'imageUrls', 'salePrice', 'originalPrice', 'unitOnOrder'],
+      attributes: ['id', 'name', 'description', 'thumbnailUrl', 'imageUrls', 'salePrice', 'originalPrice', 'unitOnOrder', 'gender', 'otherInfo', 'brand'],
       include: [
         {
           model: Category,
@@ -151,6 +151,16 @@ class ProductService {
 
     if (!product) return null;
 
+    const allRatings: number[] = product.ProductSubDetails.flatMap(subDetail =>
+      subDetail.productSubDetailReviews?.map(review => review.rating) || []
+    );
+
+    const avgRatingRaw =
+      allRatings.length > 0
+        ? allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length
+        : 5;
+
+    const avgRating = Math.round(avgRatingRaw * 2) / 2;
     // Xử lý dữ liệu trả về theo interface IProductDetailResponse
     const response: IProductDetailResponse = {
       productId: product.id,
@@ -163,6 +173,10 @@ class ProductService {
       originalPrice: product.originalPrice,
       categoryId: product.Category?.id || 0,
       category_name: product.Category?.name || '',
+      averageRating: avgRating,
+      other_info: product.otherInfo,
+      gender: product.gender,
+      brand: product.brand,
       productSubDetails: product.ProductSubDetails.map((subDetail) => ({
         id: subDetail.id,
         size: subDetail.size,
@@ -433,126 +447,249 @@ class ProductService {
     return categoryProducts;
   }
 
+  // async searchProductsForAdmin({
+  //                                keyword,
+  //                                categoryId,
+  //                                sortBy = SORT_BY_ENUM.NEWEST,
+  //                                limit = 10,
+  //                                page = 1,
+  //                                isDelete = false, // Thêm isDelete, mặc định lấy tất cả nếu null
+  //                                isActive = null, // Thêm isActive, mặc định lấy tất cả nếu null
+  //                              }: IProductFilterParams): Promise<{
+  //   data: IProductItem2Response[];
+  //   total: number;
+  //   totalPages: number;
+  // }> {
+  //   const offset = Math.max(0, (Number(page)+1 - 1) * Number(limit));
+  //
+  //   const where: any = {};
+  //   // 🔍 Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
+  //   if (keyword) {
+  //     where[Op.or] = [
+  //       { name: { [Op.like]: `%${keyword}%` } },
+  //       { code: { [Op.like]: `%${keyword}%` } },
+  //     ];
+  //   }
+  //
+  //   // 📂 Lọc theo category
+  //   if (categoryId) {
+  //     where.categoryId = Number(categoryId);
+  //   }
+  //
+  //   // ✅ Áp dụng filter isDelete nếu có giá trị (không null)
+  //   if (isDelete !== null) {
+  //     where.isDelete = isDelete;
+  //   }
+  //
+  //   // ✅ Áp dụng filter isActive nếu có giá trị (không null)
+  //   if (isActive !== null) {
+  //     where.isActive = isActive;
+  //   }
+  //
+  //   // 🔀 Sắp xếp theo lựa chọn
+  //   const order: any = [];
+  //   switch (sortBy) {
+  //     case 'price_asc':
+  //       order.push(['salePrice', 'ASC']);
+  //       break;
+  //     case 'price_desc':
+  //       order.push(['salePrice', 'DESC']);
+  //       break;
+  //     case 'newest':
+  //       order.push(['createdAt', 'DESC']);
+  //       break;
+  //     case 'latest':
+  //       order.push(['createdAt', 'ASC']);
+  //       break;
+  //     default:
+  //       order.push(['createdAt', 'DESC']);
+  //       break;
+  //   }
+  //
+  //   // 🚀 Truy vấn sản phẩm
+  //   const { rows, count } = await Product.findAndCountAll({
+  //     where,
+  //     include: [
+  //       { model: Category, attributes: ['name'] },
+  //       { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+  //     ],
+  //     order,
+  //     limit: Number(limit),
+  //     offset,
+  //     distinct: true,
+  //   });
+  //
+  //   // 🔄 Xử lý dữ liệu trả về
+  //   const data: IProductItem2Response[] = rows.map((product) => {
+  //     const colors = [
+  //       ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
+  //     ];
+  //     const sizes = [
+  //       ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
+  //     ];
+  //     const discountPercentage = product.originalPrice
+  //       ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)
+  //       : 0;
+  //     const unitOnStock = product.ProductSubDetails.reduce(
+  //       (total, subDetail) => total + (subDetail.Stocks?.reduce((sum, stock) => sum + stock.unit, 0) || 0),
+  //       0,
+  //     );
+  //
+  //     return {
+  //       id: product.id,
+  //       category: product.Category?.name || 'Unknown',
+  //       unitOnOrder: product.unitOnOrder,
+  //       unitInStock: unitOnStock,
+  //       productName: product.name || 'No name',
+  //       description: product.description,
+  //       salePrice: product.salePrice,
+  //       originalPrice: product.originalPrice,
+  //       discountPercentage: discountPercentage > 0 ? `${discountPercentage}%` : '0%',
+  //       thumbnailUrl: product.thumbnailUrl,
+  //       imageUrls: product.imageUrls || [],
+  //       isDelete: product.isDelete,
+  //       isActive: product.isActive,
+  //       colors,
+  //       size: sizes,
+  //     };
+  //   });
+  //
+  //   return {
+  //     data,
+  //     total: count,
+  //     totalPages: Math.ceil(count / Number(limit)),
+  //   };
+  // }
+  //
+  // catch(error) {
+  //   console.error('Error in searchProductsForAdmin:', error);
+  //   return { data: [], total: 0, totalPages: 0 };
+  // }
+
   async searchProductsForAdmin({
-                                 keyword,
-                                 categoryId,
-                                 sortBy = SORT_BY_ENUM.NEWEST,
-                                 limit = 10,
-                                 page = 1,
-                                 isDelete = false, // Thêm isDelete, mặc định lấy tất cả nếu null
-                                 isActive = null, // Thêm isActive, mặc định lấy tất cả nếu null
-                               }: IProductFilterParams): Promise<{
+                           keyword,
+                           categoryId,
+                           sortBy = SORT_BY_ENUM.NEWEST,
+                           limit = 10,
+                           page = 1,
+                           isDelete = false,
+                           isActive = null,
+                         }: IProductFilterParams): Promise<{
     data: IProductItem2Response[];
     total: number;
     totalPages: number;
   }> {
-    const where: any = {};
-    const offset = Math.max(0, (Number(page) - 1) * Number(limit));
+    try {
+      const offset = Math.max(0, (Number(page+1) - 1) * Number(limit));
 
-    // 🔍 Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
-    if (keyword) {
-      where[Op.or] = [
-        { name: { [Op.like]: `%${keyword}%` } },
-        { code: { [Op.like]: `%${keyword}%` } },
-      ];
-    }
+      const where: any = {};
 
-    // 📂 Lọc theo category
-    if (categoryId) {
-      where.categoryId = Number(categoryId);
-    }
+      // 🔍 Tìm kiếm theo keyword
+      if (keyword) {
+        where[Op.or] = [
+          { name: { [Op.like]: `%${keyword}%` } },
+          { code: { [Op.like]: `%${keyword}%` } },
+        ];
+      }
 
-    // ✅ Áp dụng filter isDelete nếu có giá trị (không null)
-    if (isDelete !== null) {
-      where.isDelete = isDelete;
-    }
+      // 📂 Lọc theo category
+      if (categoryId) {
+        where.categoryId = Number(categoryId);
+      }
 
-    // ✅ Áp dụng filter isActive nếu có giá trị (không null)
-    if (isActive !== null) {
-      where.isActive = isActive;
-    }
+      // ✅ Filter isDelete
+      if (isDelete !== null) {
+        where.isDelete = isDelete;
+      }
 
-    // 🔀 Sắp xếp theo lựa chọn
-    const order: any = [];
-    switch (sortBy) {
-      case 'price_asc':
-        order.push(['salePrice', 'ASC']);
-        break;
-      case 'price_desc':
-        order.push(['salePrice', 'DESC']);
-        break;
-      case 'newest':
-        order.push(['createdAt', 'DESC']);
-        break;
-      case 'latest':
-        order.push(['createdAt', 'ASC']);
-        break;
-      default:
-        order.push(['createdAt', 'DESC']);
-        break;
-    }
+      // ✅ Filter isActive
+      if (isActive !== null) {
+        where.isActive = isActive;
+      }
 
-    // 🚀 Truy vấn sản phẩm
-    const { rows, count } = await Product.findAndCountAll({
-      where,
-      include: [
-        { model: Category, attributes: ['name'] },
-        { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
-      ],
-      order,
-      limit: Number(limit),
-      offset,
-      distinct: true,
-    });
+      // 🔀 Sắp xếp
+      const order: any = [];
+      switch (sortBy) {
+        case 'price_asc':
+          order.push(['salePrice', 'ASC']);
+          break;
+        case 'price_desc':
+          order.push(['salePrice', 'DESC']);
+          break;
+        case 'latest':
+          order.push(['createdAt', 'ASC']);
+          break;
+        case 'newest':
+        default:
+          order.push(['createdAt', 'DESC']);
+          break;
+      }
 
-    // 🔄 Xử lý dữ liệu trả về
-    const data: IProductItem2Response[] = rows.map((product) => {
-      const colors = [
-        ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
-      ];
-      const sizes = [
-        ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
-      ];
-      const discountPercentage = product.originalPrice
-        ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)
-        : 0;
-      const unitOnStock = product.ProductSubDetails.reduce(
-        (total, subDetail) => total + (subDetail.Stocks?.reduce((sum, stock) => sum + stock.unit, 0) || 0),
-        0,
-      );
+      // 🚀 Truy vấn sản phẩm
+      const { rows, count } = await Product.findAndCountAll({
+        where,
+        include: [
+          { model: Category, attributes: ['name'] },
+          {
+            model: ProductSubDetail,
+            attributes: ['size', 'color', 'isActive'],
+            include: [{ model: Stock, attributes: ['unit'] }],
+          },
+        ],
+        order,
+        limit: Number(limit),
+        offset,
+        distinct: true,
+      });
+
+      // 🔄 Map dữ liệu
+      const data: IProductItem2Response[] = rows.map((product) => {
+        const colors = [
+          ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
+        ];
+        const sizes = [
+          ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
+        ];
+
+        const discountPercentage =
+          product.originalPrice && product.salePrice
+            ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)
+            : 0;
+
+        const unitInStock = product.ProductSubDetails.reduce((total, sub) => {
+          const subStock = sub.Stocks?.reduce((sum, stock) => sum + (stock.unit || 0), 0) || 0;
+          return total + subStock;
+        }, 0);
+
+        return {
+          id: product.id,
+          category: product.Category?.name || 'Unknown',
+          unitOnOrder: product.unitOnOrder || 0,
+          unitInStock,
+          productName: product.name || 'No name',
+          description: product.description,
+          salePrice: product.salePrice,
+          originalPrice: product.originalPrice,
+          discountPercentage: discountPercentage > 0 ? `${discountPercentage}%` : '0%',
+          thumbnailUrl: product.thumbnailUrl,
+          imageUrls: product.imageUrls || [],
+          isDelete: product.isDelete,
+          isActive: product.isActive,
+          colors,
+          size: sizes,
+        };
+      });
 
       return {
-        id: product.id,
-        category: product.Category?.name || 'Unknown',
-        unitOnOrder: product.unitOnOrder,
-        unitInStock: unitOnStock,
-        productName: product.name || 'No name',
-        description: product.description,
-        salePrice: product.salePrice,
-        originalPrice: product.originalPrice,
-        discountPercentage: discountPercentage > 0 ? `${discountPercentage}%` : '0%',
-        thumbnailUrl: product.thumbnailUrl,
-        imageUrls: product.imageUrls || [],
-        isDelete: product.isDelete,
-        isActive: product.isActive,
-        colors,
-        size: sizes,
+        data,
+        total: count,
+        totalPages: Math.ceil(count / Number(limit)),
       };
-    });
-
-    return {
-      data,
-      total: count,
-      totalPages: Math.ceil(count / Number(limit)),
-    };
+    } catch (error) {
+      console.error('Error in searchProductsForAdmin:', error);
+      return { data: [], total: 0, totalPages: 0 };
+    }
   }
-
-  catch(error) {
-    console.error('Error in searchProductsForAdmin:', error);
-    return { data: [], total: 0, totalPages: 0 };
-  }
-
-
   async updateStatus(productId: number, status: boolean) {
     const product = await Product.findByPk(productId);
     if (!product) return null;
@@ -562,7 +699,7 @@ class ProductService {
     return product;
   }
 
-  async createProduct({ productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts }) {
+  async createProduct({ productName, categoryId, price, description, thumbnailUrl, imageUrls, subProducts,brand,gender,otherInfo }) {
     const transaction = await Product.sequelize?.transaction();
     // Lưu sản phẩm vào database
     const product = await Product.create(
@@ -573,6 +710,9 @@ class ProductService {
         salePrice: price,
         description,
         thumbnailUrl,
+        brand,
+        gender,
+        otherInfo,
         imageUrls, // Lưu mảng URL ảnh phụ
         isActive: false,
         code: GenerateUtils.code('PRD'),
@@ -652,6 +792,9 @@ class ProductService {
           categoryId: updateData.categoryId,
           originalPrice: updateData.originalPrice,
           salePrice: updateData.salePrice,
+          gender: updateData.gender,
+          otherInfo: updateData.otherInfo,
+          brand: updateData.brand,
           description: updateData.description,
           thumbnailUrl: updateData.thumbnailUrl,
           imageUrls: updateData.imageUrls,
