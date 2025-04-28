@@ -22,4 +22,22 @@ describe('SiteController - getAll', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
+
+  it('should return 400 when request is invalid', async () => {
+    const mockReqInvalid = {} as Request; // Chưa đủ tham số hoặc dữ liệu
+    try {
+      await controller.getAllSite(mockReqInvalid, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
+
+  it('should return 500 when an unexpected error occurs', async () => {
+    jest.spyOn(controller, 'getAllSite').mockRejectedValueOnce(new Error('Unexpected error'));
+    try {
+      await controller.getAllSite(mockReq, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
 });

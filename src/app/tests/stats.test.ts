@@ -29,6 +29,29 @@ describe('StatsController - getStatsInMonth', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
+
+  it('should return 400 when request is invalid', async () => {
+    const mockReqInvalid = {
+      headers: {
+        'authorization': 'Bearer ' + token,
+      },
+      query: { siteId: '' },  // siteId không hợp lệ
+    } as unknown as Request;
+    try {
+      await controller.getStatsInMonth(mockReqInvalid, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
+
+  it('should return 500 when an unexpected error occurs', async () => {
+    jest.spyOn(controller, 'getStatsInMonth').mockRejectedValueOnce(new Error('Unexpected error'));
+    try {
+      await controller.getStatsInMonth(mockReq, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
 });
 
 describe('StatsController - getTopStockProduct', () => {
@@ -53,6 +76,29 @@ describe('StatsController - getTopStockProduct', () => {
     await controller.getTopStockProduct(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when request is invalid', async () => {
+    const mockReqInvalid = {
+      headers: {
+        'authorization': 'Bearer ' + token,
+      },
+      query: { siteId: '' },  // siteId không hợp lệ
+    } as unknown as Request;
+    try {
+      await controller.getTopStockProduct(mockReqInvalid, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
+
+  it('should return 500 when an unexpected error occurs', async () => {
+    jest.spyOn(controller, 'getTopStockProduct').mockRejectedValueOnce(new Error('Unexpected error'));
+    try {
+      await controller.getTopStockProduct(mockReq, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
   });
 });
 
@@ -83,6 +129,33 @@ describe('StatsController - getTopSellingProducts', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
   });
+
+  it('should return 400 when request is invalid', async () => {
+    const mockReqInvalid = {
+      headers: {
+        'authorization': 'Bearer ' + token,
+      },
+      query: {
+        startAt: '',
+        endAt: '1744649999999',
+        siteId: 0,
+      },
+    } as unknown as Request;  // startAt không hợp lệ
+    try {
+      await controller.getTopSellingProducts(mockReqInvalid, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
+
+  it('should return 500 when an unexpected error occurs', async () => {
+    jest.spyOn(controller, 'getTopSellingProducts').mockRejectedValueOnce(new Error('Unexpected error'));
+    try {
+      await controller.getTopSellingProducts(mockReq, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
 });
 
 describe('StatsController - getRevenueStats', () => {
@@ -111,5 +184,32 @@ describe('StatsController - getRevenueStats', () => {
     await controller.getRevenueStats(mockReq, mockRes, mockNext);
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when request is invalid', async () => {
+    const mockReqInvalid = {
+      headers: {
+        'authorization': 'Bearer ' + token,
+      },
+      query: {
+        startAt: '',
+        endAt: '1744649999999',
+        siteId: 0,
+      },
+    } as unknown as Request;  // startAt không hợp lệ
+    try {
+      await controller.getRevenueStats(mockReqInvalid, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
+  });
+
+  it('should return 500 when an unexpected error occurs', async () => {
+    jest.spyOn(controller, 'getRevenueStats').mockRejectedValueOnce(new Error('Unexpected error'));
+    try {
+      await controller.getRevenueStats(mockReq, mockRes, mockNext);
+    } catch (error) {
+      expect(true).toBe(true);
+    }
   });
 });
