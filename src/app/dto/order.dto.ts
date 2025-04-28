@@ -48,6 +48,7 @@ export interface OrderFilter extends PageParams {
   email?: string;
   status?: ORDER_STATUS;
   paymentStatus?: PAYMENT_STATUS;
+  paymentType?: PAYMENT_METHOD;
   startAt?: string;
   endAt?: string;
   siteId?: string;

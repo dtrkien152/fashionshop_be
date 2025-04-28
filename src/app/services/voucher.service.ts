@@ -32,7 +32,7 @@ class VoucherService {
     }
     if (filter.isActive) {
       whereCondition[Op.and].push({
-        status: filter.isActive == 'true',
+        isActive: filter.isActive == 'true',
       });
     }
     const { rows, count } = await Voucher.findAndCountAll({

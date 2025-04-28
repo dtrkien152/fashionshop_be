@@ -220,6 +220,11 @@ class OrderService {
         status: filter.status,
       });
     }
+    if (filter.paymentType) {
+      whereCondition[Op.and].push({
+        paymentType: filter.paymentType,
+      });
+    }
     if (filter.siteId) {
       whereCondition[Op.and].push({
         siteId: +filter.siteId,
