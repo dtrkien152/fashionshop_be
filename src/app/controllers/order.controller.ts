@@ -102,6 +102,16 @@ class OrderController {
     }
   };
 
+  handleCancelOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { code } = req.query;
+      const results = await this.orderService.handleCancelOrder(code as string);
+      return res.status(200).json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   handleReturnOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const { code, reason } = req.query;

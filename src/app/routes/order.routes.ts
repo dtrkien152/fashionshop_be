@@ -22,6 +22,8 @@ router.get('/return', jwtMiddleware.verifyEmployeeToken, orderController.getRetu
 
 router.put('/return', jwtMiddleware.verifyEmployeeToken, orderController.handleReturnOrder);
 
+router.put('/cancel', orderController.handleCancelOrder);
+
 router.put('/shipping', jwtMiddleware.verifyEmployeeToken, orderController.handleShippingOrder);
 
 router.get('/my-orders', jwtMiddleware.verifyEmployeeToken, orderController.getAllMyOrders);

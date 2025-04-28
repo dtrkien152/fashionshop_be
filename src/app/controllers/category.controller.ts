@@ -4,6 +4,7 @@ import CategoryService from '../services/category.service';
 import { Category } from '../models';
 import { NextFunction, Request, Response } from 'express';
 import categoryService from '../services/category.service';
+import { UnauthorizedError } from '../errors';
 
 @injectable()
 class CategoryController {
@@ -84,9 +85,9 @@ class CategoryController {
 
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { categoryId,isActive } = req.body;
-      await this.categoryService.updateStatus(categoryId,isActive);
-      res.status(200).json("Success");
+      const { categoryId, isActive } = req.body;
+      await this.categoryService.updateStatus(categoryId, isActive);
+      res.status(200).json('Success');
     } catch (error) {
       next(error);
     }

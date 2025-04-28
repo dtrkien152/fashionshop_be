@@ -19,12 +19,12 @@ import {
   ProductSubDetailReview,
   ReturnOrder,
   Site,
-  Stock,
+  Stock, UserVoucher,
 } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { sequelize } from '../config';
@@ -59,6 +59,13 @@ class OrderService {
       if (await this.voucherService.verifyVoucherUser(user.id, voucher.id)) {
         if (originTotalPrice > voucher.triggerPrice) {
           discountPrice = Math.min(originTotalPrice * (voucher.discountPercent / 100), voucher.maxDiscountPrice);
+          await UserVoucher.update({ isActive: false }, {
+            where: {
+              userId: user.id,
+              voucherId: voucher.id,
+            },
+            transaction: t,
+          });
         }
       } else throw new BadRequestError('Voucher is invalid!');
     }
@@ -128,6 +135,8 @@ class OrderService {
         return await order.update({ status });
       case ORDER_STATUS.REJECTED:
         return this.handleRejectOrder(code);
+      case ORDER_STATUS.CANCEL:
+        return this.handleCancelOrder(code);
       case ORDER_STATUS.RETURN:
         return this.handleReturnOrder(code, '');
       case ORDER_STATUS.SHIPPING:
@@ -141,6 +150,16 @@ class OrderService {
     const returnOrder = ReturnOrder.findByPk(order.id);
     if (!returnOrder) throw new BadRequestError('Return order not found!');
     return returnOrder;
+  }
+
+  async handleCancelOrder(code: string) {
+    const order = await Order.findOne({ where: { code } });
+    if (!order) throw new BadRequestError('Order not found!');
+    const orderDetails = await OrderDetail.findAll({ where: { orderId: order.id } });
+    await Promise.all(orderDetails.map((el) => {
+      return this.stockService.updateUnitInStock(el.productSubDetailId, order.siteId, el.unit);
+    }));
+    return await order.update({ status: ORDER_STATUS.CANCEL });
   }
 
   async handleRejectOrder(code: string) {
