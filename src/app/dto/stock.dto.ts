@@ -6,6 +6,11 @@ export interface StockFilter extends PageParams {
   siteId?: string;
 }
 
+export interface HistoryStockFilter extends PageParams {
+  siteId?: string;
+  productSubDetailId?: string;
+}
+
 export interface StockProductDto {
   productId: number;
   productName: string;

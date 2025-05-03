@@ -1,9 +1,10 @@
 import { injectable } from 'tsyringe';
-import { ISite, IStock, Product, ProductSubDetail, Site, Stock } from '../models';
+import { ISite, IStock, Product, ProductSubDetail, Site, Stock, StockHistory } from '../models';
 import { NotFoundError } from '../errors';
-import { StockFilter, StockProductDto } from '../dto';
+import { HistoryStockFilter, StockFilter, StockProductDto } from '../dto';
 import { PageableUtils } from '../utils';
 import { col, fn, Op } from 'sequelize';
+import { sequelize } from '../config';
 
 @injectable()
 class StockService {
@@ -79,6 +80,45 @@ class StockService {
     } as StockProductDto;
   }
 
+  async getAllHistoryStock(filter: HistoryStockFilter) {
+    const pageRequest = PageableUtils.pageRequest(filter.page, filter.limit, filter.orderBy, filter.orderDirection);
+    const whereCondition = {
+      [Op.and]: [],
+    };
+    if (filter.siteId) {
+      whereCondition[Op.and].push({
+        siteId: +filter.siteId,
+      });
+    }
+    if (filter.productSubDetailId) {
+      whereCondition[Op.and].push({
+        productSubDetailId: +filter.productSubDetailId,
+      });
+    }
+    const { rows, count } = await StockHistory.findAndCountAll({
+      where: whereCondition,
+      include: [{
+        model: Site,
+        attributes: ['id', 'name'],
+      }],
+      order: pageRequest.order,
+      offset: +pageRequest.offset,
+      limit: +pageRequest.limit,
+    });
+    return PageableUtils.pageResponse(filter.page, filter.limit, rows.map(this.map2HistoryStockDto), count);
+  }
+
+  map2HistoryStockDto(stockHistory: StockHistory) {
+    return {
+      siteId: stockHistory.siteId,
+      productSubDetail: stockHistory.productSubDetail,
+      unit: stockHistory.unit,
+      createdAt: stockHistory.createdAt,
+      createdBy: stockHistory.createdBy,
+      siteName: stockHistory.site.name,
+    };
+  }
+
   async getStockByProductSubDetailIdAndSiteId(productSubDetailId: number, siteId: number) {
     const stock = await Stock.findOne({
       where: {
@@ -91,8 +131,27 @@ class StockService {
     return stock;
   }
 
-  upsertStock(payload: IStock) {
-    return Stock.upsert(payload);
+  async upsertStock(payload: IStock, createdBy: string) {
+    const t = await sequelize.transaction(); // Khởi tạo transaction
+    let results;
+    const stock = await Stock.findOne({
+      where: {
+        productSubDetailId: payload.productSubDetailId, siteId: payload.siteId,
+      },
+    });
+    if (stock) {
+      results = await stock.update({ unit: stock.unit + +payload.unit }, { transaction: t });
+    } else {
+      results = await Stock.upsert(payload, { transaction: t });
+    }
+    await StockHistory.create({
+      siteId: payload.siteId,
+      productSubDetailId: payload.productSubDetailId,
+      unit: +payload.unit,
+      createdBy,
+    }, { transaction: t });
+    await t.commit();
+    return results;
   }
 
   async updateUnitInStock(productSubDetailId: number, siteId: number, unitChanged: number) {

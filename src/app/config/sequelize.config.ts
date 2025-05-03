@@ -28,6 +28,7 @@ import {
   UserAddress,
   UserVoucher,
   Voucher,
+  StockHistory,
 } from '../models';
 
 const sequelize = new Sequelize(
@@ -58,7 +59,7 @@ const sequelize = new Sequelize(
       Post, PostCategory, Cart, CartDetail, Category, CategoryEvent, Comment, Event,
       Notify, Order, OrderDetail, Otp, Payment, Product, ProductSubDetail, ShipFee,
       ReturnOrder, ShipInfo, Site, Stock, Tags, User, UserAddress, UserVoucher, Voucher,
-      Employee, ProductSubDetailReview,
+      Employee, ProductSubDetailReview, StockHistory,
     ],
   },
 );

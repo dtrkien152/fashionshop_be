@@ -9,6 +9,8 @@ const router = Router();
 
 router.get('', jwtMiddleware.verifyEmployeeToken, stockController.getAllStock);
 
+router.get('/history', jwtMiddleware.verifyEmployeeToken, stockController.getHistoryStock);
+
 router.post('', jwtMiddleware.verifyEmployeeToken, stockController.upsertStock);
 
 export default router;

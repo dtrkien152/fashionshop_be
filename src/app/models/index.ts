@@ -17,6 +17,7 @@ export * from './return_order.model';
 export * from './ship_info.model';
 export * from './site.model';
 export * from './stock.model';
+export * from './stock_history.model';
 export * from './tags.model';
 export * from './user.model';
 export * from './user_address.model';
