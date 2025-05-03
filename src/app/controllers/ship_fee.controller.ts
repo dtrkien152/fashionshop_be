@@ -2,6 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import { NextFunction, Request, Response } from 'express';
 import { ShipFeeService, VoucherService } from '../services';
 import { ShipFeeCreateRequest, ShipFeeUpdateRequest } from '../dto';
+import { SORT_BY_ENUM } from '../constants';
 
 @injectable()
 class ShipFeeController {
@@ -58,6 +59,52 @@ class ShipFeeController {
     }
   };
 
+  searchFeeByAdmin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { keyword, page, limit, sortBy } = req.body;
+      const sortOption = Object.values(SORT_BY_ENUM).includes(sortBy as SORT_BY_ENUM)
+        ? (sortBy as SORT_BY_ENUM)
+        : SORT_BY_ENUM.NEWEST;
+      const results = await this.shipFeeService.searchShipFeeByAdmin(
+        {
+          keyword,
+          page: Number(page),
+          limit: Number(limit),
+          sortBy: sortOption,
+        },
+      );
+      return res.status(200).json(results);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const { id,status } = req.body;
+      await this.shipFeeService.updateStatus({id:id,status:status})
+      return res.status(200).json("Success");
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      await this.shipFeeService.createShipFee(req.body)
+      return res.status(200).json("Success");
+    } catch (error) {
+      next(error);
+    }
+  };
+  updateFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      await this.shipFeeService.updateShipFee(req.body)
+      return res.status(200).json("Success");
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ShipFeeController;

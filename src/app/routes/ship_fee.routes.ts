@@ -16,4 +16,11 @@ router.delete('/:id', jwtMiddleware.verifyEmployeeToken, shipFeeController.deact
 
 router.get('/calculator', shipFeeController.getFee);
 
+router.post('/searchFeeByAdmin', shipFeeController.searchFeeByAdmin);
+
+router.post('/updateStatus', shipFeeController.updateStatus); // <-- thêm dòng này
+
+router.post('/updateFee', shipFeeController.updateFee);
+router.post('/createFee', shipFeeController.createFee);
+
 export default router;
