@@ -16,4 +16,5 @@ export { default as VNPayService } from './vnpay.service';
 export { default as StatsService } from './stats.service';
 export { default as EmployeeService } from './employee.service';
 export { default as GhnService } from './ghn.service';
+export { default as NotifyService } from './notify.service';
 export { default as ProductSubDetailReviewService } from './product_sub_detail_review.service';

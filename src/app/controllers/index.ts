@@ -12,3 +12,4 @@ export { default as SiteController } from './site.controller';
 export { default as StatsController } from './stats.controller';
 export { default as EmployeeController } from './employee.controller';
 export { default as GHNController } from './ghn.controller';
+export { default as NotifyController } from './notify.controller';

@@ -14,13 +14,13 @@ import {
   StatsService,
   UserService,
   VNPayService,
-  VoucherService,
+  VoucherService, NotifyService,
 } from '../services';
 import { sequelize } from './sequelize.config';
 import {
   AuthController,
   CartController, EmployeeController,
-  FileController, GHNController,
+  FileController, GHNController, NotifyController,
   OrderController,
   PostController,
   ProductController,
@@ -53,6 +53,7 @@ container.register('SiteService', { useClass: SiteService });
 container.register('StatsService', { useClass: StatsService });
 container.register('EmployeeService', { useClass: EmployeeService });
 container.register('GhnService', { useClass: GhnService });
+container.register('NotifyService', { useClass: NotifyService });
 container.register('ProductReviewService', { useClass: ProductSubDetailReviewService });
 
 container.register('UserController', { useClass: UserController });
@@ -70,5 +71,6 @@ container.register('SiteController', { useClass: SiteController });
 container.register('StatsController', { useClass: StatsController });
 container.register('EmployeeController', { useClass: EmployeeController });
 container.register('GHNController', { useClass: GHNController });
+container.register('NotifyController', { useClass: NotifyController });
 
 export { container };

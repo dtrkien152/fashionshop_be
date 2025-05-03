@@ -11,7 +11,7 @@ import {
 } from './index';
 import {
   IOrder,
-  IOrderDetail,
+  IOrderDetail, Notify,
   Order,
   OrderDetail,
   Product,
@@ -41,6 +41,7 @@ class OrderService {
   }
 
   create = async (email: string, payload: OrderCreateRequest) => {
+    const siteNames = ['Online', 'Hà Nội', 'Hồ Chí Minh'];
     const t = await sequelize.transaction(); // Khởi tạo transaction
     if (!payload.products || !payload.products.length) throw new BadRequestError('Product is empty');
     const products = await Promise.all(payload.products.map(async (el) => {
@@ -102,6 +103,16 @@ class OrderService {
       const stock = await this.stockService.getStockByProductSubDetailIdAndSiteId(el.productSubDetailId, payload.siteId);
       if (stock.unit < el.unit) {
         throw new BadRequestError('Purchase order exceeds stock unit!');
+      }
+      if (stock.unit - el.unit <= 10) {
+        const productSubDetail = payload.products.find((p0) => p0.productSubDetailId === el.productSubDetailId);
+        if (productSubDetail) {
+          await Notify.create({
+            type: 'WARNING',
+            title: 'Cảnh báo sắp hết hàng trong kho',
+            content: `Sản phẩm ${productSubDetail.productName}(${productSubDetail.color} - ${productSubDetail.size}) tại chi nhánh ${siteNames[+payload.siteId]} sắp hết hàng. Vui lòng bổ sung thêm sản phẩm vào kho.`,
+          }, { transaction: t });
+        }
       }
       return {
         siteId: stock.siteId,

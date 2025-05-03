@@ -12,3 +12,4 @@ export { default as siteRoutes } from './site.routes';
 export { default as statsRoutes } from './stats.routes';
 export { default as employeeRoutes } from './employee.routes';
 export { default as ghnRoutes } from './ghn.routes';
+export { default as notifyRoutes } from './notify.routes';

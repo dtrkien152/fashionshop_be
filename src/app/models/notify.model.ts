@@ -3,9 +3,9 @@ import { User } from './user.model';
 
 interface INotify {
   id?: number;
-  userId?: number;
+  type?: string;
+  title?: string;
   content?: string;
-  isRead?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,25 +19,23 @@ class Notify extends Model<INotify> {
   })
   id!: number;
 
-  @ForeignKey(() => User)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING(50),
     allowNull: true,
   })
-  userId!: number;
+  type!: number;
 
   @Column({
     type: DataType.STRING(200),
     allowNull: true,
   })
-  content!: string;
+  title!: string;
 
   @Column({
-    type: DataType.BOOLEAN,
+    type: DataType.STRING(500),
     allowNull: true,
-    defaultValue: false,
   })
-  isRead!: boolean;
+  content!: string;
 }
 
 export { INotify, Notify };
