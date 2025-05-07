@@ -21,6 +21,7 @@ export interface StockProductDto {
 }
 
 export interface StockProductSubDetailDto {
+  stocks: any[];
   productSubDetailId: number;
   color: string;
   size: string;

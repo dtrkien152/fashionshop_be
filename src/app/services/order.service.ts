@@ -22,7 +22,7 @@ import {
   Stock, UserVoucher,
 } from '../models';
 import { GenerateUtils, PageableUtils } from '../utils';
-import { ORDER_STATUS, PAYMENT_STATUS } from '../constants';
+import { ORDER_STATUS, PAYMENT_STATUS, SITE_NAMES } from '../constants';
 import { BadRequestError, NotFoundError } from '../errors';
 import { Op, where } from 'sequelize';
 import { CartProduct } from '../dto/cart.dto';
@@ -41,7 +41,6 @@ class OrderService {
   }
 
   create = async (email: string, payload: OrderCreateRequest) => {
-    const siteNames = ['Online', 'Hà Nội', 'Hồ Chí Minh'];
     const t = await sequelize.transaction(); // Khởi tạo transaction
     if (!payload.products || !payload.products.length) throw new BadRequestError('Product is empty');
     const products = await Promise.all(payload.products.map(async (el) => {
@@ -110,7 +109,7 @@ class OrderService {
           await Notify.create({
             type: 'WARNING',
             title: 'Cảnh báo sắp hết hàng trong kho',
-            content: `Sản phẩm ${productSubDetail.productName}(${productSubDetail.color} - ${productSubDetail.size}) tại chi nhánh ${siteNames[+payload.siteId]} sắp hết hàng. Vui lòng bổ sung thêm sản phẩm vào kho.`,
+            content: `Sản phẩm ${productSubDetail.productName}(${productSubDetail.color} - ${productSubDetail.size}) tại chi nhánh ${SITE_NAMES[+payload.siteId]} sắp hết hàng. Vui lòng bổ sung thêm sản phẩm vào kho.`,
           }, { transaction: t });
         }
       }

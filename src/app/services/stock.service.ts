@@ -75,6 +75,7 @@ class StockService {
         productSubDetailId: productSubDetail.id,
         color: productSubDetail.color,
         size: productSubDetail.size,
+        stocks: productSubDetail.Stocks,
         unitInStock: productSubDetail.Stocks.reduce((acc, cur) => acc + cur.unit, 0),
       }))),
     } as StockProductDto;
