@@ -3,6 +3,7 @@ import { ShipFeeCreateRequest, ShipFeeUpdateRequest } from '../dto';
 import { IShipFee, ShipFee } from '../models';
 import { SORT_BY_ENUM } from '../constants';
 import { Op } from 'sequelize';
+import { NotFoundError } from '../errors';
 
 @injectable()
 class ShipFeeService {
@@ -221,6 +222,14 @@ class ShipFeeService {
     return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
   }
 
+  async deleteShipFee(id: number) {
+    const fee = await ShipFee.findByPk(id);
+    if (!fee) {
+      throw new NotFoundError('Không tìm thấy phí ship');
+    }
+
+    await fee.destroy(); // Xóa khỏi DB
+  }
 }
 
 export default ShipFeeService;

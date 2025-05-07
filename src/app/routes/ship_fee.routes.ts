@@ -22,5 +22,5 @@ router.post('/updateStatus', shipFeeController.updateStatus); // <-- thêm dòng
 
 router.post('/updateFee', shipFeeController.updateFee);
 router.post('/createFee', shipFeeController.createFee);
-
+router.delete('/delete/:id', shipFeeController.deleteShipFee);
 export default router;

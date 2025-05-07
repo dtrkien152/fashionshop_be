@@ -44,13 +44,14 @@ class EmployeeController {
     try {
       const { id, role, siteId } = req.body;
 
-      if (!id || !role || !siteId) {
+      if (!id || !role ) {
         return res.status(400).json({ message: 'Thiếu thông tin id, role hoặc siteId' });
       }
 
       const result = await this.employeeService.updateRoleAndSite(+id, role, +siteId);
       res.status(200).json({ message: 'Cập nhật role và site thành công', data: result });
     } catch (error) {
+      console.log(error);
       next(error);
     }
   };

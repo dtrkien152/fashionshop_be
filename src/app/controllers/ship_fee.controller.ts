@@ -20,6 +20,22 @@ class ShipFeeController {
     }
   };
 
+  deleteShipFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'ID không hợp lệ' });
+      }
+
+      const results = await this.shipFeeService.deleteShipFee(id);
+      return res.status(200).json({ message: 'Xóa phí ship thành công' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+
   update = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const payload: ShipFeeUpdateRequest = req.body;

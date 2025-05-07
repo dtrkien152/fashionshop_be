@@ -97,7 +97,7 @@ class EmployeeService {
     }
 
     employee.role = role;
-    employee.siteId = siteId;
+    employee.siteId = siteId ? siteId : employee.siteId;
     await employee.save();
 
     return {
@@ -120,7 +120,7 @@ class EmployeeService {
       ],
       attributes: {
         exclude: ['password'], // Không trả về mật khẩu
-      }
+      },
     });
 
     return employee;
@@ -225,7 +225,7 @@ class EmployeeService {
     return updatedEmployee;
   };
 
-   updateProfile = async (employeeId: number, payload: Partial<Employee>) => {
+  updateProfile = async (employeeId: number, payload: Partial<Employee>) => {
     const employee = await Employee.findByPk(employeeId);
 
     if (!employee) throw new Error('Không tìm thấy nhân viên');
