@@ -8,7 +8,7 @@ import {
   Order,
   OrderDetail,
   Product,
-  ProductSubDetail,
+  ProductSubDetail, ProductSubDetailReview,
   Site,
   Stock,
 } from '../models';
@@ -38,12 +38,11 @@ class ProductService {
                        }: IProductFilterParams): Promise<{
     data: IProductItemResponse[];
     total: number;
-    totalPages: number
+    totalPages: number;
   }> {
     const where: WhereOptions<IProduct> = {};
     const offset = Math.max(0, (page - 1) * limit);
 
-    // Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
     if (keyword) {
       where[Op.or] = [
         Sequelize.where(fn('LOWER', col('Product.name')), Op.like, `%${keyword.toLowerCase()}%`),
@@ -51,13 +50,13 @@ class ProductService {
       ];
     }
 
-    // Lọc theo category
     if (categoryId) {
       where.categoryId = categoryId;
     }
+
     where.isDelete = false;
     where.isActive = true;
-    // Sắp xếp
+
     const order: SequelizeOrder = [];
     switch (sortBy) {
       case 'price_asc':
@@ -77,18 +76,30 @@ class ProductService {
         break;
     }
 
-    // Truy vấn dữ liệu và ánh xạ về IProductItemResponse
     const { rows, count } = await Product.findAndCountAll({
       where,
       include: [
         { model: Category, attributes: ['name'] },
-        { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+        {
+          model: ProductSubDetail,
+          attributes: ['id', 'size', 'color', 'isActive'],
+          include: [
+            {
+              model: Stock,
+              attributes: ['siteId', 'unit'],
+            },
+            {
+              model: ProductSubDetailReview,
+              attributes: ['rating'],
+            },
+          ],
+        },
       ],
       order,
       limit: Number(limit),
       offset,
       distinct: true,
-      logging: console.log, // In ra câu truy vấn SQL
+      logging: false,
     });
 
     const data: IProductItemResponse[] = rows.map((product) => {
@@ -98,9 +109,30 @@ class ProductService {
       const sizes = [
         ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
       ];
+
       const discountPercentage = Math.round(
         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
       );
+
+      // Tính unitInStocks từ siteId = 0
+      let unitInStocks = 0;
+      for (const sub of product.ProductSubDetails) {
+        for (const stock of sub.Stocks || []) {
+          if (stock.siteId === 0) {
+            unitInStocks += stock.unit;
+          }
+        }
+      }
+
+      // Tính averageRating
+      const allRatings: number[] = product.ProductSubDetails.flatMap(sub =>
+        sub.productSubDetailReviews?.map(r => r.rating) || []
+      );
+      const avgRatingRaw =
+        allRatings.length > 0
+          ? allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length
+          : 5;
+      const averageRating = Math.round(avgRatingRaw * 2) / 2;
 
       return {
         id: product.id,
@@ -117,6 +149,8 @@ class ProductService {
         imageUrls: product.imageUrls,
         colors,
         size: sizes,
+        unitInStocks,
+        averageRating,
       };
     });
 
@@ -124,6 +158,101 @@ class ProductService {
 
     return { data, total: count, totalPages };
   }
+  // async searchProducts({
+  //                        keyword,
+  //                        categoryId,
+  //                        sortBy = SORT_BY_ENUM.NEWEST,
+  //                        limit = 10,
+  //                        page = 1,
+  //                      }: IProductFilterParams): Promise<{
+  //   data: IProductItemResponse[];
+  //   total: number;
+  //   totalPages: number
+  // }> {
+  //   const where: WhereOptions<IProduct> = {};
+  //   const offset = Math.max(0, (page - 1) * limit);
+  //
+  //   // Tìm kiếm theo từ khóa (Case-insensitive cho MySQL)
+  //   if (keyword) {
+  //     where[Op.or] = [
+  //       Sequelize.where(fn('LOWER', col('Product.name')), Op.like, `%${keyword.toLowerCase()}%`),
+  //       Sequelize.where(fn('LOWER', col('Product.code')), Op.like, `%${keyword.toLowerCase()}%`),
+  //     ];
+  //   }
+  //
+  //   // Lọc theo category
+  //   if (categoryId) {
+  //     where.categoryId = categoryId;
+  //   }
+  //   where.isDelete = false;
+  //   where.isActive = true;
+  //   // Sắp xếp
+  //   const order: SequelizeOrder = [];
+  //   switch (sortBy) {
+  //     case 'price_asc':
+  //       order.push(['salePrice', 'ASC']);
+  //       break;
+  //     case 'price_desc':
+  //       order.push(['salePrice', 'DESC']);
+  //       break;
+  //     case 'newest':
+  //       order.push(['createdAt', 'DESC']);
+  //       break;
+  //     case 'latest':
+  //       order.push(['createdAt', 'ASC']);
+  //       break;
+  //     default:
+  //       order.push(['createdAt', 'DESC']);
+  //       break;
+  //   }
+  //
+  //   // Truy vấn dữ liệu và ánh xạ về IProductItemResponse
+  //   const { rows, count } = await Product.findAndCountAll({
+  //     where,
+  //     include: [
+  //       { model: Category, attributes: ['name'] },
+  //       { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+  //     ],
+  //     order,
+  //     limit: Number(limit),
+  //     offset,
+  //     distinct: true,
+  //     logging: console.log, // In ra câu truy vấn SQL
+  //   });
+  //
+  //   const data: IProductItemResponse[] = rows.map((product) => {
+  //     const colors = [
+  //       ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
+  //     ];
+  //     const sizes = [
+  //       ...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean)),
+  //     ];
+  //     const discountPercentage = Math.round(
+  //       ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
+  //     );
+  //
+  //     return {
+  //       id: product.id,
+  //       category: product.Category?.name || 'Unknown',
+  //       productName: product.name || 'No name',
+  //       description: product.description || '...',
+  //       salePrice: product.salePrice,
+  //       originalPrice: product.originalPrice,
+  //       flag: {
+  //         type: 'sale',
+  //         value: `${discountPercentage}% Sale`,
+  //       },
+  //       thumbnailUrl: product.thumbnailUrl,
+  //       imageUrls: product.imageUrls,
+  //       colors,
+  //       size: sizes,
+  //     };
+  //   });
+  //
+  //   const totalPages = Math.ceil(count / limit);
+  //
+  //   return { data, total: count, totalPages };
+  // }
 
   async getProductDetail(productId: number) {
     const where: WhereOptions<IProduct> = { id: productId };
@@ -310,13 +439,13 @@ class ProductService {
 
   async getTopSellingProducts({
                                 keyword,
-                                categoryId,
+                                categoryIds,
                                 sortBy = 'unit_on_order',
                                 limit = 10,
                                 page = 1,
                               }: {
     keyword?: string;
-    categoryId?: number;
+    categoryIds?: any;
     sortBy?: string;
     limit?: number;
     page?: number;
@@ -324,21 +453,20 @@ class ProductService {
     const where: WhereOptions = {};
     const offset = (page - 1) * limit;
 
-// Tìm kiếm theo từ khóa
     if (keyword) {
       where[Op.or as any] = [
         { name: { [Op.iLike as any]: `%${keyword}%` } },
         { code: { [Op.iLike as any]: `%${keyword}%` } },
       ];
     }
+
     where.isDelete = false;
 
-// Lọc theo category
-    if (categoryId) {
-      where.categoryId = categoryId;
+    if (categoryIds) {
+      const ids = categoryIds.split(',').map((id) => Number(id));
+      where.categoryId = { [Op.in]: ids };
     }
 
-// Sắp xếp mặc định theo unit_on_order (sản phẩm bán chạy nhất)
     const order: any[] = [['unit_on_order', 'DESC']];
     switch (sortBy) {
       case 'price_asc':
@@ -361,8 +489,21 @@ class ProductService {
     const { rows, count } = await Product.findAndCountAll({
       where,
       include: [
-        { model: Category, attributes: ['name'] },
-        { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+        { model: Category, attributes: ['id', 'name'] },
+        {
+          model: ProductSubDetail,
+          attributes: ['size', 'color', 'isActive'],
+          include: [
+            {
+              model: Stock,
+              attributes: ['siteId', 'unit'],
+            },
+            {
+              model: ProductSubDetailReview,
+              attributes: ['rating'],
+            },
+          ],
+        },
       ],
       order,
       limit: Number(limit),
@@ -378,8 +519,29 @@ class ProductService {
         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
       );
 
+      // ✅ Tính tồn kho tại siteId = 0
+      let unitInStocks = 0;
+      for (const sub of product.ProductSubDetails) {
+        for (const stock of sub.Stocks || []) {
+          if (stock.siteId === 0) {
+            unitInStocks += stock.unit;
+          }
+        }
+      }
+
+      // ✅ Tính average rating
+      const allRatings: number[] = product.ProductSubDetails.flatMap((sub) =>
+        sub.productSubDetailReviews?.map((r) => r.rating) || [],
+      );
+      const avgRatingRaw =
+        allRatings.length > 0
+          ? allRatings.reduce((sum, r) => sum + r, 0) / allRatings.length
+          : 5;
+      const averageRating = Math.round(avgRatingRaw * 2) / 2;
+
       return {
         id: product.id,
+        categoryId: product.Category?.id || null,
         category: product.Category?.name || 'Unknown',
         productName: product.name || 'No name',
         salePrice: product.salePrice,
@@ -392,11 +554,103 @@ class ProductService {
         imageUrls: product.imageUrls,
         colors,
         size: sizes,
+        unitInStocks,
+        rate: averageRating,
       };
     });
 
     return { data, total: count };
   }
+
+//   async getTopSellingProducts({
+//                                 keyword,
+//                                 categoryId,
+//                                 sortBy = 'unit_on_order',
+//                                 limit = 10,
+//                                 page = 1,
+//                               }: {
+//     keyword?: string;
+//     categoryId?: number;
+//     sortBy?: string;
+//     limit?: number;
+//     page?: number;
+//   }): Promise<{ data: IProductItemResponse[]; total: number }> {
+//     const where: WhereOptions = {};
+//     const offset = (page - 1) * limit;
+//
+// // Tìm kiếm theo từ khóa
+//     if (keyword) {
+//       where[Op.or as any] = [
+//         { name: { [Op.iLike as any]: `%${keyword}%` } },
+//         { code: { [Op.iLike as any]: `%${keyword}%` } },
+//       ];
+//     }
+//     where.isDelete = false;
+//
+// // Lọc theo category
+//     if (categoryId) {
+//       where.categoryId = categoryId;
+//     }
+//
+// // Sắp xếp mặc định theo unit_on_order (sản phẩm bán chạy nhất)
+//     const order: any[] = [['unit_on_order', 'DESC']];
+//     switch (sortBy) {
+//       case 'price_asc':
+//         order.unshift(['salePrice', 'ASC']);
+//         break;
+//       case 'price_desc':
+//         order.unshift(['salePrice', 'DESC']);
+//         break;
+//       case 'newest':
+//         order.unshift(['createdAt', 'DESC']);
+//         break;
+//       case 'latest':
+//         order.unshift(['createdAt', 'ASC']);
+//         break;
+//       default:
+//         order.unshift(['unit_on_order', 'DESC']);
+//         break;
+//     }
+//
+//     const { rows, count } = await Product.findAndCountAll({
+//       where,
+//       include: [
+//         { model: Category, attributes: ['name'] },
+//         { model: ProductSubDetail, attributes: ['size', 'color', 'isActive'] },
+//       ],
+//       order,
+//       limit: Number(limit),
+//       offset,
+//     });
+//
+//     const data: IProductItemResponse[] = rows.map((product) => {
+//       const colors = [
+//         ...new Set(product.ProductSubDetails.map((sub) => sub.color).filter(Boolean)),
+//       ];
+//       const sizes = [...new Set(product.ProductSubDetails.map((sub) => sub.size).filter(Boolean))];
+//       const discountPercentage = Math.round(
+//         ((product.originalPrice - product.salePrice) / product.originalPrice) * 100,
+//       );
+//
+//       return {
+//         id: product.id,
+//         category: product.Category?.name || 'Unknown',
+//         productName: product.name || 'No name',
+//         salePrice: product.salePrice,
+//         originalPrice: product.originalPrice,
+//         flag: {
+//           type: 'sale',
+//           value: `${discountPercentage}% Sale`,
+//         },
+//         thumbnailUrl: product.thumbnailUrl,
+//         imageUrls: product.imageUrls,
+//         colors,
+//         size: sizes,
+//       };
+//     });
+//
+//     return { data, total: count };
+//   }
 
   /**
    * Lấy ra tối đa 5 sản phẩm dựa vào category hoặc sản phẩm gần đây

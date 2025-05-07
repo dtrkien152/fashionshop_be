@@ -49,11 +49,11 @@ class ProductController {
 
   getTopSellingProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { keyword, categoryId, sortBy, limit, page } = req.query;
+      const { keyword, categoryIds, sortBy, limit, page } = req.query;
 
       const result = await this.productService.getTopSellingProducts({
         keyword: keyword as string,
-        categoryId: categoryId ? Number(categoryId) : undefined,
+        categoryIds,
         sortBy: sortBy as string,
         limit: limit ? Number(limit) : 10,
         page: page ? Number(page) : 1,
