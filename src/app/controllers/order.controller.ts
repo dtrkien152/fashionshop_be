@@ -66,6 +66,25 @@ class OrderController {
       this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
         console.log('Send mail confirm successfully');
       });
+      if (payload.payment.type === PAYMENT_METHOD.VNPAY) {
+        const paymentUrl = this.vnPayService.buildUrlPayment(results.order.code, results.order.originTotalPrice - results.order.voucherDiscountPrice, req.ip);
+        return res.status(200).json({ order: results.order, paymentUrl });
+      }
+      return res.status(200).json({ order: results.order });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createAdminOrder = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const payload: OrderCreateRequest = req.body;
+      const { email } = req.query;
+      if (!email) throw new BadRequestError('Email is required');
+      const results = await this.orderService.create(email as string, payload);
+      this.mailService.sendConfirmOrder(email as string, results.order, results.orderDetails).then(() => {
+        console.log('Send mail confirm successfully');
+      });
       return res.status(200).json({ order: results.order });
     } catch (error) {
       next(error);

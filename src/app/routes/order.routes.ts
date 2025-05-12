@@ -14,6 +14,8 @@ router.get('/tracking/:orderCode', orderController.getOrder);
 
 router.post('', orderController.createOrder);
 
+router.post('/admin', jwtMiddleware.verifyEmployeeToken, orderController.createAdminOrder);
+
 router.put('', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusOrder);
 
 router.put('/payment', jwtMiddleware.verifyEmployeeToken, orderController.updateStatusPayment);
