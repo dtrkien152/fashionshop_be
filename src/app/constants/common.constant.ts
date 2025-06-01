@@ -1,0 +1,42 @@
+export enum ROLE {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
+  SALE = 'SALE',
+}
+
+export enum ACTION {
+  ACTIVE_USER = 'ACTIVE_USER',
+  FORGOT_PASSWORD = 'FORGOT_PASSWORD',
+}
+
+export enum SORT_BY_ENUM {
+  NEWEST = 'newest',
+  LATEST = 'latest',
+  PRICE_ASC = 'price_asc',
+  PRICE_DESC = 'price_desc'
+}
+
+export enum ORDER_STATUS {
+  PENDING = 'PENDING',
+  CANCEL = 'CANCEL',
+  CONFIRMED = 'CONFIRMED',
+  REJECTED = 'REJECTED',
+  SHIPPING = 'SHIPPING',
+  COMPLETED = 'COMPLETED',
+  RETURN = 'RETURN',
+}
+
+export enum PAYMENT_METHOD {
+  VNPAY = 'VNPAY',
+  COD = 'COD'
+}
+
+export enum PAYMENT_STATUS {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+}
+
+export const IMAGE_DEFAULT = 'https://cdn.vectorstock.com/i/750p/92/16/default-profile-picture-avatar-user-icon-vector-46389216.avif';
+
+export const SITE_NAMES = ['Online', 'Hà Nội', 'Hồ Chí Minh'];

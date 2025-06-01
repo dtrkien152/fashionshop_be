@@ -1,0 +1,15 @@
+export { default as userRoutes } from './user.routes';
+export { default as authRoutes } from './auth.routes';
+export { default as productRoutes } from './product.routers';
+export { default as orderRoutes } from './order.routes';
+export { default as voucherRoutes } from './voucher.routes';
+export { default as shipFeeRoutes } from './ship_fee.routes';
+export { default as categoryRoutes } from './category.routes';
+export { default as cartRoutes } from './cart.routes';
+export { default as PostRoutes } from './post.routers';
+export { default as stockRoutes } from './stock.routes';
+export { default as siteRoutes } from './site.routes';
+export { default as statsRoutes } from './stats.routes';
+export { default as employeeRoutes } from './employee.routes';
+export { default as ghnRoutes } from './ghn.routes';
+export { default as notifyRoutes } from './notify.routes';

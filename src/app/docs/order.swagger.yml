@@ -1,0 +1,277 @@
+openapi: 3.0.0
+info:
+  title: Orders API
+  description: API for managing orders
+  version: 1.0.0
+components:
+  schemas:
+    OrderCreateRequest:
+      type: object
+      required:
+        - siteId
+        - customer
+        - products
+        - payment
+        - voucherCode
+        - email
+        - shipFee
+      properties:
+        siteId:
+          type: integer
+          example: 1
+        customer:
+          $ref: '#/components/schemas/OrderCustomer'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderProduct'
+        payment:
+          $ref: '#/components/schemas/OrderPayment'
+        voucherCode:
+          type: string
+          example: "DISCOUNT20"
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+    OrderPayment:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "VNPAY"
+        status:
+          type: string
+          example: "Paid"
+    OrderProduct:
+      type: object
+      required:
+        - productId
+        - color
+        - size
+        - unit
+      properties:
+        productId:
+          type: integer
+          example: 456
+        color:
+          type: string
+          example: "#000000"
+        size:
+          type: string
+          example: "M"
+        unit:
+          type: integer
+          example: 2
+    OrderCustomer:
+      type: object
+      required:
+        - name
+        - address
+        - phone
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+        phone:
+          type: string
+          example: "+1234567890"
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Order ID
+        status:
+          type: string
+          enum: [ PENDING, CONFIRMED, REJECTED, COMPLETED ]
+          description: Order status
+        paymentStatus:
+          type: string
+          enum: [ PENDING, CONFIRMED ]
+          description: Payment status
+        email:
+          type: string
+          description: Customer email
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation timestamp
+    OrderFilter:
+      type: object
+      properties:
+        keyword:
+          type: string
+          description: Search by keyword
+        email:
+          type: string
+          description: Filter by customer email
+        status:
+          type: string
+          enum: [ PENDING, CONFIRMED, REJECTED, COMPLETED ]
+          description: Filter by order status
+        paymentStatus:
+          type: string
+          enum: [ PENDING, CONFIRMED ]
+          description: Filter by payment status
+        page:
+          type: integer
+          description: Page number for pagination
+        limit:
+          type: integer
+          description: Number of items per page
+        orderBy:
+          type: string
+          description: Field to order results by
+        orderDirection:
+          type: string
+          enum: [ ASC, DESC, asc, desc ]
+          description: Order direction
+paths:
+  /api/orders:
+    get:
+      summary: Get all orders
+      description: Retrieve a list of orders with optional filtering and pagination
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/keyword'
+        - in: query
+          name: email
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/email'
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/status'
+        - in: query
+          name: paymentStatus
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/paymentStatus'
+        - in: query
+          name: page
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/page'
+        - in: query
+          name: limit
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/limit'
+        - in: query
+          name: orderBy
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/orderBy'
+        - in: query
+          name: orderDirection
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/orderDirection'
+      responses:
+        '200':
+          description: A list of orders
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+    post:
+      summary: Create an order
+      description: Creates a new order and sends a confirmation email.
+      tags: [ Order ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        200:
+          description: Order created successfully
+  /api/orders/status:
+    put:
+      summary: Update order status
+      description: Update the status of an order by its code
+      parameters:
+        - in: query
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Order code to update
+        - in: query
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [ PENDING, CONFIRMED, REJECTED, COMPLETED ]
+          description: New status of the order
+      responses:
+        '200':
+          description: Successfully updated order status
+        '400':
+          description: Invalid request parameters
+        '404':
+          description: Order not found
+        '500':
+          description: Internal server error
+  /api/orders/my-orders:
+    get:
+      summary: Get all my orders
+      description: Retrieve a list of orders for the currently authenticated user
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/keyword'
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/status'
+        - in: query
+          name: paymentStatus
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/paymentStatus'
+        - in: query
+          name: page
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/page'
+        - in: query
+          name: limit
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/limit'
+        - in: query
+          name: orderBy
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/orderBy'
+        - in: query
+          name: orderDirection
+          schema:
+            $ref: '#/components/schemas/OrderFilter/properties/orderDirection'
+      responses:
+        '200':
+          description: A list of user orders
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new order
+      description: Create a new order for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '201':
+          description: Order successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
