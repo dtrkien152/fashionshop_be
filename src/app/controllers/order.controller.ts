@@ -95,6 +95,11 @@ class OrderController {
     try {
       const { code, status } = req.query;
       const results = await this.orderService.updateStatusOrder(code as string, status as ORDER_STATUS);
+      if (results.paymentType == PAYMENT_METHOD.VNPAY && results.paymentStatus == PAYMENT_STATUS.PAID) {
+        if (status == ORDER_STATUS.CANCEL || status == ORDER_STATUS.REJECTED || status == ORDER_STATUS.RETURN) {
+          await this.vnPayService.refund(results, req.ip);
+        }
+      }
       return res.status(200).json(results);
     } catch (error) {
       next(error);
@@ -125,6 +130,9 @@ class OrderController {
     try {
       const { code } = req.query;
       const results = await this.orderService.handleCancelOrder(code as string);
+      if (results.paymentType == PAYMENT_METHOD.VNPAY && results.paymentStatus == PAYMENT_STATUS.PAID) {
+        await this.vnPayService.refund(results, req.ip);
+      }
       return res.status(200).json(results);
     } catch (error) {
       next(error);
@@ -135,6 +143,9 @@ class OrderController {
     try {
       const { code, reason } = req.query;
       const results = await this.orderService.handleReturnOrder(code as string, reason as string);
+      if (results.paymentType == PAYMENT_METHOD.VNPAY && results.paymentStatus == PAYMENT_STATUS.PAID) {
+        await this.vnPayService.refund(results, req.ip);
+      }
       return res.status(200).json(results);
     } catch (error) {
       next(error);

@@ -1,13 +1,14 @@
 import { inject, injectable } from 'tsyringe';
 import { NextFunction, Request, Response } from 'express';
-import { ShipFeeService, VoucherService } from '../services';
+import { GhnService, ShipFeeService, VoucherService } from '../services';
 import { ShipFeeCreateRequest, ShipFeeUpdateRequest } from '../dto';
 import { SORT_BY_ENUM } from '../constants';
 
 @injectable()
 class ShipFeeController {
 
-  constructor(@inject(ShipFeeService) private shipFeeService: ShipFeeService) {
+  constructor(@inject(ShipFeeService) private shipFeeService: ShipFeeService,
+              @inject(GhnService) private ghnService: GhnService) {
   }
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -33,7 +34,6 @@ class ShipFeeController {
       next(error);
     }
   };
-
 
 
   update = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -67,8 +67,8 @@ class ShipFeeController {
 
   getFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { price } = req.query;
-      const results = await this.shipFeeService.getFee(+price);
+      const { wardCode, districtId } = req.query;
+      const results = await this.ghnService.calculator(+districtId, wardCode as string);
       return res.status(200).json(results);
     } catch (error) {
       next(error);
@@ -97,9 +97,9 @@ class ShipFeeController {
 
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const { id,status } = req.body;
-      await this.shipFeeService.updateStatus({id:id,status:status})
-      return res.status(200).json("Success");
+      const { id, status } = req.body;
+      await this.shipFeeService.updateStatus({ id: id, status: status });
+      return res.status(200).json('Success');
     } catch (error) {
       next(error);
     }
@@ -107,16 +107,16 @@ class ShipFeeController {
 
   createFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      await this.shipFeeService.createShipFee(req.body)
-      return res.status(200).json("Success");
+      await this.shipFeeService.createShipFee(req.body);
+      return res.status(200).json('Success');
     } catch (error) {
       next(error);
     }
   };
   updateFee = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      await this.shipFeeService.updateShipFee(req.body)
-      return res.status(200).json("Success");
+      await this.shipFeeService.updateShipFee(req.body);
+      return res.status(200).json('Success');
     } catch (error) {
       next(error);
     }

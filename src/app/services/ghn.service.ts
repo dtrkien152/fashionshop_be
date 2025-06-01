@@ -54,6 +54,18 @@ class GhnService {
     return await this.axios.post(ENV_CONFIG.ghn.baseUrl + '/v2/shipping-order/create', payload);
   }
 
+  async calculator(districtId: number, wardCode: string) {
+    const payload = {
+      service_id: 53321,
+      weight: 200,
+      to_ward_code: wardCode.toString(),
+      to_district_id: districtId,
+    };
+    const response = await this.axios.post(ENV_CONFIG.ghn.baseUrl + '/v2/shipping-order/fee', payload);
+    const fee = response.data.data.total;
+    return { fee };
+  }
+
   async getProvince() {
     // return await this.axios.get(ENV_CONFIG.ghn.baseUrl + '/master-data/province');
     return await this.axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province');

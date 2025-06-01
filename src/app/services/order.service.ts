@@ -50,7 +50,11 @@ class OrderService {
       return product;
     }));
     const originTotalPrice = payload.products.reduce((acc, cur) => acc + cur.priceInUnit * cur.unit, 0);
-    const shipFee = await this.shipFeeService.getFee(originTotalPrice);
+    let shipFee = 0;
+    if (payload.customer?.districtId && payload.customer?.wardCode) {
+      const shipFeeGhn = await this.ghnService.calculator(payload.customer?.districtId, payload.customer?.wardCode);
+      shipFee = shipFeeGhn.fee;
+    }
     let discountPrice = 0;
     if (payload.voucherCode) {
       const voucher = await this.voucherService.getByCode(payload.voucherCode);
@@ -75,7 +79,7 @@ class OrderService {
       email: email,
       voucherCode: payload.voucherCode,
       voucherDiscountPrice: discountPrice,
-      shipFee: shipFee.fee,
+      shipFee: shipFee,
       customerName: payload.customer?.name,
       customerAddress: payload.customer?.address,
       customerPhone: payload.customer?.phone,
@@ -198,15 +202,11 @@ class OrderService {
   }
 
   async handleShippingOrder(code: string, weight: string | number, width: string | number, height: string | number) {
-    const order = await this.getOrderByOrderCode(code);
-    if (!order) throw new BadRequestError('Order not found!');
-    const shipResponse = await this.ghnService.createOrderShipping(order, +weight, +width, +height);
-    console.log(shipResponse);
-    await Order.update({
-      status: ORDER_STATUS.SHIPPING,
-      shipCode: shipResponse.data.data.order_code,
-    }, { where: { code } });
-    return { message: shipResponse.data.message_display };
+    const orderDto = await this.getOrderByOrderCode(code);
+    if (!orderDto) throw new BadRequestError('Order not found!');
+    const shipResponse = await this.ghnService.createOrderShipping(orderDto, +weight, +width, +height);
+    const order = await Order.findOne({ where: { code } });
+    return await order.update({ status: ORDER_STATUS.SHIPPING, shipCode: shipResponse.data.data.order_code });
   }
 
   async getAll(filter?: OrderFilter) {
