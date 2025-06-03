@@ -1,15 +1,9 @@
-import crypto from 'crypto';
-
-const codeCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const passwordCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-const otpCharacters = '0123456789';
-
-// Function to convert Vietnamese text to slug
-const vietnameseToSlug = (text: string): string => {
+// Test file để kiểm tra tính năng tạo slug từ tiếng Việt
+const vietnameseToSlug = (text) => {
   if (!text) return '';
   
   // Remove Vietnamese diacritics
-  const vietnameseMap: { [key: string]: string } = {
+  const vietnameseMap = {
     'à': 'a', 'á': 'a', 'ạ': 'a', 'ả': 'a', 'ã': 'a',
     'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ậ': 'a', 'ẩ': 'a', 'ẫ': 'a',
     'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ặ': 'a', 'ẳ': 'a', 'ẵ': 'a',
@@ -50,29 +44,10 @@ const vietnameseToSlug = (text: string): string => {
     .replace(/^-|-$/g, ''); // Remove leading and trailing hyphens
 };
 
-const GenerateUtils = {
-  string: (length: number, characters: string, prefix?: string) => {
-    let result = prefix ?? '';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters[randomIndex];
-    }
-    return result;
-  },
-  code: (prefix: string, length: number = 12) => {
-    return GenerateUtils.string(length, codeCharacters, prefix);
-  },
-  otp: (length: number = 6) => {
-    return GenerateUtils.string(length, otpCharacters);
-  },
-  uuid: () => {
-    return crypto.randomUUID();
-  },
-  password: (length: number = 12) => {
-    return GenerateUtils.string(length, passwordCharacters);
-  },
-  slug: (text: string) => {
-    return vietnameseToSlug(text);
-  },
-};
-export default GenerateUtils;
+// Test
+const testTitle = "Thương hiệu thời trang nổi tiếng giảm giá lớn đón năm mới";
+const result = vietnameseToSlug(testTitle);
+console.log("Title:", testTitle);
+console.log("Generated slug:", result);
+
+// Expected: thuong-hieu-thoi-trang-noi-tieng-giam-gia-lon-don-nam-moi 

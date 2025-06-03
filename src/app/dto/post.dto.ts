@@ -1,4 +1,4 @@
-interface IPostDetail {
+export interface IPostDetail {
   id: number;
   code: string;
   title: string;
@@ -13,7 +13,7 @@ interface IPostDetail {
 }
 
 
-interface ICommentDetail {
+export interface ICommentDetail {
   id: number;
   userId: number;
   fullName: string;
@@ -22,7 +22,7 @@ interface ICommentDetail {
   createdAt: Date;
 }
 
-interface IPostWithComments {
+export interface IPostWithComments {
   id: number;
   code?:string;
   title: string;
@@ -36,14 +36,14 @@ interface IPostWithComments {
   comments?: ICommentDetail[];
 }
 
-interface IPostQueryParams {
+export interface IPostQueryParams {
   categoryId: number;
   page?: number;
   size?: number;
   keyword?: string;
 }
 
-interface ICategoryWithPostCount {
+export interface ICategoryWithPostCount {
   id: number;
   name: string;
   postCount: number;

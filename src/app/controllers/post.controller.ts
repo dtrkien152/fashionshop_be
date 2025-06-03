@@ -126,6 +126,21 @@ class PostController {
     }
   };
 
+  updatePostStatus2 = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const {postId, isActive } = req.body;
+
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid isActive value' });
+      }
+
+      const result = await this.postService.updatePostStatus(Number(postId), isActive);
+      res.json({ message: 'Status updated successfully', data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   updatePost = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       let updateData = req.body;

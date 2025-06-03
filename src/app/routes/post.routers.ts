@@ -146,6 +146,7 @@ router.put(
 );
 
 router.put('/:postId/status', postController.updatePostStatus);
+router.post('/update-status', postController.updatePostStatus2);
 
 router.post('/search-by-admin', postController.searchByAdmin);
 
