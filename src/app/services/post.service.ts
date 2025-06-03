@@ -4,6 +4,8 @@ import { Sequelize } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { IMAGE_DEFAULT, SORT_BY_ENUM } from '../constants';
 import { Tags } from '../models/tags.model';
+import { GenerateUtils } from '../utils';
+import { IPostWithComments, IPostQueryParams, ICategoryWithPostCount, IPostDetail, ICommentDetail } from '../dto/post.dto';
 
 @injectable()
 class PostService {
@@ -243,7 +245,25 @@ class PostService {
     }
 
     // Cập nhật các trường cơ bản
-    if (data.title) post.title = data.title;
+    if (data.title) {
+      post.title = data.title;
+      // ✅ Tự động tạo code mới từ title khi title được cập nhật
+      const newCode = GenerateUtils.slug(data.title);
+      
+      // Kiểm tra xem code mới có trùng với bài viết khác không (trừ bài viết hiện tại)
+      let uniqueCode = newCode;
+      const existingPost = await Post.findOne({ 
+        where: { 
+          code: uniqueCode, 
+          id: { [Op.ne]: postId } // Loại trừ bài viết hiện tại
+        } 
+      });
+      if (existingPost) {
+        uniqueCode = `${newCode}-${Date.now()}`;
+      }
+      
+      post.code = uniqueCode;
+    }
     if (data.author) post.author = data.author;
     if (data.content) post.content = data.content;
     if (data.categoryId) post.postCategoryId = Number(data.categoryId);
@@ -298,9 +318,20 @@ class PostService {
       ? JSON.stringify(data.content)
       : data.content;
 
+    // ✅ Tự động tạo code từ title
+    const code = GenerateUtils.slug(data.title);
+
+    // ✅ Kiểm tra xem code đã tồn tại chưa, nếu có thì thêm timestamp để đảm bảo unique
+    let uniqueCode = code;
+    const existingPost = await Post.findOne({ where: { code: uniqueCode } });
+    if (existingPost) {
+      uniqueCode = `${code}-${Date.now()}`;
+    }
+
     // ✅ Tạo bài viết mới
     const post = await Post.create({
       title: data.title,
+      code: uniqueCode,
       author: data.author,
       content,
       postCategoryId,
